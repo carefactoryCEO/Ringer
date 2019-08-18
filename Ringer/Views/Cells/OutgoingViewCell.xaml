@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms" 
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="Ringer.Views.Cells.OutgoingViewCell">
+    <ContentView>
+        <Frame BackgroundColor="#3190FF"
+                BorderColor="#3190FF"
+                HasShadow="false"
+                Padding="12,8"
+                Margin="15,3,60,0"
+                CornerRadius="16"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Rotation="180"
+                FlowDirection="LeftToRight"
+                >
+            <Label Text="{Binding Text}" 
+                      d:Text="Hello world and this is the new world How do you feel? Im very excied!"
+                      TextColor="White"
+                      FontSize="Body"/>
+        </Frame>
+    </ContentView>
+</ViewCell>

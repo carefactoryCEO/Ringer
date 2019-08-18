@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:helpers="clr-namespace:Ringer.Helpers"
+             xmlns:controls="clr-namespace:Ringer.Views.Controls"
+             xmlns:partials="clr-namespace:Ringer.Views.Partials"
+             
+             mc:Ignorable="d"
+             x:Class="Ringer.Views.ChatPage"
+             Title="Ringer"
+             Shell.TabBarIsVisible="False">
+    
+    <!-- Data Template Selector -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <helpers:ChatTemplateSelector x:Key="MessageTemplateSelector"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid RowSpacing="0" ColumnSpacing="0">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="1" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        
+        <!-- messages feed -->
+        <controls:ExtendedListView 
+            x:Name="ChatList" 
+            ItemsSource="{Binding Messages}" 
+            ItemTemplate="{StaticResource MessageTemplateSelector}" 
+            ItemAppearingCommand="{Binding MessageAppearingCommand}"
+            ItemDisappearingCommand="{Binding MessageDisappearingCommand}"
+            
+            Grid.Row="0" 
+            Margin="0"
+            
+            SeparatorColor="Transparent"
+            HasUnevenRows="True" 
+            VerticalOptions="FillAndExpand" 
+            
+            FlowDirection="RightToLeft"
+            Rotation="180"
+            
+            ItemAppearing="ChatList_ItemAppearing">
+        </controls:ExtendedListView>
+
+        <!-- separator -->
+        <BoxView HorizontalOptions="FillAndExpand"
+                 HeightRequest="1"
+                 BackgroundColor="LightGray"
+                 Grid.Row="1"
+                 IsVisible="False"/>
+
+        <!-- input module -->
+        <partials:ChatInputBarView 
+            Grid.Row="2"
+            x:Name="chatInput"
+            Padding="0, 3">
+        </partials:ChatInputBarView>
+
+
+    </Grid>
+
+</ContentPage>
