@@ -45,7 +45,7 @@ namespace Ringer.iOS.Renderers
                 if (customControl.HasRoundedCorner)
                 {
                     Control.Layer.CornerRadius = _cornerRadius;
-                    Control.Layer.BorderColor = Color.Gray.ToCGColor();
+                    Control.Layer.BorderColor = Color.LightGray.ToCGColor();
                     Control.Layer.BorderWidth = 1;
 
                     Control.TextContainerInset = new UIEdgeInsets(

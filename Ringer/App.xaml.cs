@@ -16,7 +16,7 @@ namespace Ringer
         //    DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : "http://localhost:5000";
         //public static bool UseMockDataStore = true;
 
-        public static string User = "Rendy";
+        public static string User = "김영미";
         public static string Group = "Xamarin";
         public static string ChatURL = "ringerchat.azurewebsites.net";
         public static List<Message> Repository = new List<Message>();

@@ -108,13 +108,13 @@ namespace Ringer.ViewModels
             try
             {
                 IsBusy = true;
-                await signalR.ConnectAsync();
-                await signalR.JoinChannelAsync(App.Group, App.User);
-                IsConnected = true;
 
                 App.Repository.ForEach(m => Messages.Add(m));
                 App.Repository.Clear();
 
+                await signalR.ConnectAsync();
+                await signalR.JoinChannelAsync(App.Group, App.User);
+                IsConnected = true;
                 //await Task.Delay(200); // why? 보여주려고??
                 //SendLocalMessage("Connected...", App.User);
             }

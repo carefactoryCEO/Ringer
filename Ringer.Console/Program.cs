@@ -7,29 +7,27 @@ namespace Ringer.ConsoleApp
     public class Program
     {
         static ChatService service;
-        static string room;
+        static string room = "Xamarin";
         static string name;
         static Random random = new Random();
 
         public static async Task Main(string[] args)
         {
-            name = "console";
+            name = "Ringer" + random.Next(1,100);
 
             service = new ChatService();
             service.OnReceivedMessage += Service_OnReceivedMessage;
             service.OnConnectionClosed += Service_OnConnectionClosed;
             service.OnEnteredOrExited += Service_OnEnteredOrExited;
 
-            Console.WriteLine("Now you get the ringer chat rooms...");
-
-            var ip = "ringerchat.azurewebsites.net";
-            service.Init(ip, ip != "localhost");
+            service.Init("ringerchat.azurewebsites.net", true);
 
             await service.ConnectAsync();
-            Console.WriteLine("OK, you are connected");
+            Console.WriteLine("-----------------------------------");
+            Console.WriteLine("       OK, 링거 호스트 접속");
 
             await JoinRoom();
-            Console.WriteLine("You can now chat with your friends.");
+            
 
             var keepGoing = true;
             do
@@ -44,6 +42,10 @@ namespace Ringer.ConsoleApp
                 else if (text == "leave")
                 {
                     await service.LeaveChannelAsync(room, name);
+
+                    Console.WriteLine("다시 접속할까요?");
+                    Console.ReadLine();
+
                     await JoinRoom();
                 }
 
@@ -72,10 +74,10 @@ namespace Ringer.ConsoleApp
 
         private static async Task JoinRoom()
         {
-            Console.WriteLine($"Enter room ({string.Join(",", service.GetRooms())}):");
-            room = Console.ReadLine();
-
             await service.JoinChannelAsync(room, name);
+            Console.WriteLine("-----------------------------------");
+            Console.WriteLine("         링거 서비스 채팅             ");
+            Console.WriteLine("-----------------------------------");
         }
 
         private static void Service_OnReceivedMessage(object sender, Core.EventArgs.ChatEventArgs e)

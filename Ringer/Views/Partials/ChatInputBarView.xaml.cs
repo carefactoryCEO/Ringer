@@ -16,10 +16,10 @@ namespace Ringer.Views.Partials
         {
             InitializeComponent();
 
-            if (Device.RuntimePlatform == Device.iOS)
-            {
-                this.SetBinding(HeightRequestProperty, new Binding("Height", BindingMode.OneWay, null, null, null, chatTextInput));
-            }
+            //if (Device.RuntimePlatform == Device.iOS)
+            //{
+            //    this.SetBinding(HeightRequestProperty, new Binding("Height", BindingMode.OneWay, null, null, null, chatTextInput));
+            //}
         }
         public void Handle_Completed(object sender, EventArgs e)
         {
