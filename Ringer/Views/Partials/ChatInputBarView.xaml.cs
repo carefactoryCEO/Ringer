@@ -24,7 +24,7 @@ namespace Ringer.Views.Partials
         public void Handle_Completed(object sender, EventArgs e)
         {
             chatTextInput.Focus();
-            (this.Parent.Parent.BindingContext as ChatPageViewModel).OnSendCommand.Execute(null);
+            (this.Parent.Parent.BindingContext as ChatPageViewModel).SendMessageCommand.Execute(null);
 
         }
 

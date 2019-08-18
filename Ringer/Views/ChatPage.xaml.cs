@@ -9,37 +9,30 @@ namespace Ringer.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ChatPage : ContentPage
     {
+        ChatPageViewModel vm;
+
         public ChatPage()
         {
             InitializeComponent();
-            this.BindingContext = new ChatPageViewModel();
+            BindingContext = vm = new ChatPageViewModel();
         }
 
-        public void ScrollTap(object sender, System.EventArgs e)
+        protected override void OnAppearing()
         {
-            lock (new object())
-            {
-                if (BindingContext != null)
-                {
-                    var vm = BindingContext as ChatPageViewModel;
+            base.OnAppearing();
 
-                    Device.BeginInvokeOnMainThread(() =>
-                    {
-                        while (vm.DelayedMessages.Count > 0)
-                        {
-                            vm.Messages.Insert(0, vm.DelayedMessages.Dequeue());
-                        }
-                        vm.ShowScrollTap = false;
-                        vm.LastMessageVisible = true;
-                        vm.PendingMessageCount = 0;
-                        ChatList?.ScrollToFirst();
-                    });
-
-
-                }
-
-            }
+            if (!DesignMode.IsDesignModeEnabled)
+                vm.ConnectCommand.Execute(null);
         }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            if (!DesignMode.IsDesignModeEnabled)
+                vm.DisconnectCommand.Execute(null);
+        }
+
 
         public void OnListTapped(object sender, ItemTappedEventArgs e)
         {

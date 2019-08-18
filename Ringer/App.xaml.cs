@@ -1,10 +1,9 @@
-﻿using System;
-using Xamarin.Essentials;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
-using Ringer.Services;
-using Ringer.Views;
-//using Ringer.Core;
+﻿using Xamarin.Forms;
+using Ringer.Core;
+using System.Collections.ObjectModel;
+using Ringer.Models;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Ringer
 {
@@ -18,12 +17,15 @@ namespace Ringer
         //public static bool UseMockDataStore = true;
 
         public static string User = "Rendy";
+        public static string Group = "Xamarin";
+        public static string ChatURL = "ringerchat.azurewebsites.net";
+        public static List<Message> Repository = new List<Message>();
 
         public App()
         {
             InitializeComponent();
 
-            //DependencyService.Register<ChatService>();
+            DependencyService.Register<ChatService>();
 
             //if (UseMockDataStore)
             //    DependencyService.Register<MockDataStore>();
@@ -31,6 +33,8 @@ namespace Ringer
             //    DependencyService.Register<AzureDataStore>();
 
             MainPage = new AppShell();
+
+
             //MainPage = new ChatPage();
 
         }

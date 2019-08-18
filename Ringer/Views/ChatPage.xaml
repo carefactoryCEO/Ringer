@@ -32,8 +32,6 @@
             x:Name="ChatList" 
             ItemsSource="{Binding Messages}" 
             ItemTemplate="{StaticResource MessageTemplateSelector}" 
-            ItemAppearingCommand="{Binding MessageAppearingCommand}"
-            ItemDisappearingCommand="{Binding MessageDisappearingCommand}"
             
             Grid.Row="0" 
             Margin="0"
@@ -43,9 +41,7 @@
             VerticalOptions="FillAndExpand" 
             
             FlowDirection="RightToLeft"
-            Rotation="180"
-            
-            ItemAppearing="ChatList_ItemAppearing">
+            Rotation="180">
         </controls:ExtendedListView>
 
         <!-- separator -->
