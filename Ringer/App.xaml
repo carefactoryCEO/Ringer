@@ -4,7 +4,11 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Ringer.App">
+             x:Class="Ringer.App"
+             
+             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+             android:Application.WindowSoftInputModeAdjust="Resize">
+            <!-- 키보드 올라오면 툴바도 같이 올라가 버리는 문제 수정 https://xamgirl.com/adjusting-elements-when-keyboard-shows-in-xamarin-forms/ -->
     <Application.Resources>
         
     </Application.Resources>

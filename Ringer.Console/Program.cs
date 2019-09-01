@@ -20,6 +20,11 @@ namespace Ringer.ConsoleApp
             service.OnConnectionClosed += Service_OnConnectionClosed;
             service.OnEnteredOrExited += Service_OnEnteredOrExited;
 
+            //Console.WriteLine("url?");
+            //string url = Console.ReadLine();
+            //service.Init(url, true);
+
+
             service.Init("ringerchat.azurewebsites.net", true);
 
             await service.ConnectAsync();

@@ -36,11 +36,12 @@
             HorizontalOptions="Fill"
             Grid.Row="0" 
             Grid.Column="2"
+            AutoSize="Disabled"
             HasRoundedCorner="True"
             VerticalOptions="End"/>
 
 
-        <ImageButton x:Name="plusButton"
+        <Image x:Name="plusButton"
                      Source="CameraIcon"
                      Grid.Row="0" 
                      Grid.Column="0"
@@ -51,7 +52,7 @@
                      
                      HeightRequest="35"/>
 
-        <ImageButton x:Name="photoButton"
+        <Image x:Name="photoButton"
                      Source="PictureIcon"
                      Grid.Row="0" 
                      Grid.Column="1"

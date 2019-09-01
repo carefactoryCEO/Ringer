@@ -42,8 +42,9 @@ namespace Ringer.Droid.Renderers
 
                 // expend limitation to 5 lines
                 Control.SetMaxLines(5);
-                Control.SetPadding(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 60, Control.PaddingBottom);
-
+                
+                //Control.SetPadding(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 90, Control.PaddingBottom);
+                Control.SetPaddingRelative(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 90, Control.PaddingBottom);
             }
 
             if (e.NewElement != null)

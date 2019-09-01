@@ -123,7 +123,24 @@ namespace Ringer.ViewModels
                 // Walt Disney World Resort, Orlando, FL 32830 US
                 // 10600 N Tantau Ave, Cupertino, CA 95014 미국
 
-                Console.WriteLine(geocodeAddress);
+                //Console.WriteLine(geocodeAddress);
+
+
+                var geocodeAddress1 =
+                    $"AdminArea:       {placemark.AdminArea}\n" +
+                    $"CountryCode:     {placemark.CountryCode}\n" +
+                    $"CountryName:     {placemark.CountryName}\n" +
+                    $"FeatureName:     {placemark.FeatureName}\n" +
+                    $"Locality:        {placemark.Locality}\n" +
+                    $"PostalCode:      {placemark.PostalCode}\n" +
+                    $"SubAdminArea:    {placemark.SubAdminArea}\n" +
+                    $"SubLocality:     {placemark.SubLocality}\n" +
+                    $"SubThoroughfare: {placemark.SubThoroughfare}\n" +
+                    $"Thoroughfare:    {placemark.Thoroughfare}\n";
+
+                Debug.WriteLine(geocodeAddress1);
+
+
 
                 var infomation = new Infomation
                 {

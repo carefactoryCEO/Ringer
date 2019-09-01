@@ -20,7 +20,7 @@ namespace Ringer.Views
         {
             InitializeComponent();
 
-            //GetGeolocation();
+            GetGeolocation();
         }
 
         private async void GetGeolocation()
