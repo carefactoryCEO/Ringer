@@ -1,14 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Xamarin.Essentials;
 using Xamarin.Forms.Maps;
-using Ringer.ViewModels;
 using Ringer.Models;
 
 namespace Ringer.Views
@@ -19,6 +14,11 @@ namespace Ringer.Views
         public MapPage()
         {
             InitializeComponent();
+        }
+
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
 
             GetGeolocation();
         }
@@ -59,27 +59,14 @@ namespace Ringer.Views
             
         }
 
-        private void MyMap_MapClicked(object sender, Xamarin.Forms.Maps.MapClickedEventArgs e)
+        private void MyMap_MapClicked(object sender, MapClickedEventArgs e)
         {
-            Console.WriteLine(e.Position);
+            Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
         }
 
         private void Button_Clicked(object sender, EventArgs e)
         {
             GetGeolocation();
-
-            //GetGeolocation();
-            //37.6109008789063, Longitude: 127.039388325429
-
-            //var location = await Geolocation.GetLastKnownLocationAsync();
-
-            //var position = new Position(37.6109008789063, 127.039388325429);
-
-            //var position = new Position(location.Latitude, location.Longitude);
-
-            //MyMap.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromKilometers(0.1)));            //var position = new Position(location.Latitude, location.Longitude);
-
-            //MyMap.MoveToRegion(MapSpan.FromCenterAndRadius(position, Distance.FromKilometers(0.1)));
         }
 
         private async void Button_Clicked_1Async(object sender, EventArgs e)

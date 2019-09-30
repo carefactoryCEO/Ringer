@@ -64,29 +64,19 @@
                      
                      HeightRequest="35"/>
 
-        <!--<Button x:Name="ghostButton"
-                Grid.Row="0" 
-                Grid.Column="2"
-                Text="전송" 
-                BackgroundColor="Red"
-                TextColor="White"
-                FontSize="Small"
-                HorizontalOptions="Fill"
-                InputTransparent="true"
-                CornerRadius="0"
-                VerticalOptions="Center"
-                HeightRequest="30"
-                Padding="0"/>-->
-
         <Image Source="SendIcon" 
                Grid.Row="0" 
                Grid.Column="3"
                HeightRequest="28"
                VerticalOptions="End"
                HorizontalOptions="Start"
-               Margin="-33,0,0,5"/>
+               Margin="-33,0,0,5">
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+            </Image.GestureRecognizers>
+        </Image>
 
-        <controls:ExtendedEditorControl            
+        <!--<controls:ExtendedEditorControl            
             x:Name="ghostEditor"
             Grid.Row="0" Grid.Column="3"
             FontSize="12"
@@ -94,14 +84,13 @@
             HorizontalOptions="Fill"
             VerticalOptions="End"
             
-            BackgroundColor="Transparent"
-            Opacity="0.3"
-            
+            BackgroundColor="Red"
+            Opacity="0.1"
             
             HeightRequest="40"
             
-            Focused="Handle_Focused"            
-            Margin="-33,0,0,0"/>
+            Focused="Handle_Focused"
+            Margin="-33,0,0,0"/>-->
 
     </Grid>
 </ContentView>

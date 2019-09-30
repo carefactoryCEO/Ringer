@@ -12,6 +12,7 @@ namespace Ringer.Core
         public event EventHandler<ChatEventArgs> OnReceivedMessage;
         public event EventHandler<ChatEventArgs> OnEnteredOrExited;
         public event EventHandler<ChatEventArgs> OnConnectionClosed;
+        public event EventHandler<ChatEventArgs> OnReconnected;
 
         HubConnection hubConnection;
         Random random;
@@ -35,12 +36,14 @@ namespace Ringer.Core
 
             hubConnection.Closed += async (error) =>
             {
-                OnConnectionClosed?.Invoke(this, new ChatEventArgs("Connection closed...", string.Empty));
+                OnConnectionClosed?.Invoke(this, new ChatEventArgs($"Connection closed...{DateTime.Now}", string.Empty));
+                ActiveChannels.Clear();
                 IsConnected = false;
                 await Task.Delay(random.Next(0, 5) * 1000);
                 try
                 {
                     await ConnectAsync();
+                    OnReconnected?.Invoke(this, new ChatEventArgs($"Reconnected...{DateTime.Now}", string.Empty));
                 }
                 catch (Exception ex)
                 {

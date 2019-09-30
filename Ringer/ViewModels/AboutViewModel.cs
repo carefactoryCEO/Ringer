@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Input;
 
 using Xamarin.Forms;
@@ -7,6 +8,8 @@ namespace Ringer.ViewModels
 {
     public class AboutViewModel : INotifyPropertyChanged
     {
+        public string Title { get; set; }
+
         public AboutViewModel()
         {
             Title = "About";
@@ -15,5 +18,7 @@ namespace Ringer.ViewModels
         }
 
         public ICommand OpenWebCommand { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 }

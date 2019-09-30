@@ -4,8 +4,11 @@ var sendButton = document.getElementById("sendButton");
 var userInput = document.getElementById("userInput");
 var messageInput = document.getElementById("messageInput");
 
-var url = "https://localhost:5001/hubs/chat";
-//var url = "https://ringerchat.azurewebsites.net/hubs/chat";
+//var url = "https://localhost:5001/hubs/chat"; // local
+var url = "https://ringerchat.azurewebsites.net/hubs/chat"; // jhylmb@naver.com
+
+console.error(url);
+
 var group = "Xamarin";
 var user = userInput.value = "Web" + getInt();
 
@@ -38,7 +41,7 @@ connection.start().then(function () {
 
 }).catch(function (err) {
 
-    return console.error(err.toString());
+    return console.log(err.toString());
 });
 
 
@@ -50,7 +53,7 @@ function joinchannel() {
             return console.log("joined to Xamarin");
         })
         .catch(function (err) {
-            return console.error(err.toString());
+            return console.log(err.toString());
         });
 
 }

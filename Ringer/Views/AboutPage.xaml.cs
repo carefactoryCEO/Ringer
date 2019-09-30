@@ -14,5 +14,10 @@ namespace Ringer.Views
         {
             InitializeComponent();
         }
+
+        private void Editor_Focused(object sender, FocusEventArgs e)
+        {
+            Console.WriteLine($"Editor Focussed! {DateTime.Now}");
+        }
     }
 }

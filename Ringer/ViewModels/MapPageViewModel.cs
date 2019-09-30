@@ -9,6 +9,7 @@ using Ringer.Models;
 using Ringer.Views;
 using Xamarin.Essentials;
 using System.Linq;
+using System.ComponentModel;
 
 namespace Ringer.ViewModels
 {
@@ -99,6 +100,8 @@ namespace Ringer.ViewModels
 
             FetchCurrentLocation();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         private async void FetchCurrentLocation()
         {
