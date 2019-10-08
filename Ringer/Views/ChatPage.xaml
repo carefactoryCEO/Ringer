@@ -10,6 +10,8 @@
              mc:Ignorable="d"
              x:Class="Ringer.Views.ChatPage"
              Title="Ringer"
+             
+             Shell.NavBarIsVisible="False"  
              Shell.TabBarIsVisible="False">
     
     <!-- Data Template Selector -->

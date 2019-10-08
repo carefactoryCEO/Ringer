@@ -7,7 +7,8 @@
              xmlns:viewmodels="clr-namespace:Ringer.ViewModels"
              mc:Ignorable="d"
              x:Class="Ringer.Views.MapPage"
-             Shell.NavBarIsVisible="False">
+             Shell.NavBarIsVisible="False"             
+             Shell.TabBarIsVisible="False">
     
     <ContentPage.BindingContext>
         <viewmodels:MapPageViewModel/>
@@ -33,7 +34,7 @@
                         VerticalOptions="Start"
                         HorizontalOptions="End"
                         Clicked="Button_Clicked"
-                        IsVisible="{OnPlatform False, iOS=True}"/>
+                        IsVisible="{OnPlatform False, iOS=False}"/>
             </Grid>
                 
             
