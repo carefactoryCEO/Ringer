@@ -24,5 +24,13 @@
     </div>
 </div>
 
+
 <script src="~/lib/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/chat.js"></script>
+
+<environment exclude="Development">
+    <script src="~/js/chat.js"></script>
+</environment>
+
+<environment include="Development">
+    <script src="~/js/chat-dev.js"></script>
+</environment>>

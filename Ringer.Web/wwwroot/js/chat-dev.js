@@ -4,8 +4,8 @@ var sendButton = document.getElementById("sendButton");
 var userInput = document.getElementById("userInput");
 var messageInput = document.getElementById("messageInput");
 
-//var url = "https://localhost:5001/hubs/chat"; // local
-var url = "https://ringerchat.azurewebsites.net/hubs/chat"; // azure:jhylmb@naver.com
+var url = "https://localhost:5001/hubs/chat"; // local
+//var url = "https://ringerchat.azurewebsites.net/hubs/chat"; // azure:jhylmb@naver.com
 
 console.error(url);
 

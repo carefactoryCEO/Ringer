@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iis": {
-      "applicationUrl": "http://localhost/Ringer.Backend",
+      "applicationUrl": "http://localhost/Ringer-chatserver",
       "sslPort": 0
     },
     "iisExpress": {
