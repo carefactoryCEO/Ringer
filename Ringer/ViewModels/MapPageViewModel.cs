@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
-
-using Xamarin.Forms;
-
 using Ringer.Models;
-using Ringer.Views;
 using Xamarin.Essentials;
 using System.Linq;
 using System.ComponentModel;
+using System;
+using System.Threading.Tasks;
 
 namespace Ringer.ViewModels
 {
@@ -98,20 +94,19 @@ namespace Ringer.ViewModels
                 }
             };
 
-            FetchCurrentLocation();
+            // GetLocationAsync().ConfigureAwait(false);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        private async void FetchCurrentLocation()
-        {
-            var location = await Geolocation.GetLastKnownLocationAsync();
+        bool isCurrentLocationInserted = false;
 
-            if (location == null)
+        public async Task InsertCurrentLocationAsync(Location location)
+        {
+            if (isCurrentLocationInserted || location == null)
                 return;
 
             var placemarks = await Geocoding.GetPlacemarksAsync(location.Latitude, location.Longitude);
-
             var placemark = placemarks?.FirstOrDefault();
 
             if (placemark != null)
@@ -125,9 +120,6 @@ namespace Ringer.ViewModels
 
                 // Walt Disney World Resort, Orlando, FL 32830 US
                 // 10600 N Tantau Ave, Cupertino, CA 95014 미국
-
-                //Console.WriteLine(geocodeAddress);
-
 
                 var geocodeAddress1 =
                     $"AdminArea:       {placemark.AdminArea}\n" +
@@ -143,8 +135,6 @@ namespace Ringer.ViewModels
 
                 Debug.WriteLine(geocodeAddress1);
 
-
-
                 var infomation = new Infomation
                 {
                     Title = "현위치",
@@ -152,7 +142,10 @@ namespace Ringer.ViewModels
                 };
 
                 Infomations.Insert(0, infomation);
-            }            
+
+                isCurrentLocationInserted = true;
+            }
+
         }
     }
 }

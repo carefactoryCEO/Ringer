@@ -5,6 +5,8 @@ using Xamarin.Forms.Xaml;
 using Xamarin.Essentials;
 using Xamarin.Forms.Maps;
 using Ringer.Models;
+using System.Threading.Tasks;
+using Ringer.ViewModels;
 
 namespace Ringer.Views
 {
@@ -13,30 +15,34 @@ namespace Ringer.Views
     {
         public MapPage()
         {
-            InitializeComponent();
+            InitializeComponent();            
         }
 
-        protected override void OnAppearing()
+        protected async override void OnAppearing()
         {
             base.OnAppearing();
 
-            GetGeolocation();
+            await GetGeolocationAsync();
         }
 
-        private async void GetGeolocation()
+        private async Task GetGeolocationAsync()
         {
             try
             {
-                var location = await Geolocation.GetLastKnownLocationAsync();
-                
+                var request = new GeolocationRequest(GeolocationAccuracy.Medium);
+                var location = await Geolocation.GetLastKnownLocationAsync() ?? await Geolocation.GetLocationAsync(request);
 
                 if (location != null)
                 {
                     var position = new Position(location.Latitude, location.Longitude);
                     var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
+                    
                     MyMap.MoveToRegion(mapSpan);
+                    MyMap.IsShowingUser = true;
 
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");                   
+                    await (BindingContext as MapPageViewModel).InsertCurrentLocationAsync(location);
+
+                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
                 }
             }
             catch (FeatureNotSupportedException fnsEx)
@@ -59,14 +65,14 @@ namespace Ringer.Views
             
         }
 
-        private void MyMap_MapClicked(object sender, MapClickedEventArgs e)
+        private void MyMap_MapClicked(object sender, EventArgs e)
         {
-            Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
+            //Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
         }
 
-        private void Button_Clicked(object sender, EventArgs e)
+        private async void Button_Clicked(object sender, EventArgs e)
         {
-            GetGeolocation();
+            await GetGeolocationAsync();
         }
 
         private async void Button_Clicked_1Async(object sender, EventArgs e)

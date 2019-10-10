@@ -24,17 +24,15 @@
 
             <Grid>
                 <maps:Map x:Name="MyMap"
-                          IsShowingUser="True"
                           HasScrollEnabled="True"
                           MapType="Street"
-                          HasZoomEnabled="True"
-                          MapClicked="MyMap_MapClicked"/>
+                          HasZoomEnabled="True"/>
                 
                 <Button Text="Me"
                         VerticalOptions="Start"
                         HorizontalOptions="End"
                         Clicked="Button_Clicked"
-                        IsVisible="{OnPlatform False, iOS=False}"/>
+                        IsVisible="{OnPlatform False, iOS=True}"/>
             </Grid>
                 
             
