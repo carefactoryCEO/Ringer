@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using Ringer.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Ringer.Views;
 
 namespace Ringer
 {
@@ -35,13 +36,13 @@ namespace Ringer
             MainPage = new AppShell();
 
 
-            //MainPage = new ChatPage();
+            //MainPage = new AboutPage();
 
         }
 
         protected override void OnStart()
         {
-            // Handle when your app starts
+            // Handle when your app starts            
         }
 
         protected override void OnSleep()

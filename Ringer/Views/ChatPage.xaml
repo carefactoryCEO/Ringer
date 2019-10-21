@@ -31,7 +31,7 @@
         
         <!-- messages feed -->
         <controls:ExtendedListView 
-            x:Name="ChatList" 
+            x:Name="ChatList"
             ItemsSource="{Binding Messages}" 
             ItemTemplate="{StaticResource MessageTemplateSelector}" 
             
