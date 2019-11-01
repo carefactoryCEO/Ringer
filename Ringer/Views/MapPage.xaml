@@ -5,7 +5,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:maps="clr-namespace:Xamarin.Forms.Maps;assembly=Xamarin.Forms.Maps"
              xmlns:viewmodels="clr-namespace:Ringer.ViewModels"
+             xmlns:iOS="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              mc:Ignorable="d"
+             iOS:Page.UseSafeArea="True"
              x:Class="Ringer.Views.MapPage"
              Shell.NavBarIsVisible="False"             
              Shell.TabBarIsVisible="False">
@@ -16,7 +18,7 @@
     
     
     <ContentPage.Content>
-        <Grid RowSpacing="0">
+        <!--<Grid RowSpacing="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="2*"/>
@@ -80,6 +82,30 @@
                     Padding="5"
                     VerticalOptions="Start"
                     HorizontalOptions="End"/>
-        </Grid>
+        </Grid>-->
+        <AbsoluteLayout>
+            <maps:Map x:Name="MyMap" HasScrollEnabled="True" MapType="Street" HasZoomEnabled="True" AbsoluteLayout.LayoutFlags="SizeProportional" AbsoluteLayout.LayoutBounds="0,0,1,.35" />
+            <Button Text="🚩"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    AbsoluteLayout.LayoutBounds=".95,.03,40,40"
+                    Clicked="Button_Clicked" IsVisible="{OnPlatform False, iOS=True}" />
+            <ListView x:Name="ItemsListView" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,1,1,.65" Grid.Row="1" ItemsSource="{Binding Infomations}" VerticalOptions="FillAndExpand" ItemSelected="ItemsListView_ItemSelected" HasUnevenRows="true">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout Padding="20, 10, 20, 10">
+                                <Label Text="{Binding Title}" LineBreakMode="NoWrap" Style="{DynamicResource ListItemTextStyle}" TextColor="Accent" FontSize="16" />
+                                <Label Text="{Binding Extras}" LineBreakMode="NoWrap" Style="{DynamicResource ListItemDetailTextStyle}" FontSize="13" />
+                                <Label Text="{Binding DisplayLocation}" Style="{DynamicResource ListItemDetailTextStyle}" FontSize="13" />
+                                <Label Text="{Binding DisplayPhoneNumber}" LineBreakMode="NoWrap" Style="{DynamicResource ListItemDetailTextStyle}" FontSize="13" />
+
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Button Text="상담" AbsoluteLayout.LayoutFlags="PositionProportional" AbsoluteLayout.LayoutBounds=".95,.95,50,50" Clicked="Button_Clicked_1Async" TextColor="White" FontSize="14" CornerRadius="25" WidthRequest="50" HeightRequest="50" BackgroundColor="#B42A42" Padding="5" VerticalOptions="Start" HorizontalOptions="End" />
+        </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>
