@@ -29,6 +29,8 @@ namespace Ringer.ViewModels
                 return;
 
             IsConnected = false;
+
+            Messages.Add(new Message { Text = "dummy", User = "dummy" });
             
 
             SendMessageCommand = new Command(async () => await SendMessage());
@@ -61,7 +63,7 @@ namespace Ringer.ViewModels
                 await signalR.ConnectAsync();
                 await signalR.JoinChannelAsync(App.Group, App.User);
 
-                SendLocalMessage($"Connected! {DateTime.Now}", string.Empty);
+                SendLocalMessage($"vm.Connet:Connected! {DateTime.Now}", string.Empty);
 
                 IsConnected = true;
                 //await Task.Delay(200); // why? 보여주려고??
@@ -69,7 +71,7 @@ namespace Ringer.ViewModels
             }
             catch (Exception ex)
             {
-                SendLocalMessage($"Connection error: {ex.Message}", App.User);
+                SendLocalMessage($"vm.Connect:Connection error: {ex.Message}", App.User);
             }
             finally
             {
@@ -97,7 +99,7 @@ namespace Ringer.ViewModels
             }
             catch (Exception ex)
             {
-                SendLocalMessage($"Send failed: {ex.Message}", App.User);
+                SendLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", App.User);
             }
             finally
             {
@@ -116,7 +118,7 @@ namespace Ringer.ViewModels
 
             Messages.Insert(0, new Message
             {
-                Text = $"Disconnected...{DateTime.Now}",
+                Text = $"vm.Disconnect:Disconnected...{DateTime.Now}",
                 User = string.Empty
             });
             App.Repository.AddRange(Messages);
@@ -129,7 +131,7 @@ namespace Ringer.ViewModels
         }
 
 
-        private void SendLocalMessage(string message, string user)
+        public void SendLocalMessage(string message, string user)
         {
             Device.BeginInvokeOnMainThread(() =>
             {

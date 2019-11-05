@@ -9,18 +9,32 @@ namespace Ringer.Core
 {
     public class ChatService
     {
+        #region evet handlers
         public event EventHandler<ChatEventArgs> OnReceivedMessage;
         public event EventHandler<ChatEventArgs> OnEnteredOrExited;
         public event EventHandler<ChatEventArgs> OnConnectionClosed;
         public event EventHandler<ChatEventArgs> OnReconnected;
+        #endregion
 
+        #region private members
         HubConnection hubConnection;
         Random random;
+        #endregion
 
-        bool IsConnected { get; set; }
-        Dictionary<string, string> ActiveChannels { get; } = new Dictionary<string, string>();
+        #region public properties
+        public bool IsConnected { get; set; }
+        public Dictionary<string, string> ActiveChannels { get; } = new Dictionary<string, string>();
+        #endregion
 
+        #region constructor and destructor
+        ~ChatService()
+        {
+            Console.WriteLine("Destructor was called");
+            OnConnectionClosed?.Invoke(this, new ChatEventArgs($"ChatService.Destructor:Service Destructed..{DateTime.Now}", string.Empty));
+        }
+        #endregion
 
+        #region public methods
         public void Init(string urlRoot, bool useHttps)
         {
             random = new Random();
@@ -36,14 +50,14 @@ namespace Ringer.Core
 
             hubConnection.Closed += async (error) =>
             {
-                OnConnectionClosed?.Invoke(this, new ChatEventArgs($"Connection closed...{DateTime.Now}", string.Empty));
+                OnConnectionClosed?.Invoke(this, new ChatEventArgs($"ChatService.HubConnection.Closed:Connection closed...{DateTime.Now}", string.Empty));
                 ActiveChannels.Clear();
                 IsConnected = false;
                 await Task.Delay(random.Next(0, 5) * 1000);
                 try
                 {
                     await ConnectAsync();
-                    OnReconnected?.Invoke(this, new ChatEventArgs($"Reconnected...{DateTime.Now}", string.Empty));
+                    OnReconnected?.Invoke(this, new ChatEventArgs($"ChatService.HubConnection.Closed:Reconnected...{DateTime.Now}", string.Empty));
                 }
                 catch (Exception ex)
                 {
@@ -142,5 +156,6 @@ namespace Ringer.Core
                 "Xamarin"
             };
         }
+        #endregion
     }
 }

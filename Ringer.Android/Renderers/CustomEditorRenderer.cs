@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using Android.Content;
 using Android.Graphics.Drawables;
+using Android.Runtime;
+using Android.Widget;
 using Ringer.Droid.Renderers;
 using Ringer.Views.Controls;
 using Xamarin.Forms;
@@ -24,15 +27,16 @@ namespace Ringer.Droid.Renderers
 
             if (Control != null)
             {
+
                 // hide android default underline
                 // https://stackoverflow.com/questions/48003093/xamarin-forms-hide-editor-underline
                 Control.SetBackgroundColor(Android.Graphics.Color.Transparent);
 
                 // remove android default cursor color
                 // https://stackoverflow.com/questions/45916849/how-to-change-entry-cursor-color-in-xamarin-android
-                //IntPtr IntPtrtextViewClass = JNIEnv.FindClass(typeof(TextView));
-                //IntPtr mCursorDrawableResProperty = JNIEnv.GetFieldID(IntPtrtextViewClass, "mCursorDrawableRes", "I");
-                //JNIEnv.SetField(Control.Handle, mCursorDrawableResProperty, 0); // replace 0 with a Resource.Drawable.my_cursor
+                IntPtr IntPtrtextViewClass = JNIEnv.FindClass(typeof(TextView));
+                IntPtr mCursorDrawableResProperty = JNIEnv.GetFieldID(IntPtrtextViewClass, "mCursorDrawableRes", "I");
+                JNIEnv.SetField(Control.Handle, mCursorDrawableResProperty, 0); // replace 0 with a Resource.Drawable.my_cursor
 
                 if (initial)
                 {
@@ -44,7 +48,7 @@ namespace Ringer.Droid.Renderers
                 Control.SetMaxLines(5);
                 
                 //Control.SetPadding(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 90, Control.PaddingBottom);
-                Control.SetPaddingRelative(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 90, Control.PaddingBottom);
+                Control.SetPaddingRelative(Control.PaddingLeft + 20, Control.PaddingTop -10, Control.PaddingRight + 95, Control.PaddingBottom - 10);
             }
 
             if (e.NewElement != null)
@@ -100,8 +104,8 @@ namespace Ringer.Droid.Renderers
         void ApplyBorder()
         {
             GradientDrawable gd = new GradientDrawable();
-            gd.SetCornerRadius(50);
-            gd.SetStroke(2, Color.Gray.ToAndroid());
+            gd.SetCornerRadius(45);
+            gd.SetStroke(3, Color.LightGray.ToAndroid());
             this.Control.Background = gd;
         }
     }

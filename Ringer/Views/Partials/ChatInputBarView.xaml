@@ -7,16 +7,12 @@
              mc:Ignorable="d"
              x:Class="Ringer.Views.Partials.ChatInputBarView">
 
-    <Grid RowSpacing="0" ColumnSpacing="0">
-
-        <!--<Grid.Margin>
-            <OnPlatform x:TypeArguments="Thickness">
-                <On Platform="Android" Value="0,0,0,5"/>
-            </OnPlatform>
-        </Grid.Margin>-->
+    <Grid RowSpacing="0" ColumnSpacing="0"
+          Padding="{OnPlatform Android='0,3'}">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -25,23 +21,8 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="18" />
         </Grid.ColumnDefinitions>
-
-        <controls:ExtendedEditorControl 
-            x:Name="chatTextInput" 
-            Text="{Binding TextToSend}"
-            TextColor="Black"
-            FontSize="Body"
-            Keyboard="Chat"
-            IsExpandable="true"
-            HorizontalOptions="Fill"
-            Grid.Row="0" 
-            Grid.Column="2"
-            AutoSize="Disabled"
-            HasRoundedCorner="True"
-            VerticalOptions="End"/>
-
-
-        <Image x:Name="plusButton"
+        
+        <Image x:Name="cameraButton"
                      Source="CameraIcon"
                      Grid.Row="0" 
                      Grid.Column="0"
@@ -54,6 +35,9 @@
                     <On Platform="Android" Value="10,0,0,5"/>
                 </OnPlatform>
             </Image.Margin>
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="CameraButton_Tapped"/>
+            </Image.GestureRecognizers>
         </Image>
 
         <Image x:Name="photoButton"
@@ -69,9 +53,29 @@
                     <On Platform="Android" Value="0,0,11,5"/>
                 </OnPlatform>
             </Image.Margin>
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="PhotoButton_Tapped"/>
+            </Image.GestureRecognizers>
         </Image>
 
-        <Image Source="SendIcon" 
+        <controls:ExtendedEditorControl 
+            x:Name="chatTextInput" 
+            Text="{Binding TextToSend}"
+            TextColor="Black"
+            FontSize="15"
+            Keyboard="Chat"
+            IsExpandable="true"
+            HorizontalOptions="Fill"
+            Grid.Row="0" 
+            Grid.Column="2"
+            AutoSize="Disabled"
+            HasRoundedCorner="True"
+            VerticalOptions="Center"
+            Focused="ChatTextInput_Focused"
+            Unfocused="ChatTextInput_Unfocused"/>
+
+        <Image x:Name="sendButton"
+            Source="SendIcon" 
                Grid.Row="0" 
                Grid.Column="3"
                HeightRequest="28"
@@ -84,25 +88,14 @@
                 </OnPlatform>
             </Image.Margin>
             <Image.GestureRecognizers>
-                <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
+                <TapGestureRecognizer Tapped="SendButton_Tapped"/>
             </Image.GestureRecognizers>
         </Image>
 
-        <!--<controls:ExtendedEditorControl            
-            x:Name="ghostEditor"
-            Grid.Row="0" Grid.Column="3"
-            FontSize="12"
-            
-            HorizontalOptions="Fill"
-            VerticalOptions="End"
-            
-            BackgroundColor="Red"
-            Opacity="0.1"
-            
-            HeightRequest="40"
-            
-            Focused="Handle_Focused"
-            Margin="-33,0,0,0"/>-->
+        <BoxView BackgroundColor="Beige" HeightRequest="200"
+                 Grid.Row="1" Grid.ColumnSpan="4"
+                 IsVisible="False"
+                 x:Name="boxView"/>
 
     </Grid>
 </ContentView>

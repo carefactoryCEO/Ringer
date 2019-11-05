@@ -6,20 +6,20 @@
              mc:Ignorable="d"
              x:Class="Ringer.Views.Cells.IncomingViewCell">
     <ContentView>
-        <Frame BackgroundColor="#EBE9F1"
-              BorderColor="#EbE9F1"
-              Padding="12, 8"
-              Margin="60,5,15,0"
+        <Frame BackgroundColor="#FFFFFF"
+              BorderColor="#FFFFFF"
               HasShadow="false"
+              Padding="{OnPlatform '10,8', Android='10,6'}"
+              Margin="80,6,7.5,0"
+              CornerRadius="12"
               HorizontalOptions="Start"
               VerticalOptions="Start"
-              CornerRadius="16"
               Rotation="180"
               FlowDirection="LeftToRight">
             <Label Text="{Binding Text}"
                   d:Text="Hello world and this is the new world How do you feel? Im very excied!"
-                  TextColor="#4A4A4A"
-                  FontSize="Body"/>
+                  TextColor="#291900"
+                  FontSize="15"/>
         </Frame>
     </ContentView>
 </ViewCell>

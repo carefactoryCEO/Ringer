@@ -26,14 +26,17 @@
         </ResourceDictionary>
     </Shell.Resources>
     
-    <TabBar>
+    <FlyoutItem Title="Map">
         <Tab Title="Map" Icon="tab_feed.png">
             <ShellContent ContentTemplate="{DataTemplate local:MapPage}" />
         </Tab>
 
+        
+    </FlyoutItem>
+    <FlyoutItem Title="About">
         <Tab Title="About" Icon="tab_about.png" Route="about">
             <ShellContent ContentTemplate="{DataTemplate local:AboutPage}" />
         </Tab>
-    </TabBar>
+    </FlyoutItem>
 
 </Shell>

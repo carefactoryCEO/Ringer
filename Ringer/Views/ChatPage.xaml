@@ -1,64 +1,62 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:helpers="clr-namespace:Ringer.Helpers"
-             xmlns:controls="clr-namespace:Ringer.Views.Controls"
-             xmlns:partials="clr-namespace:Ringer.Views.Partials"
-             
-             mc:Ignorable="d"
-             x:Class="Ringer.Views.ChatPage"
-             Title="Ringer"
-             
-             Shell.NavBarIsVisible="False"  
-             Shell.TabBarIsVisible="False">
-    
-    <!-- Data Template Selector -->
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:d="http://xamarin.com/schemas/2014/forms/design" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:helpers="clr-namespace:Ringer.Helpers" xmlns:controls="clr-namespace:Ringer.Views.Controls" xmlns:partials="clr-namespace:Ringer.Views.Partials" mc:Ignorable="d" x:Class="Ringer.Views.ChatPage" Title="Ringer Chat" Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False" xmlns:iOS="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core" iOS:Page.UseSafeArea="False">
+
+    <!-- Resources -->
     <ContentPage.Resources>
         <ResourceDictionary>
-            <helpers:ChatTemplateSelector x:Key="MessageTemplateSelector"/>
+            <helpers:ChatTemplateSelector x:Key="MessageTemplateSelector" />
+            <Color x:Key="Primary">#2196F3</Color>
+            <Color x:Key="Accento">#384f81</Color>
+            <Color x:Key="Accent">#5E5C5C</Color>
+            <Color x:Key="LightTextColor">#999999</Color>
         </ResourceDictionary>
     </ContentPage.Resources>
 
+    <!-- Main Grid -->
     <Grid RowSpacing="0" ColumnSpacing="0">
-
         <Grid.RowDefinitions>
+            <RowDefinition Height="{OnPlatform 30, iOS=60}" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="1" />
+            <RowDefinition Height="7" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        
-        <!-- messages feed -->
-        <controls:ExtendedListView 
-            x:Name="ChatList"
-            ItemsSource="{Binding Messages}" 
-            ItemTemplate="{StaticResource MessageTemplateSelector}" 
-            
-            Grid.Row="0" 
-            Margin="0"
-            
-            SeparatorColor="Transparent"
-            HasUnevenRows="True" 
-            VerticalOptions="FillAndExpand" 
-            
-            FlowDirection="RightToLeft"
-            Rotation="180">
-        </controls:ExtendedListView>
 
-        <!-- separator -->
-        <BoxView HorizontalOptions="FillAndExpand"
-                 HeightRequest="1"
-                 BackgroundColor="LightGray"
-                 Grid.Row="1"
-                 IsVisible="False"/>
+        <!--buffer-->
+        <BoxView BackgroundColor="{StaticResource Accent}" Grid.Row="2" />
+
+        <!-- messages feed -->
+        <controls:ExtendedListView
+            x:Name="ChatList"
+            ItemsSource="{Binding Messages}"
+            ItemTemplate="{StaticResource MessageTemplateSelector}"
+            Grid.Row="0" Grid.RowSpan="2"
+            Margin="0"
+            BackgroundColor="{StaticResource Accent}"
+            SeparatorColor="Transparent"
+            HasUnevenRows="True"
+            VerticalOptions="FillAndExpand"
+            FlowDirection="RightToLeft" Rotation="180"
+            />
+
+
+        <!-- navigation box -->
+        <StackLayout Grid.Row="0" BackgroundColor="{StaticResource Accent}" Opacity=".9" Orientation="Horizontal" Padding="20, 5">
+            <Label Text="Back" TextColor="White" HorizontalOptions="StartAndExpand" VerticalOptions="EndAndExpand">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="BackButton_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+            <Label Text="링거 상담실" FontAttributes="Bold" TextColor="White" HorizontalOptions="CenterAndExpand" VerticalOptions="EndAndExpand" />
+            <Label Text="Menu" TextColor="White" HorizontalOptions="EndAndExpand" VerticalOptions="EndAndExpand">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="MenuButton_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+        </StackLayout>
+
 
         <!-- input module -->
-        <partials:ChatInputBarView 
-            Grid.Row="2"
-            x:Name="chatInput"
-            Padding="0, 3">
-        </partials:ChatInputBarView>
+        <partials:ChatInputBarView Grid.Row="3" x:Name="chatInput" Padding="0,3" />
 
 
     </Grid>

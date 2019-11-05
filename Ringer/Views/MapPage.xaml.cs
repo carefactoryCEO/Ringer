@@ -13,18 +13,23 @@ namespace Ringer.Views
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MapPage : ContentPage
     {
+        #region constructor
         public MapPage()
         {
             InitializeComponent();            
         }
+        #endregion
 
+        #region override methods
         protected async override void OnAppearing()
         {
             base.OnAppearing();
 
             await GetGeolocationAsync();
         }
+        #endregion
 
+        #region private methods
         private async Task GetGeolocationAsync()
         {
             try
@@ -106,5 +111,6 @@ namespace Ringer.Views
                 // Handle exception that may have occurred in geocoding
             }
         }
+        #endregion
     }
 }

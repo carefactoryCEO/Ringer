@@ -7,10 +7,11 @@
              xmlns:viewmodels="clr-namespace:Ringer.ViewModels"
              xmlns:iOS="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              mc:Ignorable="d"
-             iOS:Page.UseSafeArea="True"
+             iOS:Page.UseSafeArea="False"
              x:Class="Ringer.Views.MapPage"
              Shell.NavBarIsVisible="False"             
-             Shell.TabBarIsVisible="False">
+             Shell.TabBarIsVisible="False"
+             Title="지도">
     
     <ContentPage.BindingContext>
         <viewmodels:MapPageViewModel/>
@@ -105,7 +106,17 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Text="상담" AbsoluteLayout.LayoutFlags="PositionProportional" AbsoluteLayout.LayoutBounds=".95,.95,50,50" Clicked="Button_Clicked_1Async" TextColor="White" FontSize="14" CornerRadius="25" WidthRequest="50" HeightRequest="50" BackgroundColor="#B42A42" Padding="5" VerticalOptions="Start" HorizontalOptions="End" />
+            <Button Text="상담"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    AbsoluteLayout.LayoutBounds=".95,.95,50,50"
+                    Command="{Binding GoToChatPageCommand}"
+                    TextColor="White"
+                    FontSize="14"
+                    CornerRadius="25"
+                    WidthRequest="50" HeightRequest="50"
+                    BackgroundColor="#B42A42" 
+                    Padding="5"
+                    />
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

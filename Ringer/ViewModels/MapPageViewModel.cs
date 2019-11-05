@@ -6,6 +6,8 @@ using System.Linq;
 using System.ComponentModel;
 using System;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms;
 
 namespace Ringer.ViewModels
 {
@@ -15,6 +17,7 @@ namespace Ringer.ViewModels
 
         public MapPageViewModel()
         {
+            #region dummy information
             Infomations = new ObservableCollection<Infomation>
             {
                 new Infomation
@@ -93,9 +96,17 @@ namespace Ringer.ViewModels
                     Extras = "가정의학과, 한국인 의사"
                 }
             };
+            #endregion
 
             // GetLocationAsync().ConfigureAwait(false);
+
+            GoToChatPageCommand = new Command(async () =>
+            {
+                await Shell.Current.GoToAsync("chatpage");
+            });
         }
+
+        public ICommand GoToChatPageCommand { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

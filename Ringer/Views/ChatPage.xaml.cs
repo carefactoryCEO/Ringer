@@ -1,7 +1,10 @@
 ﻿using Ringer.Models;
 using Ringer.ViewModels;
+using System;
 using System.Diagnostics;
 using Xamarin.Forms;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Xaml;
 
 namespace Ringer.Views
@@ -21,6 +24,7 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
+            vm.SendLocalMessage("chatpage.OnAppearing", "test");
             if (!DesignMode.IsDesignModeEnabled)
                 vm.ConnectCommand.Execute(null);
         }
@@ -29,20 +33,23 @@ namespace Ringer.Views
         {
             base.OnDisappearing();
 
+            vm.SendLocalMessage("chatpage.OnDiappearing", "test");
             if (!DesignMode.IsDesignModeEnabled)
                 vm.DisconnectCommand.Execute(null);
         }
 
-
-        public void OnListTapped(object sender, ItemTappedEventArgs e)
+        protected async void BackButton_Tapped(object sender, EventArgs e)
         {
-            chatInput.UnFocusEntry();
-            Debug.WriteLine("OnListTapped");
+            //await Shell.Current.Navigation.PopModalAsync();
+
+            var state = Shell.Current.CurrentState;
+
+            await Shell.Current.Navigation.PopAsync();
         }
 
-        private void ChatList_ItemAppearing(object sender, ItemVisibilityEventArgs e)
+        protected async void MenuButton_Tapped(object sender, EventArgs e)
         {
-            Debug.WriteLine($"{e.ItemIndex} {(e.Item as Message).Text}");
+            await Shell.Current.Navigation.PushModalAsync(new AboutPage());
         }
     }
 }

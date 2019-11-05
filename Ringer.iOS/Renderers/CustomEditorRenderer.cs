@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Ringer.iOS.Renderers;
@@ -14,8 +15,9 @@ namespace Ringer.iOS.Renderers
     {
         UILabel _placeholderLabel;
         double previousHeight = -1;
+        double previousWidth = -1;
         int prevLines = 0;
-        System.nfloat _cornerRadius = 18;
+        System.nfloat _cornerRadius = 16;
 
         protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
         {
@@ -24,13 +26,10 @@ namespace Ringer.iOS.Renderers
             // Control == UITextView
             if (Control != null)
             {
-
-
                 if (_placeholderLabel == null)
                 {
                     CreatePlaceholder();
                 }
-
             }
 
             if (e.NewElement != null)
@@ -50,18 +49,15 @@ namespace Ringer.iOS.Renderers
 
                     Control.TextContainerInset = new UIEdgeInsets(
                         Control.TextContainerInset.Top,
-                        Control.TextContainerInset.Left + 10,
+                        Control.TextContainerInset.Left + 6,
                         Control.TextContainerInset.Bottom,
-                        Control.TextContainerInset.Right + 30);
+                        Control.TextContainerInset.Right + 33);
                 }
-
-
                 else
                     Control.Layer.CornerRadius = 0;
 
                 Control.InputAccessoryView = new UIView(CGRect.Empty);
                 Control.ReloadInputViews();
-
             }
 
             if (e.OldElement != null)
@@ -69,8 +65,6 @@ namespace Ringer.iOS.Renderers
 
             }
         }
-
-
 
         protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
@@ -88,12 +82,12 @@ namespace Ringer.iOS.Renderers
 
                     if (prevLines > numLines)
                     {
-                        customControl.HeightRequest = -1;
+                        customControl.HeightRequest = - 1;
 
                     }
                     else if (string.IsNullOrEmpty(Control.Text))
                     {
-                        customControl.HeightRequest = -1;
+                        customControl.HeightRequest = - 1;
                     }
 
                     prevLines = numLines;
@@ -120,7 +114,7 @@ namespace Ringer.iOS.Renderers
 
                     Control.TextContainerInset = new UIEdgeInsets(
                         Control.TextContainerInset.Top,
-                        Control.TextContainerInset.Left + 10,
+                        Control.TextContainerInset.Left + 6,
                         Control.TextContainerInset.Bottom,
                         Control.TextContainerInset.Right + 30);
                 }
@@ -135,19 +129,18 @@ namespace Ringer.iOS.Renderers
                     Control.ScrollEnabled = true;
 
             }
-            else if (ExtendedEditorControl.HeightProperty.PropertyName == e.PropertyName)
+            else if (VisualElement.HeightProperty.PropertyName == e.PropertyName)
             {
                 if (customControl.IsExpandable)
                 {
                     CGSize size = Control.Text.StringSize(Control.Font, Control.Frame.Size, UILineBreakMode.WordWrap);
 
                     int numLines = (int)(size.Height / Control.Font.LineHeight);
-                    if (numLines >= 5)
+
+                    if (numLines > 4)
                     {
                         Control.ScrollEnabled = true;
-
                         customControl.HeightRequest = previousHeight;
-
                     }
                     else
                     {
@@ -157,6 +150,7 @@ namespace Ringer.iOS.Renderers
                     }
                 }
             }
+
         }
 
         public void CreatePlaceholder()
