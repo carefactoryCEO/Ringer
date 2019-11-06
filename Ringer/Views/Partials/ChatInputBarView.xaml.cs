@@ -1,5 +1,7 @@
 ﻿using Ringer.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -8,19 +10,31 @@ namespace Ringer.Views.Partials
 {
     public partial class ChatInputBarView : ContentView
     {
+        ChatPageViewModel vm;
+
         public ChatInputBarView()
         {
             InitializeComponent();
 
-            //_page = this.Parent.Parent as ChatPage;
             //if (Device.RuntimePlatform == Device.iOS)
             //{
             //    this.SetBinding(HeightRequestProperty, new Binding("Height", BindingMode.OneWay, null, null, null, chatTextInput));
             //}
         }
+
+        protected override void OnBindingContextChanged()
+        {
+            base.OnBindingContextChanged();
+
+            if (BindingContext is ChatPageViewModel)
+                vm = BindingContext as ChatPageViewModel;
+        }
+
         public void SendMessage()
         {   
-            (this.Parent.Parent.BindingContext as ChatPageViewModel).SendMessageCommand.Execute(null);
+            //(this.Parent.Parent.BindingContext as ChatPageViewModel).SendMessageCommand.Execute(null);
+
+            vm?.SendMessageCommand.Execute(null);
         }
 
         private void SendButton_Tapped(object sender, EventArgs e)
@@ -29,14 +43,23 @@ namespace Ringer.Views.Partials
             SendMessage();
         }
 
-        protected void CameraButton_Tapped(object sender, EventArgs e)
+        private void CameraButton_Tapped(object sender, EventArgs e)
         {
             boxView.IsVisible = true;
         }
 
-        protected async void PhotoButton_Tapped(object sender, EventArgs e)
+        private async void PhotoButton_Tapped(object sender, EventArgs e)
         {
+            string action = await Shell.Current.DisplayActionSheet(
+                null,
+                vm.CameraAction.Cancle,
+                null,
+                vm.CameraAction.TakingPhoto,
+                vm.CameraAction.AttachingPhoto,
+                vm.CameraAction.TakingVideo,
+                vm.CameraAction.AttachingVideo);
 
+            Debug.WriteLine(action);
         }
 
         ChatPage _page;

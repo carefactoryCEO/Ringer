@@ -22,6 +22,8 @@ namespace Ringer.ViewModels
         public ICommand DisconnectCommand { get; }
         public ICommand SendMessageCommand { get; }
 
+        public CameraAction CameraAction { get; }
+
 
         public ChatPageViewModel()
         {
@@ -29,6 +31,8 @@ namespace Ringer.ViewModels
                 return;
 
             IsConnected = false;
+
+            CameraAction = new CameraAction();
 
             Messages.Add(new Message { Text = "dummy", User = "dummy" });
             
@@ -148,5 +152,16 @@ namespace Ringer.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+    }
+
+    class CameraAction
+    {
+        public string Title { get; } = "작업을 선택하세요.";
+        public string Cancle { get; } = "취소";
+        public string Destruction { get; } = "파파괴";
+        public string TakingPhoto { get; } = "사진 찍기";
+        public string AttachingPhoto { get; } = "사진 불러오기";
+        public string TakingVideo { get; } = "비디오 찍기";
+        public string AttachingVideo { get; } = "비디오 불러오기";
     }
 }

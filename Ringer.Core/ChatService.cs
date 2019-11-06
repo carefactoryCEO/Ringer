@@ -53,7 +53,8 @@ namespace Ringer.Core
                 OnConnectionClosed?.Invoke(this, new ChatEventArgs($"ChatService.HubConnection.Closed:Connection closed...{DateTime.Now}", string.Empty));
                 ActiveChannels.Clear();
                 IsConnected = false;
-                await Task.Delay(random.Next(0, 5) * 1000);
+                //await Task.Delay(random.Next(0, 5) * 1000);
+                await Task.Delay(random.Next(500));
                 try
                 {
                     await ConnectAsync();

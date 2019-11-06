@@ -18,6 +18,7 @@ namespace Ringer.Views
         {
             InitializeComponent();
             BindingContext = vm = new ChatPageViewModel();
+            chatInput.BindingContext = vm;
         }
 
         protected override void OnAppearing()
