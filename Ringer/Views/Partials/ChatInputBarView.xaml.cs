@@ -43,13 +43,10 @@ namespace Ringer.Views.Partials
             SendMessage();
         }
 
-        private void CameraButton_Tapped(object sender, EventArgs e)
+        private async void CameraButton_Clicked(object sender, EventArgs e)
         {
-            boxView.IsVisible = true;
-        }
+            chatTextInput.Focus();
 
-        private async void PhotoButton_Tapped(object sender, EventArgs e)
-        {
             string action = await Shell.Current.DisplayActionSheet(
                 null,
                 vm.CameraAction.Cancle,
@@ -67,8 +64,6 @@ namespace Ringer.Views.Partials
 
         protected void ChatTextInput_Focused(object sender, EventArgs e)
         {
-            boxView.IsVisible = false;
-
             if (Device.RuntimePlatform != Device.iOS)
                 return;
 

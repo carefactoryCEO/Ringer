@@ -24,7 +24,6 @@ namespace Ringer.ViewModels
 
         public CameraAction CameraAction { get; }
 
-
         public ChatPageViewModel()
         {
             if (DesignMode.IsDesignModeEnabled)
