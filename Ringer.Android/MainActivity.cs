@@ -7,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Android;
+using Plugin.CurrentActivity;
 
 namespace Ringer.Droid
 {
@@ -20,16 +21,30 @@ namespace Ringer.Droid
 
             base.OnCreate(savedInstanceState);
 
+            // camera
+            CrossCurrentActivity.Current.Init(this, savedInstanceState);
+
             global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
+
+            // essentials
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
+            // for map
             Xamarin.FormsMaps.Init(this, savedInstanceState);
+
+            // status bar color
             Window.SetStatusBarColor(Android.Graphics.Color.Rgb(56, 79, 129));
+
             LoadApplication(new App());
         }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            // camera
+            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
