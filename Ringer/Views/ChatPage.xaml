@@ -69,7 +69,7 @@
 
 
         <!-- input module -->
-        <partials:ChatInputBarView Grid.Row="3" x:Name="chatInput" Padding="0,3" />
+        <partials:ChatInputBarView Grid.Row="3" x:Name="chatInput"/>
 
 
     </Grid>

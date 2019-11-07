@@ -1,10 +1,6 @@
-﻿using Ringer.Models;
-using Ringer.ViewModels;
+﻿using Ringer.ViewModels;
 using System;
-using System.Diagnostics;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Xaml;
 
 namespace Ringer.Views
@@ -13,6 +9,7 @@ namespace Ringer.Views
     public partial class ChatPage : ContentPage
     {
         ChatPageViewModel vm;
+
 
         public ChatPage()
         {

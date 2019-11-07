@@ -7,95 +7,80 @@
              mc:Ignorable="d"
              x:Class="Ringer.Views.Partials.ChatInputBarView">
 
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <Color x:Key="temp">transparent</Color>
+            <x:Double x:Key="height">32</x:Double>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
     <Grid RowSpacing="0" ColumnSpacing="0"
-          Padding="{OnPlatform Android='0,3'}">
+           Padding="0,3">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="45" />
-            <ColumnDefinition Width="45" />
+            <ColumnDefinition Width="60" />
             <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="18" />
+            <ColumnDefinition Width="15" />
         </Grid.ColumnDefinitions>
-        
-        <Image x:Name="cameraButton"
+
+        <ImageButton x:Name="cameraButton"
                      Source="CameraIcon"
-                     Grid.Row="0" 
-                     Grid.Column="0"
-                     HorizontalOptions="Center"            
-                     VerticalOptions="End"
-                     HeightRequest="35">
-            <Image.Margin>
-                <OnPlatform x:TypeArguments="Thickness">
-                    <On Platform="iOS" Value="10,0,0,0"/>
-                    <On Platform="Android" Value="10,0,0,5"/>
-                </OnPlatform>
-            </Image.Margin>
-            <Image.GestureRecognizers>
-                <TapGestureRecognizer Tapped="CameraButton_Tapped"/>
-            </Image.GestureRecognizers>
-        </Image>
+                     Padding="0,6"
+                     Grid.Row="0"
+                     Grid.Column="0"           
+                     VerticalOptions="EndAndExpand"
+                     WidthRequest="60"
+                     
+                     Command="{Binding CameraMenuCommand}"
+                     Clicked="CameraButton_Clicked"
 
-        <Image x:Name="photoButton"
-                     Source="PictureIcon"
-                     Grid.Row="0" 
-                     Grid.Column="1"
-                     HorizontalOptions="End"            
-                     VerticalOptions="End"
-                     HeightRequest="35">
-            <Image.Margin>
-                <OnPlatform x:TypeArguments="Thickness">
-                    <On Platform="iOS" Value="0,0,11,0"/>
-                    <On Platform="Android" Value="0,0,11,5"/>
-                </OnPlatform>
-            </Image.Margin>
-            <Image.GestureRecognizers>
-                <TapGestureRecognizer Tapped="PhotoButton_Tapped"/>
-            </Image.GestureRecognizers>
-        </Image>
+                     HeightRequest="{StaticResource height}"
+                     BackgroundColor="{StaticResource temp}" />
 
-        <controls:ExtendedEditorControl 
-            x:Name="chatTextInput" 
+
+
+        <controls:ExtendedEditorControl
+            x:Name="chatTextInput"
+            Grid.Row="0"
+            Grid.Column="1"
             Text="{Binding TextToSend}"
             TextColor="Black"
-            FontSize="15"
+            FontSize="{OnPlatform iOS=15, Android=14}"
             Keyboard="Chat"
             IsExpandable="true"
             HorizontalOptions="Fill"
-            Grid.Row="0" 
-            Grid.Column="2"
             AutoSize="Disabled"
             HasRoundedCorner="True"
             VerticalOptions="Center"
+            BackgroundColor="#F9F9F9"
             Focused="ChatTextInput_Focused"
             Unfocused="ChatTextInput_Unfocused"/>
 
+        <BoxView Grid.Column="2" BackgroundColor="{StaticResource temp}"
+                 HeightRequest="{StaticResource height}"
+                 Margin="-33,0,0,0">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="SendButton_Tapped"/>
+            </BoxView.GestureRecognizers>
+        </BoxView>
+        
         <Image x:Name="sendButton"
-            Source="SendIcon" 
-               Grid.Row="0" 
-               Grid.Column="3"
-               HeightRequest="28"
+            Source="SendIcon"
+               Grid.Column="2"
+               
+               BackgroundColor="{StaticResource temp}"
                VerticalOptions="End"
-               HorizontalOptions="Start">
-            <Image.Margin>
-                <OnPlatform x:TypeArguments="Thickness">
-                    <On Platform="iOS" Value="-33,0,0,3.5" />
-                    <On Platform="Android" Value="-33,0,0,7" />
-                </OnPlatform>
-            </Image.Margin>
+               HorizontalOptions="StartAndExpand"
+               HeightRequest="{OnPlatform Android=29}"
+               Margin="{OnPlatform Android='-32,0,0,2', iOS='-33,0,0,2'}">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="SendButton_Tapped"/>
             </Image.GestureRecognizers>
         </Image>
-
-        <BoxView BackgroundColor="Beige" HeightRequest="200"
-                 Grid.Row="1" Grid.ColumnSpan="4"
-                 IsVisible="False"
-                 x:Name="boxView"/>
 
     </Grid>
 </ContentView>
