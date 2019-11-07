@@ -1,4 +1,6 @@
-﻿using Ringer.ViewModels;
+﻿using Plugin.Permissions;
+using Plugin.Permissions.Abstractions;
+using Ringer.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -54,9 +56,10 @@ namespace Ringer.Views.Partials
                 vm.CameraAction.TakingPhoto,
                 vm.CameraAction.AttachingPhoto,
                 vm.CameraAction.TakingVideo,
-                vm.CameraAction.AttachingVideo);
+                Device.RuntimePlatform == Device.iOS ? null : vm.CameraAction.AttachingVideo,
+                "설정 열기");
 
-            Debug.WriteLine(action);
+            vm?.CameraCommand.Execute(action);
         }
 
         ChatPage _page;
