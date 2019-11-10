@@ -16,80 +16,30 @@
     <ContentPage.BindingContext>
         <viewmodels:MapPageViewModel/>
     </ContentPage.BindingContext>
-    
-    
+
+
     <ContentPage.Content>
-        <!--<Grid RowSpacing="0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>
-
-            <Grid>
-                <maps:Map x:Name="MyMap"
-                          HasScrollEnabled="True"
-                          MapType="Street"
-                          HasZoomEnabled="True"/>
-                
-                <Button Text="Me"
-                        VerticalOptions="Start"
-                        HorizontalOptions="End"
-                        Clicked="Button_Clicked"
-                        IsVisible="{OnPlatform False, iOS=True}"/>
-            </Grid>
-                
-            
-            <ListView x:Name="ItemsListView" Grid.Row="1"       
-                      ItemsSource="{Binding Infomations}"
-                      VerticalOptions="FillAndExpand"                      
-                      ItemSelected="ItemsListView_ItemSelected"
-                      HasUnevenRows="true">
-                <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <ViewCell>
-                            <StackLayout Padding="20, 10, 20, 10">
-                                <Label Text="{Binding Title}" 
-                                    LineBreakMode="NoWrap" 
-                                    Style="{DynamicResource ListItemTextStyle}"
-                                    TextColor="Accent"
-                                    FontSize="16"/>
-                                <Label Text="{Binding Extras}"
-                                    LineBreakMode="NoWrap"
-                                    Style="{DynamicResource ListItemDetailTextStyle}"
-                                    FontSize="13" />
-                                <Label Text="{Binding DisplayLocation}"
-                                    Style="{DynamicResource ListItemDetailTextStyle}"
-                                    FontSize="13" />
-                                <Label Text="{Binding DisplayPhoneNumber}"
-                                    LineBreakMode="NoWrap"
-                                    Style="{DynamicResource ListItemDetailTextStyle}"
-                                    FontSize="13" />
-                                
-                            </StackLayout>
-                        </ViewCell>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-
-            <Button Text="상담" Clicked="Button_Clicked_1Async"
-                    TextColor="White"
-                    FontSize="14"
-                    Margin="0,-20,15,0"
-                    CornerRadius="20"
-                    WidthRequest="40"
-                    HeightRequest="40"
-                    Grid.Row="1"
-                    BackgroundColor="#B42A42"
-                    Padding="5"
-                    VerticalOptions="Start"
-                    HorizontalOptions="End"/>
-        </Grid>-->
         <AbsoluteLayout>
-            <maps:Map x:Name="MyMap" HasScrollEnabled="True" MapType="Street" HasZoomEnabled="True" AbsoluteLayout.LayoutFlags="SizeProportional" AbsoluteLayout.LayoutBounds="0,0,1,.35" />
-            <Button Text="🚩"
+
+            <maps:Map x:Name="MyMap"
+                      HasScrollEnabled="True"
+                      HasZoomEnabled="True"
+                      MoveToLastRegionOnLayoutChange="True"
+                      MapType="Street"
+                      MapClicked="MyMap_MapClicked"
+                      AbsoluteLayout.LayoutFlags="SizeProportional"
+                      AbsoluteLayout.LayoutBounds="0,0,1,.35" />
+
+            <!--<BoxView BackgroundColor="Brown"
+                     AbsoluteLayout.LayoutFlags="WidthProportional"
+                     AbsoluteLayout.LayoutBounds="0,0,1,20"
+                     Opacity=".5"/>-->
+
+            <ImageButton Source="MapCurrent"
                     AbsoluteLayout.LayoutFlags="PositionProportional"
-                    AbsoluteLayout.LayoutBounds=".95,.03,40,40"
-                    Clicked="Button_Clicked" IsVisible="{OnPlatform False, iOS=True}" />
+                    AbsoluteLayout.LayoutBounds=".97,.265,45,45"
+                    Clicked="MapCurrentButton_Clicked" IsVisible="{OnPlatform False, iOS=True}" />
+
             <ListView x:Name="ItemsListView" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,1,1,.65" Grid.Row="1" ItemsSource="{Binding Infomations}" VerticalOptions="FillAndExpand" ItemSelected="ItemsListView_ItemSelected" HasUnevenRows="true">
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -106,16 +56,12 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Text="상담"
+            <ImageButton Source="StartChatButton"
                     AbsoluteLayout.LayoutFlags="PositionProportional"
                     AbsoluteLayout.LayoutBounds=".95,.95,50,50"
                     Command="{Binding GoToChatPageCommand}"
-                    TextColor="White"
-                    FontSize="14"
-                    CornerRadius="25"
-                    WidthRequest="50" HeightRequest="50"
-                    BackgroundColor="#B42A42" 
-                    Padding="5"
+                    WidthRequest="60" HeightRequest="60"
+                    BackgroundColor="Transparent"
                     />
         </AbsoluteLayout>
     </ContentPage.Content>

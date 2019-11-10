@@ -338,3 +338,9 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+# .DS_Store
+*..DS_Store
+.DS_Store
+Ringer/.DS_Store
+*.DS_Store

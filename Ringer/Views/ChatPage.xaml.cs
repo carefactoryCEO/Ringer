@@ -47,7 +47,7 @@ namespace Ringer.Views
 
         protected async void MenuButton_Tapped(object sender, EventArgs e)
         {
-            await Shell.Current.Navigation.PushModalAsync(new AboutPage());
+            await Shell.Current.Navigation.PushModalAsync(new VidyoPage());
         }
     }
 }

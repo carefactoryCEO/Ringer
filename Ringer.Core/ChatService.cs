@@ -25,15 +25,7 @@ namespace Ringer.Core
         public bool IsConnected { get; set; }
         public Dictionary<string, string> ActiveChannels { get; } = new Dictionary<string, string>();
         #endregion
-
-        #region constructor and destructor
-        ~ChatService()
-        {
-            Console.WriteLine("Destructor was called");
-            OnConnectionClosed?.Invoke(this, new ChatEventArgs($"ChatService.Destructor:Service Destructed..{DateTime.Now}", string.Empty));
-        }
-        #endregion
-
+        
         #region public methods
         public void Init(string urlRoot, bool useHttps)
         {
@@ -81,12 +73,6 @@ namespace Ringer.Core
             hubConnection.On<string>("Left", (user) =>
             {
                 OnEnteredOrExited?.Invoke(this, new ChatEventArgs($"{user} left.", user));
-            });
-
-
-            hubConnection.On<string>("EnteredOrLeft", (message) =>
-            {
-                OnEnteredOrExited?.Invoke(this, new ChatEventArgs(message, message));
             });
         }
 
@@ -142,20 +128,15 @@ namespace Ringer.Core
             if (!IsConnected)
                 throw new InvalidOperationException("Not connected");
 
-            await hubConnection.InvokeAsync("SendMessageGroup",
-                    group,
-                    userName,
-                    message);
+            await hubConnection.InvokeAsync("SendMessageGroup", group, userName, message);
         }
+        #endregion
 
-        public List<string> GetRooms()
+        #region destructor
+        ~ChatService()
         {
-            return new List<string>
-            {
-                "ringer",
-                "carefactory",
-                "Xamarin"
-            };
+            Console.WriteLine("Destructor was called");
+            OnConnectionClosed?.Invoke(this, new ChatEventArgs($"ChatService.Destructor:Service Destructed..{DateTime.Now}", string.Empty));
         }
         #endregion
     }

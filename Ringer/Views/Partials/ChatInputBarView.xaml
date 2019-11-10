@@ -9,7 +9,7 @@
 
     <ContentView.Resources>
         <ResourceDictionary>
-            <Color x:Key="temp">transparent</Color>
+            <Color x:Key="temp">Transparent</Color>
             <x:Double x:Key="height">32</x:Double>
         </ResourceDictionary>
     </ContentView.Resources>
@@ -27,21 +27,18 @@
             <ColumnDefinition Width="15" />
         </Grid.ColumnDefinitions>
 
-        <ImageButton x:Name="cameraButton"
-                     Source="CameraIcon"
-                     Padding="0,6"
-                     Grid.Row="0"
-                     Grid.Column="0"           
-                     VerticalOptions="EndAndExpand"
-                     WidthRequest="60"
-                     
-                     Command="{Binding CameraMenuCommand}"
-                     Clicked="CameraButton_Clicked"
-
-                     HeightRequest="{StaticResource height}"
-                     BackgroundColor="{StaticResource temp}" />
-
-
+        <Image x:Name="cameraButton"
+                Source="CameraButton"
+                Grid.Row="0"
+                Grid.Column="0"           
+                VerticalOptions="EndAndExpand"
+                Aspect="AspectFit"
+                HeightRequest="36"
+                BackgroundColor="{StaticResource temp}" >
+            <Image.GestureRecognizers>
+                <TapGestureRecognizer Tapped="CameraButton_Clicked"/>
+            </Image.GestureRecognizers>
+        </Image>
 
         <controls:ExtendedEditorControl
             x:Name="chatTextInput"
@@ -54,9 +51,11 @@
             IsExpandable="true"
             HorizontalOptions="Fill"
             AutoSize="Disabled"
+            HeightRequest="{OnPlatform iOS=32}"
             HasRoundedCorner="True"
             VerticalOptions="Center"
             BackgroundColor="#F9F9F9"
+            
             Focused="ChatTextInput_Focused"
             Unfocused="ChatTextInput_Unfocused"/>
 
@@ -69,14 +68,14 @@
         </BoxView>
         
         <Image x:Name="sendButton"
-            Source="SendIcon"
+               Source="SendIcon"
                Grid.Column="2"
                
                BackgroundColor="{StaticResource temp}"
                VerticalOptions="End"
                HorizontalOptions="StartAndExpand"
-               HeightRequest="{OnPlatform Android=29}"
-               Margin="{OnPlatform Android='-32,0,0,2', iOS='-33,0,0,2'}">
+               HeightRequest="{OnPlatform Android=29, iOS=28}"
+               Margin="{OnPlatform Android='-32,0,0,4', iOS='-32,0,0,4'}">
             <Image.GestureRecognizers>
                 <TapGestureRecognizer Tapped="SendButton_Tapped"/>
             </Image.GestureRecognizers>

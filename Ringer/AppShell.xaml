@@ -25,18 +25,6 @@
             <Style TargetType="ShellItem" BasedOn="{StaticResource BaseStyle}" />
         </ResourceDictionary>
     </Shell.Resources>
-    
-    <FlyoutItem Title="Map">
-        <Tab Title="Map" Icon="tab_feed.png">
-            <ShellContent ContentTemplate="{DataTemplate local:MapPage}" />
-        </Tab>
 
-        
-    </FlyoutItem>
-    <FlyoutItem Title="About">
-        <Tab Title="About" Icon="tab_about.png" Route="about">
-            <ShellContent ContentTemplate="{DataTemplate local:AboutPage}" />
-        </Tab>
-    </FlyoutItem>
-
+    <ShellContent ContentTemplate="{DataTemplate local:MapPage}" />
 </Shell>

@@ -10,7 +10,6 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
 
 namespace Ringer.ViewModels
 {
@@ -47,7 +46,6 @@ namespace Ringer.ViewModels
             ConnectCommand     = new Command(async () => await Connect());
             DisconnectCommand  = new Command(async () => await Disconnect());
             CameraCommand = new Command<string>(async s => await ProcessCameraAction(s));
-
 
             signalR = DependencyService.Resolve<ChatService>();
             signalR.Init(urlRoot: App.ChatURL, useHttps: true);
@@ -105,10 +103,7 @@ namespace Ringer.ViewModels
             try
             {
                 IsBusy = true;
-                await signalR.SendMessageAsync(
-                    App.Group,
-                    App.User,
-                    TextToSend);      
+                await signalR.SendMessageAsync(App.Group, App.User, TextToSend);      
             }
             catch (Exception ex)
             {

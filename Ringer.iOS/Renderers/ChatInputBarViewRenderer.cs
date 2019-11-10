@@ -42,7 +42,6 @@ namespace Ringer.iOS.Renderers
 
         void OnKeyboardShow(object sender, UIKeyboardEventArgs args)
         {
-
             NSValue result = (NSValue)args.Notification.UserInfo.ObjectForKey(new NSString(UIKeyboard.FrameEndUserInfoKey));
             CGSize keyboardSize = result.RectangleFValue.Size;
             if (Element != null)

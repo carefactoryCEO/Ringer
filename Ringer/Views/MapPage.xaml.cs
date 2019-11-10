@@ -7,6 +7,7 @@ using Xamarin.Forms.Maps;
 using Ringer.Models;
 using System.Threading.Tasks;
 using Ringer.ViewModels;
+using Map = Xamarin.Forms.Maps.Map;
 
 namespace Ringer.Views
 {
@@ -34,6 +35,7 @@ namespace Ringer.Views
         {
             try
             {
+                // TODO: Location permission check here
                 var request = new GeolocationRequest(GeolocationAccuracy.Medium);
                 var location = await Geolocation.GetLastKnownLocationAsync() ?? await Geolocation.GetLocationAsync(request);
 
@@ -52,30 +54,28 @@ namespace Ringer.Views
             }
             catch (FeatureNotSupportedException fnsEx)
             {
-                // Handle not supported on device exception
+                Console.WriteLine(fnsEx.Message);
             }
             catch (FeatureNotEnabledException fneEx)
             {
-                // Handle not enabled on device exception
+                Console.WriteLine(fneEx.Message);
             }
             catch (PermissionException pEx)
             {
-                // Handle permission exception
+                Console.WriteLine(pEx.Message);
             }
             catch (Exception ex)
             {
-                // Unable to get location
+                Console.WriteLine(ex.Message);
             }
-
-            
         }
 
-        private void MyMap_MapClicked(object sender, EventArgs e)
+        private void MyMap_MapClicked(object sender, MapClickedEventArgs e)
         {
-            //Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
+            Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
         }
 
-        private async void Button_Clicked(object sender, EventArgs e)
+        private async void MapCurrentButton_Clicked(object sender, EventArgs e)
         {
             await GetGeolocationAsync();
         }
