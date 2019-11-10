@@ -59,36 +59,39 @@ namespace Ringer.Views.Partials
         }
 
         ChatPage _page;
-        double _paddingBottom;
+        Thickness _insets;
+        bool initial = true;
 
-        protected void ChatTextInput_Focused(object sender, EventArgs e)
+        protected override SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
         {
-            if (Device.RuntimePlatform != Device.iOS)
-                return;
+            if (Device.RuntimePlatform != Device.iOS || !initial)
+                return base.OnMeasure(widthConstraint, heightConstraint);
+
+            initial = false;
 
             _page = Parent.Parent as ChatPage;
 
-            var safeInsets = _page.On<iOS>().SafeAreaInsets();
-            _paddingBottom = safeInsets.Bottom;
-            safeInsets.Bottom = 0;
+            _insets = _page.On<iOS>().SafeAreaInsets();
 
-            //_page.Padding = safeInsets;
+            _page.Padding = new Thickness(0, 0, 0, _insets.Bottom);
 
-            //Console.WriteLine($"ChatTextInput_Focused: {safeInsets.Left}, {safeInsets.Top}, {safeInsets.Right}, {safeInsets.Bottom}");
+            return base.OnMeasure(widthConstraint, heightConstraint);
+        }
+
+        protected void ChatTextInput_Focused(object sender, EventArgs e)
+        {
+            if (Device.RuntimePlatform != Device.iOS || _insets.Bottom == 0)
+                return;
+
+            _page.Padding = new Thickness(0);
         }
 
         protected void ChatTextInput_Unfocused(object sender, EventArgs e)
         {
-            if (Device.RuntimePlatform != Device.iOS)
+            if (Device.RuntimePlatform != Device.iOS || _insets.Bottom == 0)
                 return;
 
-            var safeInsets = _page.On<iOS>().SafeAreaInsets();
-            safeInsets.Bottom = _paddingBottom;
-
-            //_page.Padding = safeInsets;
-
-
-            //Console.WriteLine($"ChatTextInput_Unfocused: {safeInsets.Left}, {safeInsets.Top}, {safeInsets.Right}, {safeInsets.Bottom}");
+            _page.Padding = new Thickness(0, 0, 0, _insets.Bottom);
         }
     }
 }

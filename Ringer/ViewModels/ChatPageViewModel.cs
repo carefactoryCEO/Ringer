@@ -25,6 +25,7 @@ namespace Ringer.ViewModels
         public bool IsBusy { get; set; } = false;
         public bool IsConnected { get; set; } = false;
         public CameraAction CameraAction { get; } = new CameraAction();
+        public double NavBarHeight { get; set; } = 0;
         #endregion
 
         #region Commands

@@ -30,15 +30,15 @@
 
     <!-- Main Grid -->
     <Grid RowSpacing="0" ColumnSpacing="0">
+
         <Grid.RowDefinitions>
-            <RowDefinition Height="{OnPlatform 40, iOS=60}" />
+            <!-- navigation box -->
+            <RowDefinition Height="{Binding NavBarHeight}" />
+            <!-- messages feed -->
             <RowDefinition Height="*" />
-            <!--<RowDefinition Height="7" />-->
+            <!-- input module -->
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <!--buffer-->
-        <!--<BoxView BackgroundColor="{StaticResource Accent}" Grid.Row="2" />-->
 
         <!-- messages feed -->
         <controls:ExtendedListView
@@ -59,32 +59,36 @@
         <StackLayout Grid.Row="0"
                      BackgroundColor="{StaticResource Accent}"
                      Opacity=".9"
-                     Orientation="Horizontal">
+                     Orientation="Horizontal"
+                     Padding="0,0,0,8">
+            
             <ImageButton Source="BackButton"
                          HorizontalOptions="StartAndExpand"
                          VerticalOptions="EndAndExpand"
                          Clicked="BackButton_Tapped"
-                         HeightRequest="32"
                          WidthRequest="50"
-                         Padding="3"
+                         HeightRequest="28"
+                         Padding="5, 3"
                          BackgroundColor="{StaticResource NavBarButtonBackgroundColor}">
             </ImageButton>
+            
             <Label Text="링거 상담실"
                    FontAttributes="Bold"
                    TextColor="White"
-                   HorizontalOptions="CenterAndExpand"
+                   HorizontalOptions="Center"
                    VerticalOptions="EndAndExpand"
-                   Margin="0,7"
-                   FontSize="Body"/>
+                   Margin="{OnPlatform Android='0,0,0,7', iOS='0,0,0,4'}"/>
+            
             <ImageButton Source="CamButton"
                          HorizontalOptions="EndAndExpand"
                          VerticalOptions="EndAndExpand"
                          Clicked="MenuButton_Tapped"
-                         HeightRequest="32"
                          WidthRequest="50"
-                         Padding="3"
+                         HeightRequest="28"
+                         Padding="5, 3"
                          BackgroundColor="{StaticResource NavBarButtonBackgroundColor}">
             </ImageButton>
+        
         </StackLayout>
 
 
