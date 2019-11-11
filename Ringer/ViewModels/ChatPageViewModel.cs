@@ -2,8 +2,8 @@
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
-using Ringer.Core;
 using Ringer.Models;
+using Ringer.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,23 +16,25 @@ namespace Ringer.ViewModels
     class ChatPageViewModel : INotifyPropertyChanged
     {
         #region private members
-        private readonly ChatService signalR;
+        private App app;
+        private bool isBusy = false;
         #endregion
 
         #region Public Properties
-        public ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
+        // TODO: Check if app.Messages notify changes
+        // else Use Dependency service
+        public ObservableCollection<Message> Messages => app.Messages;
         public string TextToSend { get; set; }
-        public bool IsBusy { get; set; } = false;
-        public bool IsConnected { get; set; } = false;
         public CameraAction CameraAction { get; } = new CameraAction();
         public double NavBarHeight { get; set; } = 0;
+        public string NavBarTitle => "링거 상담실";
         #endregion
 
         #region Commands
-        public ICommand ConnectCommand { get; }
-        public ICommand DisconnectCommand { get; }
         public ICommand SendMessageCommand { get; }
         public ICommand CameraCommand { get; }
+        public ICommand GoBackCommand { get; }
+        public ICommand ShowVidyoCommand { get; }
         #endregion
 
         #region Constructor
@@ -41,101 +43,43 @@ namespace Ringer.ViewModels
             if (DesignMode.IsDesignModeEnabled)
                 return;
 
-            Messages.Add(new Message { Text = "dummy", User = "dummy" });
+            app = Application.Current as App;
             
-            SendMessageCommand = new Command(async () => await SendMessage());
-            ConnectCommand     = new Command(async () => await Connect());
-            DisconnectCommand  = new Command(async () => await Disconnect());
-            CameraCommand = new Command<string>(async s => await ProcessCameraAction(s));
-
-            signalR = DependencyService.Resolve<ChatService>();
-            signalR.Init(urlRoot: App.ChatURL, useHttps: true);
-
-            signalR.OnConnectionClosed += (s, e) => SendLocalMessage(e.Message, e.User);
-            signalR.OnReceivedMessage  += (s, e) => SendLocalMessage(e.Message, e.User);
-            signalR.OnReconnected += async (s, e) =>
-            {
-                SendLocalMessage(e.Message, e.User);
-                await signalR.JoinChannelAsync(App.Group, App.User);
-            };
+            SendMessageCommand  = new Command(async () => await SendMessage());
+            GoBackCommand       = new Command(async () => await Shell.Current.Navigation.PopAsync());
+            ShowVidyoCommand    = new Command(async () => {
+                await Shell.Current.GoToAsync("vidyopage");
+                });
+            CameraCommand       = new Command<string>(async actionString => await ProcessCameraAction(actionString));
         }
         #endregion
 
         #region Private Methods
-        private async Task Connect()
-        {
-            if (IsConnected)
-                return;
-            try
-            {
-                IsBusy = true;
-
-                App.Repository.ForEach(m => Messages.Add(m));
-                App.Repository.Clear();
-
-                await signalR.ConnectAsync();
-                await signalR.JoinChannelAsync(App.Group, App.User);
-
-                SendLocalMessage($"vm.Connet:Connected! {DateTime.Now}", string.Empty);
-
-                IsConnected = true;
-                //await Task.Delay(200); // why? 보여주려고??
-                //SendLocalMessage("Connected...", App.User);
-            }
-            catch (Exception ex)
-            {
-                SendLocalMessage($"vm.Connect:Connection error: {ex.Message}", App.User);
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-        }
         private async Task SendMessage()
         {
-            if (string.IsNullOrEmpty(TextToSend))
+            if (string.IsNullOrEmpty(TextToSend) || isBusy)
                 return;
 
-            if (!IsConnected)
+            if (!app.IsSignalRConnected)
             {
                 await Shell.Current.DisplayAlert("Not connected", "Please connect to the server and try again.", "OK");
                 return;
             }
             try
             {
-                IsBusy = true;
-                await signalR.SendMessageAsync(App.Group, App.User, TextToSend);      
+                isBusy = true;
+                await app.SignalR.SendMessageAsync(App.Group, App.User, TextToSend);
+
+                TextToSend = string.Empty;
             }
             catch (Exception ex)
             {
-                SendLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", App.User);
+                app.AddMessage($"vs.SendMessage:Send failed: {ex.Message}", App.User);
             }
             finally
             {
-
-                
-                IsBusy = false;
+                isBusy = false;
             }
-        }
-        private async Task Disconnect()
-        {
-            if (!IsConnected)
-                return;
-
-            //SendLocalMessage($"Disconnected...{DateTime.UtcNow}", string.Empty);
-
-            Messages.Insert(0, new Message
-            {
-                Text = $"vm.Disconnect:Disconnected...{DateTime.Now}",
-                User = string.Empty
-            });
-            App.Repository.AddRange(Messages);
-
-            await signalR.LeaveChannelAsync(App.Group, App.User);
-            await signalR.DisconnectAsync();            
-
-            IsConnected = false;
-            
         }
         private async Task<bool> CheckPermissionAsync(Permission permission)
         {
@@ -151,7 +95,6 @@ namespace Ringer.ViewModels
                     return false;
             }
         }
-
         private async Task ProcessCameraAction(string action)
         {
             if (action == "설정 열기")
@@ -183,7 +126,7 @@ namespace Ringer.ViewModels
                     if (file == null)
                         return;
 
-                    SendLocalMessage($"{action}:{file.Path}", "camera");
+                    app.AddMessage($"{action}:{file.Path}", "camera");
 
                     file.Dispose();
                 }
@@ -220,7 +163,7 @@ namespace Ringer.ViewModels
                     if (file == null)
                         return;
 
-                    SendLocalMessage($"{action}:{file.Path}", "camera");
+                    app.AddMessage($"{action}:{file.Path}", "camera");
 
                     file.Dispose();
                 }
@@ -252,7 +195,7 @@ namespace Ringer.ViewModels
                     if (file == null)
                         return;
 
-                    SendLocalMessage($"{action}:{file.Path}", "camera");
+                    app.AddMessage($"{action}:{file.Path}", "camera");
 
                     file.Dispose();
                 }
@@ -286,7 +229,7 @@ namespace Ringer.ViewModels
                     if (file == null)
                         return;
 
-                    SendLocalMessage($"{action}:{file.Path}", "camera");
+                    app.AddMessage($"{action}:{file.Path}", "camera");
 
                     file.Dispose();
                 }
@@ -301,25 +244,9 @@ namespace Ringer.ViewModels
         }
         #endregion
 
-        #region Public Methods
-        public void SendLocalMessage(string message, string user)
-        {
-            Device.BeginInvokeOnMainThread(() =>
-            {
-                Messages.Insert(0, new Message
-                {
-                    Text = message,
-                    User = user
-                });
-
-                TextToSend = string.Empty;
-
-                Console.WriteLine(Messages.Count);
-            });
-        }
-        #endregion
-
+        #region Events
         public event PropertyChangedEventHandler PropertyChanged;
+        #endregion
     }
 
     #region CamaraAction Class

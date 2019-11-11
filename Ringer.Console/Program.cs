@@ -6,7 +6,7 @@ namespace Ringer.ConsoleApp
 {
     public class Program
     {
-        static ChatService service;
+        static SignalRService service;
         static string room = "Xamarin";
         static string name;
         static Random random = new Random();
@@ -15,10 +15,10 @@ namespace Ringer.ConsoleApp
         {
             name = "Ringer" + random.Next(1,100);
 
-            service = new ChatService();
+            service = new SignalRService();
             service.OnReceivedMessage += Service_OnReceivedMessage;
-            service.OnConnectionClosed += Service_OnConnectionClosed;
-            service.OnEnteredOrExited += Service_OnEnteredOrExited;
+            service.Closed += Service_OnConnectionClosed;
+            service.OnEntered += Service_OnEntered;
 
             //Console.WriteLine("url?");
             //string url = Console.ReadLine();
@@ -63,7 +63,16 @@ namespace Ringer.ConsoleApp
 
         }
 
-        private static void Service_OnEnteredOrExited(object sender, Core.EventArgs.ChatEventArgs e)
+        private static void Service_OnEntered(object sender, Core.EventArgs.ChatEventArgs e)
+        {
+            if (e.User == name)
+                return;
+
+            Console.WriteLine($"{e.Message}");
+
+        }
+
+        private static void Service_On(object sender, Core.EventArgs.ChatEventArgs e)
         {
             if (e.User == name)
                 return;

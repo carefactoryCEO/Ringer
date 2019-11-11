@@ -1,59 +1,150 @@
 ﻿using Xamarin.Forms;
 using Ringer.Core;
-using System.Collections.ObjectModel;
 using Ringer.Models;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using Ringer.Views;
 using System.Diagnostics;
+using System.Collections.ObjectModel;
+using System;
+using System.Threading.Tasks;
 
 namespace Ringer
 {
     public partial class App : Application
     {
-        //TODO: Replace with *.azurewebsites.net url after deploying backend to Azure
-        //To debug on Android emulators run the web backend against .NET Core not IIS
-        //If using other emulators besides stock Google images you may need to adjust the IP address
-        //public static string AzureBackendUrl =
-        //    DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : "http://localhost:5000";
-        //public static bool UseMockDataStore = true;
+        #region public static members
+        public static readonly string User = "김영미";
+        public static readonly string Group = "Xamarin";
+        public static readonly string ChatURL = "ringerchat.azurewebsites.net";
+        #endregion
 
-        public static string User = "김영미";
-        public static string Group = "Xamarin";
-        public static string ChatURL = "ringerchat.azurewebsites.net";
-        public static List<Message> Repository = new List<Message>();
+        #region Public Properties
+        public SignalRService SignalR { get; }
+        public ObservableCollection<Message> Messages { get; }
+        public bool IsSignalRConnected { get; set; } = false;
+        public bool IsProcessingSignalR { get; set; } = false;
+        #endregion
 
+        #region Constructor
         public App()
         {
             InitializeComponent();
 
-            DependencyService.Register<ChatService>();
-
-            //if (UseMockDataStore)
-            //    DependencyService.Register<MockDataStore>();
-            //else
-            //    DependencyService.Register<AzureDataStore>();
-
             MainPage = new AppShell();
 
+            Messages = new ObservableCollection<Message>
+            {
+                new Message
+                {
+                    Text = "dummy",
+                    User = "dummy"
+                }
+            };
 
-            //MainPage = new AboutPage();
+            #region Prepare SignalR
+            SignalR = new SignalRService();
+            SignalR.Init(urlRoot: ChatURL, useHttps: true);
 
+            // Connection events
+            SignalR.Closed += (s, e) => AddMessage(e.Message, e.User);
+            SignalR.Reconnecting += (s, e) => AddMessage(e.Message, e.User);
+            SignalR.Reconnected += (s, e) => AddMessage(e.Message, e.User);
+            
+            // Message events
+            SignalR.OnEntered += (s, e) => AddMessage(e.Message, e.User);
+            SignalR.OnLeft += (s, e) => AddMessage(e.Message, e.User);
+            SignalR.OnReceivedMessage += (s, e) => AddMessage(e.Message, e.User);
+            #endregion
         }
+        #endregion
 
-        protected override void OnStart()
+        #region Life Cycle Methods
+        protected override async void OnStart()
         {
-            Debug.WriteLine("OnStart");     
-        }
+            base.OnStart();
 
-        protected override void OnSleep()
+            Debug.WriteLine("App.OnStart");
+
+            await ConnectSignalRAsync();
+        }
+        protected override async void OnSleep()
         {
             Debug.WriteLine("OnSleep");
-        }
 
-        protected override void OnResume()
+            await DisconnectSignalRAsync();
+            
+            base.OnSleep();
+        }
+        protected override async void OnResume()
         {
             Debug.WriteLine("OnResume");
+
+            await ConnectSignalRAsync();
+
+            base.OnResume();
         }
+        #endregion
+
+        #region Private Methods        
+        private async Task ConnectSignalRAsync()
+        {
+            if (IsSignalRConnected || DesignMode.IsDesignModeEnabled)
+                return;
+
+            try
+            {
+                IsProcessingSignalR = true;
+
+                await SignalR.ConnectAsync();
+                AddMessage($"App:Connected! {DateTime.Now}\n{SignalR.HubConnection.ConnectionId}", string.Empty);
+                
+                await SignalR.JoinChannelAsync(Group, User);
+
+
+                IsSignalRConnected = true;
+            }
+            catch (Exception ex)
+            {
+                AddMessage($"App:Connection error: {ex.Message}", User);
+            }
+            finally
+            {
+                IsProcessingSignalR = false;
+            }
+        }        
+        private async Task DisconnectSignalRAsync()
+        {
+            if (!IsSignalRConnected || DesignMode.IsDesignModeEnabled)
+                return;
+
+            try
+            {
+                IsProcessingSignalR = true;
+
+                await SignalR.LeaveChannelAsync(Group, User);
+
+                await SignalR.DisconnectAsync();
+                AddMessage(message: $"App:Disconnected...{DateTime.Now}", user: string.Empty);
+            
+
+                IsSignalRConnected = false;
+            }
+            catch (Exception ex)
+            {
+                AddMessage($"App:Discsonnection error: {ex.Message}", User);
+            }
+            finally
+            {
+                IsProcessingSignalR = false;
+            }
+
+        }
+        public void AddMessage(string message, string user)
+        {
+            Messages.Insert(0, new Message
+            {
+                Text = message,
+                User = user
+            });
+        }
+        #endregion
     }
 }
