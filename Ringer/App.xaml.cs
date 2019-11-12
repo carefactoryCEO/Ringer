@@ -5,21 +5,16 @@ using System.Diagnostics;
 using System.Collections.ObjectModel;
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace Ringer
 {
     public partial class App : Application
     {
-        #region public static members
-        public static readonly string User = "김영미";
-        public static readonly string Group = "Xamarin";
-        public static readonly string ChatURL = "ringerchat.azurewebsites.net";
-        #endregion
-
         #region Public Properties
         public SignalRService SignalR { get; }
         public ObservableCollection<Message> Messages { get; }
-        public bool IsSignalRConnected { get; set; } = false;
+        public bool IsSignalRConnected => SignalR.HubConnection.State == HubConnectionState.Connected;
         public bool IsProcessingSignalR { get; set; } = false;
         #endregion
 
@@ -39,9 +34,17 @@ namespace Ringer
                 }
             };
 
+
+
+            Properties["User"] = Device.RuntimePlatform + "-" +new Random().Next(1, 100).ToString();
+            Properties["Group"] = "Xamarin";
+            Properties["ChatURL"] = "ringerchat.azurewebsites.net";
+            
+
+
             #region Prepare SignalR
             SignalR = new SignalRService();
-            SignalR.Init(urlRoot: ChatURL, useHttps: true);
+            SignalR.Init(urlRoot: (string)Properties["ChatURL"], useHttps: true);
 
             // Connection events
             SignalR.Closed += (s, e) => AddMessage(e.Message, e.User);
@@ -69,7 +72,7 @@ namespace Ringer
         {
             Debug.WriteLine("OnSleep");
 
-            await DisconnectSignalRAsync();
+            //await DisconnectSignalRAsync();
             
             base.OnSleep();
         }
@@ -85,7 +88,7 @@ namespace Ringer
 
         #region Private Methods        
         private async Task ConnectSignalRAsync()
-        {
+        {   
             if (IsSignalRConnected || DesignMode.IsDesignModeEnabled)
                 return;
 
@@ -96,14 +99,11 @@ namespace Ringer
                 await SignalR.ConnectAsync();
                 AddMessage($"App:Connected! {DateTime.Now}\n{SignalR.HubConnection.ConnectionId}", string.Empty);
                 
-                await SignalR.JoinChannelAsync(Group, User);
-
-
-                IsSignalRConnected = true;
+                await SignalR.JoinChannelAsync((string)Properties["Group"], (string)Properties["User"]);
             }
             catch (Exception ex)
             {
-                AddMessage($"App:Connection error: {ex.Message}", User);
+                AddMessage($"App:Connection error: {ex.Message}", (string)Properties["User"]);
             }
             finally
             {
@@ -119,17 +119,14 @@ namespace Ringer
             {
                 IsProcessingSignalR = true;
 
-                await SignalR.LeaveChannelAsync(Group, User);
+                await SignalR.LeaveChannelAsync((string)Properties["Group"], (string)Properties["User"]);
 
                 await SignalR.DisconnectAsync();
                 AddMessage(message: $"App:Disconnected...{DateTime.Now}", user: string.Empty);
-            
-
-                IsSignalRConnected = false;
             }
             catch (Exception ex)
             {
-                AddMessage($"App:Discsonnection error: {ex.Message}", User);
+                AddMessage($"App:Discsonnection error: {ex.Message}", (string)Properties["User"]);
             }
             finally
             {

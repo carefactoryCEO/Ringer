@@ -24,7 +24,7 @@
             <maps:Map x:Name="MyMap"
                       HasScrollEnabled="True"
                       HasZoomEnabled="True"
-                      MoveToLastRegionOnLayoutChange="True"
+                      MoveToLastRegionOnLayoutChange="False"
                       MapType="Street"
                       MapClicked="MyMap_MapClicked"
                       AbsoluteLayout.LayoutFlags="SizeProportional"

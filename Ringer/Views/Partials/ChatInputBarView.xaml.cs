@@ -40,7 +40,7 @@ namespace Ringer.Views.Partials
                 vm.CameraAction.TakingPhoto,
                 vm.CameraAction.AttachingPhoto,
                 vm.CameraAction.TakingVideo,
-                Device.RuntimePlatform == Device.iOS ? null : vm.CameraAction.AttachingVideo,
+                vm.CameraAction.AttachingVideo,
                 "설정 열기");
 
             vm?.CameraCommand.Execute(action);
