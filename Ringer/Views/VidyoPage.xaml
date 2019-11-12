@@ -3,6 +3,8 @@
     <ContentPage.Content>
         <StackLayout VerticalOptions="Center" HorizontalOptions="Center">
 
+            <Button Text="Opne AppRTC" Clicked="Button_Clicked_1"/>
+
             <Button Text="Vidyo.io page" Clicked="Button_Clicked"
                      WidthRequest="150" HeightRequest="50"/>
         </StackLayout>

@@ -6,15 +6,17 @@
              xmlns:helpers="clr-namespace:Ringer.Helpers"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
+             xmlns:vm="clr-namespace:Ringer.ViewModels"
              mc:Ignorable="d"
              x:Class="Ringer.Views.ChatPage"
-             
-             Title="Ringer Chat"
-
+             Title="링거 상담실"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
-
              Shell.FlyoutBehavior="Disabled">
+
+    <ContentPage.BindingContext>
+        <vm:ChatPageViewModel x:Name="ChatPageVM"/>
+    </ContentPage.BindingContext>
 
     <!-- Resources -->
     <ContentPage.Resources>
@@ -33,7 +35,7 @@
 
         <Grid.RowDefinitions>
             <!-- navigation box -->
-            <RowDefinition Height="{Binding NavBarHeight}" />
+            <RowDefinition x:Name="NavBarRow"/>
             <!-- messages feed -->
             <RowDefinition Height="*" />
             <!-- input module -->
@@ -41,59 +43,62 @@
         </Grid.RowDefinitions>
 
         <!-- messages feed -->
-        <controls:ExtendedListView
-            x:Name="ChatList"
+        <controls:ExtendedListView x:Name="ChatList"            
             ItemsSource="{Binding Messages}"
             ItemTemplate="{StaticResource MessageTemplateSelector}"
-            Grid.Row="0" Grid.RowSpan="2"
-            Margin="0"
             BackgroundColor="{StaticResource Accent}"
-            SeparatorColor="Transparent"
+            
+            Grid.Row="0" 
+            Grid.RowSpan="2"
+            
+            Margin="0"
+            SeparatorColor="Transparent"                                   
             HasUnevenRows="True"
             VerticalOptions="FillAndExpand"
-            FlowDirection="RightToLeft" Rotation="180"
-            />
+            
+            FlowDirection="RightToLeft" 
+            Rotation="180"/>
 
 
         <!-- navigation box -->
-        <StackLayout Grid.Row="0"
-                     BackgroundColor="{StaticResource Accent}"
+        <StackLayout BackgroundColor="{StaticResource Accent}"
+                     Grid.Row="0"                     
                      Opacity=".9"
                      Orientation="Horizontal"
                      Padding="0,0,0,8">
-            
-            <ImageButton Source="BackButton"
+
+            <ImageButton Command="{Binding GoBackCommand}"
+                         BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+                         Source="BackButton"
                          HorizontalOptions="StartAndExpand"
-                         VerticalOptions="EndAndExpand"
-                         Clicked="BackButton_Tapped"
+                         VerticalOptions="EndAndExpand"                         
                          WidthRequest="50"
                          HeightRequest="28"
-                         Padding="5, 3"
-                         BackgroundColor="{StaticResource NavBarButtonBackgroundColor}">
-            </ImageButton>
-            
-            <Label Text="링거 상담실"
+                         Padding="5, 3"/>
+
+            <Label Text="{Binding NavBarTitle}"
+                   Margin="{OnPlatform Android='0,0,0,7', iOS='0,0,0,4'}"
                    FontAttributes="Bold"
                    TextColor="White"
                    HorizontalOptions="Center"
-                   VerticalOptions="EndAndExpand"
-                   Margin="{OnPlatform Android='0,0,0,7', iOS='0,0,0,4'}"/>
-            
-            <ImageButton Source="CamButton"
+                   VerticalOptions="EndAndExpand"/>
+
+            <ImageButton BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+                         Command="{Binding ShowVidyoCommand}"
+                         Source="CamButton"
                          HorizontalOptions="EndAndExpand"
                          VerticalOptions="EndAndExpand"
-                         Clicked="MenuButton_Tapped"
                          WidthRequest="50"
                          HeightRequest="28"
                          Padding="5, 3"
-                         BackgroundColor="{StaticResource NavBarButtonBackgroundColor}">
+                         >
             </ImageButton>
         
         </StackLayout>
 
 
         <!-- input module -->
-        <partials:ChatInputBarView Grid.Row="2" x:Name="chatInput"/>
+        <partials:ChatInputBarView Grid.Row="2" x:Name="chatInput" BindingContext="{x:Reference ChatPageVM}"/>
 
 
     </Grid>
