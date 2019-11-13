@@ -3,16 +3,13 @@ using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Ringer.Models;
-using Ringer.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Ringer.ViewModels
 {
@@ -24,8 +21,6 @@ namespace Ringer.ViewModels
         #endregion
 
         #region Public Properties
-        // TODO: Check if app.Messages notify changes
-        // else Use Dependency service
         public ObservableCollection<Message> Messages => app.Messages;
         public string TextToSend { get; set; }
         public CameraAction CameraAction { get; } = new CameraAction();
@@ -93,10 +88,10 @@ namespace Ringer.ViewModels
                 CrossPermissions.Current.OpenAppSettings();
             }
 
-            // 사진 찍기
+            // 사진 촬영
             if (action == CameraAction.TakingPhoto)
             {
-                if (await CheckCameraAndStoragePermissionsAsync() && await CheckMediaLibraryPermissionAsync())
+                if (await TakingPhotoPermittedAsync())
                 {
                     if (!CrossMedia.Current.IsTakePhotoSupported)
                     {
@@ -108,7 +103,7 @@ namespace Ringer.ViewModels
                     {
                         var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                         {
-                            Directory = "Test",
+                            Directory = "RingerPhoto",
                             SaveToAlbum = true,
                             CompressionQuality = 75,
                             CustomPhotoSize = 50,
@@ -135,7 +130,7 @@ namespace Ringer.ViewModels
             // 비디오 찍기
             if (action == CameraAction.TakingVideo)
             {
-                if (await CheckCameraAndStoragePermissionsAsync() && await CheckMediaLibraryPermissionAsync())
+                if (await TakingVideoPermittedAsync())
                 {
                     if (!CrossMedia.Current.IsTakeVideoSupported)
                     {
@@ -148,7 +143,8 @@ namespace Ringer.ViewModels
                         var file = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
                         {
                             Name = "VIDEO-" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4",
-                            Directory = "Test"
+                            Directory = "RingerVideo",
+                            SaveToAlbum = true
                         });
 
                         if (file == null)
@@ -168,7 +164,7 @@ namespace Ringer.ViewModels
             // 사진 불러오기
             if (action == CameraAction.AttachingPhoto)
             {
-                if (await CheckStoragePermissionAsync() && await CheckMediaLibraryPermissionAsync())
+                if (AttachingPhotoPermitted())
                 {
                     try
                     {
@@ -180,8 +176,7 @@ namespace Ringer.ViewModels
 
                         var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
                         {
-                            PhotoSize = PhotoSize.Medium,
-
+                            PhotoSize = PhotoSize.Medium
                         });
 
                         if (file == null)
@@ -201,7 +196,7 @@ namespace Ringer.ViewModels
             // 비디오 불러오기
             if (action == CameraAction.AttachingVideo)
             {
-                if (await CheckStoragePermissionAsync() && await CheckMediaLibraryPermissionAsync())
+                if (AttachingVideoPermitted())
                 {
                     if (!CrossMedia.Current.IsPickVideoSupported)
                     {
@@ -229,68 +224,35 @@ namespace Ringer.ViewModels
             }
         }
 
-        private async Task<bool> CheckMediaLibraryPermissionAsync()
+        private async Task<bool> CheckPhotosPermissionsAsync()
         {
-            var status = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
+            var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
 
             if (status == PermissionStatus.Granted)
                 return true;
             else
             {
-                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.MediaLibrary))
+                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Photos))
                 {
-                    await Shell.Current.DisplayAlert("갤러리 접근 권한 요청", "사진, 동영상을 갤러리에 저장하려면 갤러리 접근 권한을 허용해야 합니다.", "확인");
+                    await Shell.Current.DisplayAlert("사진 접근 권한 요청", "사진, 동영상을 촬영하려면 사진 접근 권한을 허용해야 합니다.", "확인");
                 }
 
-                status = await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
+                status = await CrossPermissions.Current.RequestPermissionAsync<PhotosPermission>();
 
                 if (status == PermissionStatus.Granted)
                     return true;
                 else if (status != PermissionStatus.Unknown)
                 {
-                    await Shell.Current.DisplayAlert("갤러리 접근 거부", "갤러리 접근을 허용하지 않았습니다.", "확인");
-
-                    // TODO: iOS는 한 번 거부한 권한을 iOS설정에서만 변경할 수 있습니다. iOS 설정에서 갤러리 접근을 허용하시겠습니까?
-
                     if (Device.RuntimePlatform == Device.iOS)
                     {
-                        CrossPermissions.Current.OpenAppSettings();
-                        return false;
+                        bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "사진 접근 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
+
+                        if (goSetting)
+                            CrossPermissions.Current.OpenAppSettings();
                     }
-                    
-                    return false;
                 }
             }
 
-            return false;
-        }
-
-        private async Task<bool> CheckStoragePermissionAsync()
-        {
-            var storagePermissionStatus = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
-
-            if (storagePermissionStatus == PermissionStatus.Granted)
-                return true;
-            else
-            {
-                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Storage))
-                {
-                    await Shell.Current.DisplayAlert("저장소 접근 권한 요청", "사진, 동영상을 전송하려면 저장소 접근 권한을 허용해야 합니다.", "확인");
-                }
-
-                storagePermissionStatus = await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
-
-                if (storagePermissionStatus == PermissionStatus.Granted)
-                    return true;
-                else if (storagePermissionStatus != PermissionStatus.Unknown)
-                {
-                    await Shell.Current.DisplayAlert("저장소 접근 거부", "저장소 접근을 허용하지 않았습니다.", "확인");
-
-                    // TODO: iOS는 한 번 거부한 권한을 iOS설정에서만 변경할 수 있습니다. iOS 설정에서 저장소 접근을 허용하시겠습니까?
-                    return false;
-                }
-            }
-            
             return false;
         }
         private async Task<bool> CheckCameraPermissionAsync()
@@ -322,17 +284,63 @@ namespace Ringer.ViewModels
                 {
                     if (Device.RuntimePlatform == Device.iOS)
                     {
-                        await Shell.Current.DisplayAlert("카메라 사용", "카메라 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.\n\n확인을 누르면 iOS 설정으로 이동합니다.", "확인");
-                        CrossPermissions.Current.OpenAppSettings();
+                        bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "카메라 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
+
+                        if (goSetting)
+                            CrossPermissions.Current.OpenAppSettings();
                     }
-                    else
-                        await Shell.Current.DisplayAlert("카메라 사용 거부", "카메라 사용 권한을 허용하지 않았습니다.", "확인");
                 }
             }
 
             return false;
         }
-        private async Task<bool> CheckCameraAndStoragePermissionsAsync() => await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync() ? true : false;
+        private async Task<bool> CheckMicPermissionAsync()
+        {
+            if (Device.RuntimePlatform == Device.Android)
+                return true;
+
+            var status = await CrossPermissions.Current.CheckPermissionStatusAsync<MicrophonePermission>();
+
+            Debug.WriteLine(status.ToString());
+
+            if (status == PermissionStatus.Granted)
+                return true;
+            else
+            {
+                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Microphone))
+                {
+                    await Shell.Current.DisplayAlert("마이크 사용 권한 요청", "동영상을 촬영하려면 마이크 사용 권한을 허용해야 합니다.", "확인");
+
+                    Debug.WriteLine("should show");
+                }
+
+                status = await CrossPermissions.Current.RequestPermissionAsync<MicrophonePermission>();
+
+                Debug.WriteLine(status.ToString());
+
+                if (status == PermissionStatus.Granted)
+                    return true;
+                else if (status != PermissionStatus.Unknown)
+                {
+                    if (Device.RuntimePlatform == Device.iOS)
+                    {
+                        bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "마이크 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
+
+                        if (goSetting)
+                            CrossPermissions.Current.OpenAppSettings();
+                    }
+                }
+            }
+
+            Debug.WriteLine("no mic permission");
+
+            return false;
+        }
+
+        private bool AttachingPhotoPermitted() => true;
+        private bool AttachingVideoPermitted() => true;
+        private async Task<bool> TakingPhotoPermittedAsync() => await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync();
+        private async Task<bool> TakingVideoPermittedAsync() => await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync();
         #endregion
 
         #region Events
@@ -346,10 +354,10 @@ namespace Ringer.ViewModels
         public string Title { get; } = "작업을 선택하세요.";
         public string Cancle { get; } = "취소";
         public string Destruction { get; } = "파파괴";
-        public string TakingPhoto { get; } = "사진 찍기";
+        public string TakingPhoto { get; } = "사진 촬영";
         public string AttachingPhoto { get; } = "사진 불러오기";
-        public string TakingVideo { get; } = "비디오 찍기";
-        public string AttachingVideo { get; } = "비디오 불러오기";
+        public string TakingVideo { get; } = "동영상 촬영";
+        public string AttachingVideo { get; } = "동영상 불러오기";
     }
     #endregion
 }

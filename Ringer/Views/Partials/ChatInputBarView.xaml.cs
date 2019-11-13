@@ -31,15 +31,13 @@ namespace Ringer.Views.Partials
 
         private async void CameraButton_Clicked(object sender, EventArgs e)
         {
-            chatTextInput.Focus();
-
             string action = await Shell.Current.DisplayActionSheet(
                 null,
                 vm.CameraAction.Cancle,
                 null,
                 vm.CameraAction.TakingPhoto,
-                vm.CameraAction.AttachingPhoto,
                 vm.CameraAction.TakingVideo,
+                vm.CameraAction.AttachingPhoto,
                 vm.CameraAction.AttachingVideo,
                 "설정 열기");
 
