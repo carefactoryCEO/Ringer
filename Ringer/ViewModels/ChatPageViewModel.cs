@@ -255,6 +255,25 @@ namespace Ringer.ViewModels
 
             return false;
         }
+        private async Task<bool> CheckStoragePermissionAsync()
+        {
+            var status = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
+
+            if (status == PermissionStatus.Granted)
+                return true;
+            else
+            {
+                if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Storage))
+                    await Shell.Current.DisplayAlert("저장소 접근 권한 요청", "사진, 동영상을 저장하고 불러오려면 저장소 권한을 허용해야 합니다.", "확인");
+
+                status = await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
+
+                if (status == PermissionStatus.Granted)
+                    return true;
+
+                return false;
+            }
+        }
         private async Task<bool> CheckCameraPermissionAsync()
         {
             // camera availability check
@@ -339,8 +358,28 @@ namespace Ringer.ViewModels
 
         private bool AttachingPhotoPermitted() => true;
         private bool AttachingVideoPermitted() => true;
-        private async Task<bool> TakingPhotoPermittedAsync() => await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync();
-        private async Task<bool> TakingVideoPermittedAsync() => await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync();
+        private async Task<bool> TakingPhotoPermittedAsync()
+        {
+            if (Device.RuntimePlatform == Device.iOS)
+                return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync();
+
+            else if (Device.RuntimePlatform == Device.Android)
+                return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
+
+            else
+                return false;
+        }
+        private async Task<bool> TakingVideoPermittedAsync()
+        {
+            if (Device.RuntimePlatform == Device.iOS)
+                return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync();
+
+            else if (Device.RuntimePlatform == Device.Android)
+                return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
+
+            else
+                return false;
+        }
         #endregion
 
         #region Events

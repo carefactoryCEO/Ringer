@@ -14,7 +14,7 @@ namespace Ringer.Core
         #endregion
 
         #region public properties
-        public bool IsConnected { get; set; }
+        public bool IsConnected => HubConnection.State == HubConnectionState.Connected;
         public Dictionary<string, string> ActiveChannels { get; } = new Dictionary<string, string>();
         public HubConnection HubConnection { get; private set; }
         #endregion
@@ -44,7 +44,7 @@ namespace Ringer.Core
         #endregion
 
         #region Private Mothods
-        private Task HubConnection_Closed(Exception err)
+        private async Task HubConnection_Closed(Exception err)
         {
             Closed?.Invoke(
                     this,
@@ -52,17 +52,28 @@ namespace Ringer.Core
 
             ActiveChannels.Clear();
 
-            IsConnected = false;
+            do
+            {
+                await Task.Delay(333);
 
-            return Task.CompletedTask;
+                try
+                {
+                    Init(null, true);
+                    await ConnectAsync();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+
+            } while (!IsConnected);
+
         }
         private Task HubConnection_Reconnecting(Exception err)
         {
             Reconnecting?.Invoke(
                    this,
                    new ChatEventArgs($"Service.Reconnecting...{DateTime.Now} {err.Message}", string.Empty));
-
-            IsConnected = false;
 
             return Task.CompletedTask;
         }
@@ -71,8 +82,6 @@ namespace Ringer.Core
             Reconnected?.Invoke(
                     this,
                     new ChatEventArgs($"Service.Reconnected...{DateTime.Now} {message}", string.Empty));
-
-            IsConnected = true;
 
             return Task.CompletedTask;
         }
@@ -97,15 +106,16 @@ namespace Ringer.Core
             if (IsConnected)
                 return;
 
-            // Connection after disconnection
-            // hubConnection is disposed when disconnected
-            if (HubConnection == null)
+            try
             {
-                Init(null, false);
+                await HubConnection.StartAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("Connection Failed: " + ex.Message);
             }
 
-            await HubConnection.StartAsync();
-            IsConnected = true;
+            
         }
         public async Task DisconnectAsync()
         {
@@ -121,7 +131,6 @@ namespace Ringer.Core
             }
 
             ActiveChannels.Clear();
-            IsConnected = false;
         }
         public async Task LeaveChannelAsync(string group, string userName)
         {

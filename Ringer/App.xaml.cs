@@ -14,7 +14,7 @@ namespace Ringer
         #region Public Properties
         public SignalRService SignalR { get; }
         public ObservableCollection<Message> Messages { get; }
-        public bool IsSignalRConnected => SignalR.HubConnection.State == HubConnectionState.Connected;
+        public bool IsSignalRConnected => SignalR.IsConnected;
         public bool IsProcessingSignalR { get; set; } = false;
         #endregion
 
