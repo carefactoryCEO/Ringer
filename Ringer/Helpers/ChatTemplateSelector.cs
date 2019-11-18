@@ -1,4 +1,4 @@
-﻿using Ringer.Models;
+﻿using Ringer.Core.Models;
 using Ringer.Views.Cells;
 using Xamarin.Forms;
 

@@ -1,9 +1,8 @@
 ﻿namespace Ringer.Core.EventArgs
 {
-    public class ChatEventArgs : IChatEventArgs
+    public class SignalREventArgs : IChatEventArgs
     {
-
-        public ChatEventArgs(string message, string user)
+        public SignalREventArgs(string message, string user)
         {
             Message = message;
             User = user;

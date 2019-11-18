@@ -1,4 +1,5 @@
-﻿using Ringer.Core;
+﻿using Microsoft.AspNetCore.SignalR.Client;
+using Ringer.Core;
 using System;
 using System.Threading.Tasks;
 
@@ -25,11 +26,12 @@ namespace Ringer.ConsoleApp
             //service.Init(url, true);
 
 
-            service.Init("ringerchat.azurewebsites.net", true);
+            //service.Init("ringerchat.azurewebsites.net", true);
+            service.Init("localhost:44389", name, room);
 
             await service.ConnectAsync();
             Console.WriteLine("-----------------------------------");
-            Console.WriteLine("       OK, 링거 호스트 접속");
+            Console.WriteLine($"       OK, 링거 호스트 접속({service.HubConnection.ConnectionId})");
 
             await JoinRoom();
             
@@ -54,16 +56,23 @@ namespace Ringer.ConsoleApp
                     await JoinRoom();
                 }
 
+                else if (text == "test")
+                {
+                    var result = await service.HubConnection.InvokeAsync<string>("ReadyToDisconnect", name);
+
+                    Console.WriteLine(result);
+                }
+
                 else
                 {
-                    await service.SendMessageAsync(room, name, text);
+                    await service.SendMessageToGroupAsync(room, name, text);
                 }
 
             } while (keepGoing);
 
         }
 
-        private static void Service_OnEntered(object sender, Core.EventArgs.ChatEventArgs e)
+        private static void Service_OnEntered(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.User == name)
                 return;
@@ -72,7 +81,7 @@ namespace Ringer.ConsoleApp
 
         }
 
-        private static void Service_On(object sender, Core.EventArgs.ChatEventArgs e)
+        private static void Service_On(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.User == name)
                 return;
@@ -81,7 +90,7 @@ namespace Ringer.ConsoleApp
 
         }
 
-        private static void Service_OnConnectionClosed(object sender, Core.EventArgs.ChatEventArgs e)
+        private static void Service_OnConnectionClosed(object sender, Core.EventArgs.SignalREventArgs e)
         {
             Console.WriteLine($"Disconnected at {DateTime.Now}");
         }
@@ -94,7 +103,7 @@ namespace Ringer.ConsoleApp
             Console.WriteLine("-----------------------------------");
         }
 
-        private static void Service_OnReceivedMessage(object sender, Core.EventArgs.ChatEventArgs e)
+        private static void Service_OnReceivedMessage(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.User == name)
                 return;

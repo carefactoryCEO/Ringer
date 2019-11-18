@@ -2,7 +2,8 @@
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
-using Ringer.Models;
+using Ringer.Core;
+using Ringer.Core.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,38 +17,19 @@ namespace Ringer.ViewModels
     class ChatPageViewModel : INotifyPropertyChanged
     {
         #region private members
-        private App app;
-        private bool isBusy = false;
-        #endregion
-
-        #region Public Properties
-        public ObservableCollection<Message> Messages => app.Messages;
-        public string TextToSend { get; set; }
-        public CameraAction CameraAction { get; } = new CameraAction();
-        public double NavBarHeight { get; set; } = 0;
-        public string NavBarTitle => "링거 상담실";
-        #endregion
-
-        #region Commands
-        public ICommand SendMessageCommand { get; }
-        public ICommand CameraCommand { get; }
-        public ICommand GoBackCommand { get; }
-        public ICommand ShowVidyoCommand { get; }
+        SignalRService signalR;
+        string group = (string)Application.Current.Properties["Group"];
+        string user = (string)Application.Current.Properties["User"];
         #endregion
 
         #region Constructor
         public ChatPageViewModel()
         {
-            if (DesignMode.IsDesignModeEnabled)
-                return;
-
-            app = Xamarin.Forms.Application.Current as App;
+            signalR = DependencyService.Resolve<SignalRService>();
             
             SendMessageCommand  = new Command(async () => await SendMessage());
             GoBackCommand       = new Command(async () => await Shell.Current.Navigation.PopAsync());
-            ShowVidyoCommand    = new Command(async () => {
-                await Shell.Current.GoToAsync("vidyopage");
-                });
+            ShowVidyoCommand    = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
             CameraCommand       = new Command<string>(async actionString => await ProcessCameraAction(actionString));
         }
         #endregion
@@ -55,29 +37,18 @@ namespace Ringer.ViewModels
         #region Private Methods
         private async Task SendMessage()
         {
-            if (string.IsNullOrEmpty(TextToSend) || isBusy)
+            if (string.IsNullOrEmpty(TextToSend))
                 return;
-
-            if (!app.IsSignalRConnected)
-            {
-                await Shell.Current.DisplayAlert("Not connected", "Please connect to the server and try again.", "OK");
-                return;
-            }
 
             try
             {
-                isBusy = true;
-                await app.SignalR.SendMessageAsync((string)app.Properties["Group"], (string)app.Properties["User"], TextToSend);
+                await signalR.SendMessageToGroupAsync(group, user, TextToSend);
 
                 TextToSend = string.Empty;
             }
             catch (Exception ex)
             {
-                app.AddMessage($"vs.SendMessage:Send failed: {ex.Message}", String.Empty);
-            }
-            finally
-            {
-                isBusy = false;
+                signalR.AddLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", String.Empty);
             }
         }
 
@@ -88,7 +59,7 @@ namespace Ringer.ViewModels
                 CrossPermissions.Current.OpenAppSettings();
             }
 
-            // 사진 촬영
+            #region taking photo
             if (action == CameraAction.TakingPhoto)
             {
                 if (await TakingPhotoPermittedAsync())
@@ -115,7 +86,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        app.AddMessage($"{action}:{file.Path}", "camera");
+                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -126,8 +97,9 @@ namespace Ringer.ViewModels
                     }
                 }
             }
+            #endregion
 
-            // 비디오 찍기
+            #region taking video
             if (action == CameraAction.TakingVideo)
             {
                 if (await TakingVideoPermittedAsync())
@@ -150,7 +122,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        app.AddMessage($"{action}:{file.Path}", "camera");
+                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -160,8 +132,9 @@ namespace Ringer.ViewModels
                     }
                 }
             }
+            #endregion
 
-            // 사진 불러오기
+            #region attaching photo
             if (action == CameraAction.AttachingPhoto)
             {
                 if (AttachingPhotoPermitted())
@@ -182,7 +155,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        app.AddMessage($"{action}:{file.Path}", "camera");
+                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -192,8 +165,9 @@ namespace Ringer.ViewModels
                     }
                 }
             }
+            #endregion
 
-            // 비디오 불러오기
+            #region attaching video            
             if (action == CameraAction.AttachingVideo)
             {
                 if (AttachingVideoPermitted())
@@ -212,7 +186,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        app.AddMessage($"{action}:{file.Path}", "camera");
+                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -222,6 +196,7 @@ namespace Ringer.ViewModels
                     }
                 }
             }
+            #endregion
         }
 
         private async Task<bool> CheckPhotosPermissionsAsync()
@@ -380,6 +355,21 @@ namespace Ringer.ViewModels
             else
                 return false;
         }
+        #endregion
+
+        #region Public Properties
+        public string TextToSend { get; set; }
+        public CameraAction CameraAction { get; } = new CameraAction();
+        public double NavBarHeight { get; set; } = 0;
+        public string NavBarTitle => "링거 상담실";
+        public ObservableCollection<Message> Messages => signalR.Messages;
+        #endregion
+
+        #region public Commands
+        public ICommand SendMessageCommand { get; }
+        public ICommand CameraCommand { get; }
+        public ICommand GoBackCommand { get; }
+        public ICommand ShowVidyoCommand { get; }
         #endregion
 
         #region Events

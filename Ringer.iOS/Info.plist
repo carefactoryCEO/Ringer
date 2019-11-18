@@ -19,8 +19,6 @@
 	<string>8.0</string>
 	<key>CFBundleDisplayName</key>
 	<string>Ringer</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.airdoc.Ringer</string>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>UILaunchStoryboardName</key>
@@ -53,5 +51,7 @@
 	<string>UIStatusBarStyleLightContent</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>CFBundleIdentifier</key>
+	<string>kr.co.carefactory.ringer</string>
 </dict>
 </plist>
