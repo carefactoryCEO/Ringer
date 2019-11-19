@@ -344,3 +344,4 @@ healthchecksdb
 .DS_Store
 Ringer/.DS_Store
 *.DS_Store
+*.ipa
