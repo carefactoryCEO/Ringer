@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "643999327356",
+    "firebase_url": "https://ringer-e8237.firebaseio.com",
+    "project_id": "ringer-e8237",
+    "storage_bucket": "ringer-e8237.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643999327356:android:f4fd35744b95d340bb55f9",
+        "android_client_info": {
+          "package_name": "kr.co.carefactory.ringer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "643999327356-mvj04rotgbuaqdm4o47d4etfs439mscp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqw8VTBYQJLZ7haZhLx6-2bnf9AAdNdTo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "643999327356-mvj04rotgbuaqdm4o47d4etfs439mscp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

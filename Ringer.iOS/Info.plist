@@ -53,5 +53,9 @@
 	<false/>
 	<key>CFBundleIdentifier</key>
 	<string>kr.co.carefactory.ringer</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
