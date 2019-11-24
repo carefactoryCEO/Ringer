@@ -14,27 +14,23 @@ namespace Ringer.ConsoleApp
 
         public static async Task Main(string[] args)
         {
-            name = "Ringer" + random.Next(1,100);
+            name = "Ringer" + random.Next(1, 100);
 
             service = new SignalRService();
             service.OnReceivedMessage += Service_OnReceivedMessage;
             service.Closed += Service_OnConnectionClosed;
             service.OnEntered += Service_OnEntered;
 
-            //Console.WriteLine("url?");
-            //string url = Console.ReadLine();
-            //service.Init(url, true);
-
-
-            //service.Init("ringerchat.azurewebsites.net", true);
-            service.Init("localhost:44389", name, room);
+            //service.Init("ringerchat.azurewebsites.net", name, room);
+            service.Init("localhost", name, room);
 
             await service.ConnectAsync();
+
             Console.WriteLine("-----------------------------------");
             Console.WriteLine($"       OK, 링거 호스트 접속({service.HubConnection.ConnectionId})");
 
             await JoinRoom();
-            
+
 
             var keepGoing = true;
             do

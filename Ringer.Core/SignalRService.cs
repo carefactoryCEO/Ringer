@@ -38,18 +38,26 @@ namespace Ringer.Core
         /// </summary>
         /// <param name="urlRoot"></param>
         /// <param name="useHttps"></param>
-        public void Init(string urlRoot, string user, string group)
+        public void Init(string urlRoot, string user, string group, bool useHttps = false)
         {
             this.user = user;
             this.group = group;
-            //var port = (urlRoot == "localhost" || urlRoot == "10.0.2.2") ? (useHttps ? ":5001" : ":5000") :string.Empty;
-            //var url = $"http{(useHttps ? "s" : string.Empty)}://{urlRoot}{port}/hubs/chat";
-            var url = $"https://{urlRoot}/hubs/chat";
+
+
+
+            var port = (urlRoot == "localhost" || urlRoot == "10.0.2.2") ? (useHttps ? ":5001" : ":5000") : string.Empty;
+            var url = $"http{(useHttps ? "s" : string.Empty)}://{urlRoot}{port}/hubs/chat";
+
+
+            //var url = $"https://{urlRoot}/hubs/chat";
+            Console.WriteLine("---------------------");
+            Console.WriteLine(url);
+            Console.WriteLine("---------------------");
 
             // Build HubConnection
             HubConnection = new HubConnectionBuilder()
                 .WithUrl(url)
-                 //.WithAutomaticReconnect()
+                .WithAutomaticReconnect() // wait 0,2,10,30 seconds and try to reconnect
                 .Build();
 
             // Handle Hub connection events
@@ -65,7 +73,12 @@ namespace Ringer.Core
         #endregion
 
         #region public properties
+
         public bool IsConnected => HubConnection.State == HubConnectionState.Connected;
+        public bool IsConnecting => HubConnection.State == HubConnectionState.Connecting;
+        public bool IsDisconnected => HubConnection.State == HubConnectionState.Disconnected;
+        public bool IsReconnecting => HubConnection.State == HubConnectionState.Reconnecting;
+
         public Dictionary<string, string> ActiveChannels { get; }
         public HubConnection HubConnection { get; private set; }
         public ObservableCollection<Message> Messages { get; set; }
