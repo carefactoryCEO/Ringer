@@ -8,6 +8,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
+using System.Reflection;
 
 namespace Ringer.ViewModels
 {

@@ -1,42 +1,34 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Ringer.Core;
+﻿using Ringer.Core;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text;
 using Ringer.Core.Models;
+using Ringer.Core.EventArgs;
 
 namespace Ringer.ConsoleApp
 {
     public class Program
     {
-        static SignalRService messagingService;
-        static string room = "Xamarin";
-        static string name;
-        static Random random = new Random();
+        #region members
+        static readonly string hubUrl = "https://ringerhub.azurewebsites.net/hubs/chat";
+        static readonly string tokenUrl = "https://ringerhub.azurewebsites.net/auth/login";
+        static readonly MessagingService messagingService = new MessagingService();
 
+        static readonly string name = "admin";
+        static readonly DateTime birthDate = DateTime.Parse("11-11-11");
+        static readonly GenderType gender = GenderType.Female;
+
+        static readonly string room = "Xamarin";
         static readonly HttpClient client = new HttpClient();
+        #endregion
 
         public static async Task Main(string[] args)
         {
             #region Login
 
-            Console.WriteLine("이름? : ");
-            name = Console.ReadLine();
-
-            Console.WriteLine("생년월일? : ");
-            var bdString = Console.ReadLine();
-            DateTime birthDate = DateTime.Parse(bdString);
-
-            Console.WriteLine("성별? 여자: 1, 남자: 2 ");
-            var genderString = Console.ReadLine();
-            GenderType gender = genderString == "1" ? GenderType.Female : GenderType.Male;
-
-            //name = "신모범";
-            //var birthDate = DateTime.Parse("76-07-21");
-            //var gender = GenderType.Male;
-
+            // get json
             var loginInfo = JsonSerializer.Serialize(new LoginInfo
             {
                 Name = name,
@@ -44,33 +36,51 @@ namespace Ringer.ConsoleApp
                 Gender = gender,
             });
 
-
             // get Token
             HttpResponseMessage response = await client.PostAsync(
-                "http://localhost:5000/auth/login",
+                tokenUrl,
                 new StringContent(loginInfo, Encoding.UTF8, "application/json"));
 
             var token = await response.Content.ReadAsStringAsync();
 
-            Console.WriteLine(token);
+            Console.WriteLine($"Got Token: " + token);
+
             #endregion
 
-            messagingService = new SignalRService();
-            messagingService.OnReceivedMessage += Service_OnReceivedMessage;
-            messagingService.Closed += Service_OnConnectionClosed;
+            #region Init and Connect to SignalR
+
+            // Subscribe hubconnection messages
+            messagingService.Connected += Service_Connected;
+            messagingService.Closed += Service_Closed;
+            messagingService.Reconnecting += Service_Reconnecting;
+            messagingService.Reconnected += Service_Reconnected;
+
+            messagingService.OnMessageReceived += Service_OnMessageReceived;
             messagingService.OnEntered += Service_OnEntered;
+            messagingService.OnLeft += Service_OnLeft;
 
-            //service.Init("ringerchat.azurewebsites.net", name, room);
-            messagingService.Init("localhost", name, room, token: token);
+            // Initialize the messaging service
+            messagingService.Init(hubUrl, token);
 
+            // Connect to hub
             await messagingService.ConnectAsync();
 
             Console.WriteLine("-----------------------------------");
-            Console.WriteLine($"       OK, 링거 호스트 접속({messagingService.HubConnection.ConnectionId})");
+            Console.WriteLine($"OK, {hubUrl} 접속({messagingService.HubConnection.ConnectionId})");
+            Console.WriteLine("-----------------------------------");
 
-            await JoinRoom();
+            #endregion
 
+            #region Choose and join the room
 
+            // TODO: 콘솔은 admin이므로 현재 열려 있는 방의 목록을 보여준다.
+            // TODO: 방에 입장.
+
+            await messagingService.JoinRoomAsync(room, name);
+
+            #endregion
+
+            #region Chat
             var keepGoing = true;
             do
             {
@@ -83,65 +93,65 @@ namespace Ringer.ConsoleApp
 
                 else if (text == "leave")
                 {
-                    await messagingService.LeaveChannelAsync(room, name);
+                    await messagingService.LeaveRoomAsync(room, name);
 
+                    // TODO: 방에서 나와 대기실 -> 방 목록 보여준다.
                     Console.WriteLine("다시 접속할까요?");
                     Console.ReadLine();
-
-                    await JoinRoom();
                 }
 
                 else
                 {
-                    await messagingService.SendMessageToGroupAsync(room, name, text);
+                    await messagingService.SendMessageToRoomAsync(room, name, text);
                 }
 
             } while (keepGoing);
-
+            #endregion
         }
 
-        private static void Service_OnEntered(object sender, Core.EventArgs.SignalREventArgs e)
+        private static void Service_Connected(object sender, SignalREventArgs e)
         {
-            if (e.User == name)
-                return;
-
-            Console.WriteLine($"{e.Message}");
-
+            Console.WriteLine(e.Message);
         }
 
-        private static void Service_On(object sender, Core.EventArgs.SignalREventArgs e)
+        private static void Service_Closed(object sender, SignalREventArgs e)
         {
-            if (e.User == name)
-                return;
-
-            Console.WriteLine($"{e.Message}");
-
+            Console.WriteLine(e.Message);
         }
 
-        private static void Service_OnConnectionClosed(object sender, Core.EventArgs.SignalREventArgs e)
+        private static void Service_Reconnecting(object sender, SignalREventArgs e)
         {
-            Console.WriteLine($"Disconnected at {DateTime.Now}");
+            Console.WriteLine(e.Message);
         }
 
-        private static async Task JoinRoom()
+        private static void Service_Reconnected(object sender, SignalREventArgs e)
         {
-            await messagingService.JoinChannelAsync(room, name);
-            Console.WriteLine("-----------------------------------");
-            Console.WriteLine("         링거 서비스 채팅             ");
-            Console.WriteLine("-----------------------------------");
+            Console.WriteLine(e.Message);
         }
 
-        private static void Service_OnReceivedMessage(object sender, Core.EventArgs.SignalREventArgs e)
+        private static void Service_OnMessageReceived(object sender, SignalREventArgs e)
         {
             if (e.User == name)
                 return;
 
             Console.WriteLine($"{e.User}: {e.Message}");
         }
-    }
 
-    internal class Payload
-    {
-        public string Name { get; set; }
+        private static void Service_OnEntered(object sender, SignalREventArgs e)
+        {
+            if (e.User == name)
+                return;
+
+            Console.WriteLine($"{e.Message}");
+        }
+
+
+        private static void Service_OnLeft(object sender, SignalREventArgs e)
+        {
+            if (e.User == name)
+                return;
+
+            Console.WriteLine($"{e.Message}");
+        }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
 using Device = Xamarin.Forms.Device;
 using Xamarin.Essentials;
+using Ringer.Helpers;
 
 namespace Ringer
 {
@@ -16,10 +17,8 @@ namespace Ringer
         public static string Token;
 
         #region private members
-        string user;
-        string group;
         string chatUrl;
-        SignalRService signalR;
+        MessagingService messagingService;
 
         #endregion
 
@@ -30,35 +29,30 @@ namespace Ringer
 
             MainPage = new AppShell();
 
-            Properties["User"] = user = Device.RuntimePlatform + "-" + new Random().Next(1, 100).ToString();
-            Properties["Group"] = group = "Xamarin";
-            //Properties["ChatURL"] = chatUrl = "ringerchat.azurewebsites.net"; // debug: localhost:5001
-
-#if DEBUG
-            Properties["ChatURL"] = chatUrl = DeviceInfo.Platform == DevicePlatform.Android ? "10.0.2.2" : "localhost";
-            var https = false;
-#else
-            Properties["ChatURL"] = chatUrl = "ringerchat.azurewebsites.net";
-            var https = true;
-#endif
-
             #region prepare signalR
-            DependencyService.Register<SignalRService>();
+            DependencyService.Register<MessagingService>();
 
-            signalR = DependencyService.Resolve<SignalRService>();
+            messagingService = DependencyService.Resolve<MessagingService>();
 
-            signalR.Init(chatUrl, user, group, https);
+            messagingService.Reconnected += async (s, e) => await messagingService.JoinRoomAsync("Xamarin", Settings.Name);
 
-            // Connection events
-            signalR.Closed += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
-            signalR.Reconnecting += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
-            signalR.Reconnected += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
+            //messagingService.Init(urlRoot: chatUrl, useHttps: https);
 
-            // Message events
-            signalR.OnEntered += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
-            signalR.OnLeft += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
-            signalR.OnReceivedMessage += (s, e) => signalR.AddLocalMessage(e.Message, e.User);
+            //// Connection events
+            //messagingService.Closed += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+            //messagingService.Reconnecting += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+            //messagingService.Reconnected += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+
+            //// Message events
+            //messagingService.OnEntered += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+            //messagingService.OnLeft += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+            //messagingService.OnReceivedMessage += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
             #endregion
+        }
+
+        private void MessagingService_Reconnected(object sender, Core.EventArgs.SignalREventArgs e)
+        {
+            throw new NotImplementedException();
         }
         #endregion
 
@@ -80,6 +74,9 @@ namespace Ringer
                 Debug.WriteLine("-------------------------");
                 Debug.WriteLine(id);
                 Debug.WriteLine("-------------------------");
+
+                // Set Device Id
+                Settings.DeviceId = id?.ToString();
             }
             #endregion
 
@@ -87,38 +84,27 @@ namespace Ringer
 
             if (DesignMode.IsDesignModeEnabled)
                 return;
-
-            await signalR.ConnectAsync();
-            await signalR.JoinChannelAsync(group, user);
         }
 
         protected override void OnSleep()
         {
             base.OnSleep();
 
-            //Device.StartTimer(TimeSpan.FromSeconds(1), () =>
-            //{
-            //    Debug.WriteLine(signalR.HubConnection.State);
-            //    return true;
-            //});
-
             Debug.WriteLine("OnSleep");
+
+            // TODO: 이 디바이스의 IsConnected를 false로 만든다.
+
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Potential Code Quality Issues", "RECS0165:Asynchronous methods should return a Task instead of void", Justification = "<Pending>")]
-        protected override async void OnResume()
+        protected override void OnResume()
         {
-
             base.OnResume();
 
             Debug.WriteLine("OnResume");
 
-            if (DesignMode.IsDesignModeEnabled)
-                return;
-
-            await signalR.ConnectAsync();
-            await signalR.JoinChannelAsync(group, user);
-
+            // TODO: 1. connection을 확인하고
+            //       2. pending message를 다운받는다.
         }
         #endregion
     }

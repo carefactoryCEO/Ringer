@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Ringer.Core.Models
 {
@@ -32,13 +31,46 @@ namespace Ringer.Core.Models
 
         public ICollection<Ticket> Tickets { get; set; }
 
+        public ICollection<MobileDevice> Devices { get; set; }
+
+        public ICollection<Room> Rooms { get; set; }
     }
 
-    public enum GenderType
+    public class Room
     {
-        [Display(Name = "여자")]
-        Female,
-        [Display(Name = "남자")]
-        Male
+        public int ID { get; set; }
+
+        public string Name { get; set; }
+
+        //public ICollection<User> Users { get; set; }
+
+        public ICollection<MobileDevice> Devices { get; set; }
+    }
+
+    public class MobileDevice
+    {
+        public string ID { get; set; }
+
+        public string Connection { get; set; }
+
+        [Required]
+        public OSType OS { get; set; }
+
+        [Required]
+        public User Owner { get; set; }
+
+        public bool IsConnected => Connection != null;
+    }
+
+    public class Message
+    {
+        public string Content { get; set; }
+        public string Sender { get; set; } // sender
+    }
+
+    public enum OSType
+    {
+        iOS,
+        Android
     }
 }

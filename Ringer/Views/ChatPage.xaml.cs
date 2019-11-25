@@ -1,11 +1,8 @@
-﻿using Ringer.ViewModels;
-using System;
-using System.Diagnostics;
+﻿using Ringer.Helpers;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 using Xamarin.Forms.Xaml;
-using Ringer;
 
 namespace Ringer.Views
 {
@@ -14,6 +11,7 @@ namespace Ringer.Views
     {
         #region Private Members
         bool initial = true;
+
         #endregion
 
         #region Constructor
@@ -38,5 +36,11 @@ namespace Ringer.Views
             NavBarRow.Height = topInset + 40;
         }
         #endregion
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            await ChatPageVM.CheckLogInAsync();
+        }
     }
 }

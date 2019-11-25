@@ -1,8 +1,8 @@
 ﻿namespace Ringer.Core.Models
 {
-    public class Message
+    class MyClass1
     {
-        public string Text { get; set; }
-        public string User { get; set; } // sender
+
     }
 }
+

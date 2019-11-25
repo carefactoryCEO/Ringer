@@ -57,5 +57,7 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSAllowsArbitraryLoads</key>
+	<string>YES</string>
 </dict>
 </plist>
