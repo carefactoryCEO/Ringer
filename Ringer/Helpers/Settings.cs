@@ -5,6 +5,12 @@ namespace Ringer.Helpers
 {
     public static class Settings
     {
+        public static string Token
+        {
+            get => Preferences.Get(nameof(Token), null);
+            set => Preferences.Set(nameof(Token), value);
+        }
+
         public static string AppCenterAndroid = "AC_ANDROID";
 
 #if DEBUG

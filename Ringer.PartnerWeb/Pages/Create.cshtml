@@ -1,0 +1,53 @@
+@page
+@model Ringer.PartnerWeb.Pages.CreateModel
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create</h1>
+
+<h4>User</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="RingerUser.Name" class="control-label"></label>
+                <input asp-for="RingerUser.Name" class="form-control" />
+                <span asp-validation-for="RingerUser.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RingerUser.BirthDate" class="control-label"></label>
+                <input asp-for="@Model.BirthDateString" class="form-control" />
+                <span asp-validation-for="@Model.BirthDateString" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RingerUser.Gender" class="control-label"></label><br />
+                @foreach (var gender in Model.GenderTypes)
+                {
+                    <input type="radio" asp-for="Gender" value="@gender" /> @gender;
+                }
+                <span asp-validation-for="RingerUser.Gender" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RingerUser.PhoneNumber" class="control-label"></label>
+                <input asp-for="RingerUser.PhoneNumber" class="form-control" />
+                <span asp-validation-for="RingerUser.PhoneNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

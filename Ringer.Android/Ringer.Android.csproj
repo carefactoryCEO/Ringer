@@ -41,6 +41,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+    <AndroidSupportedAbis>armeabi-v7a;arm64-v8a;x86</AndroidSupportedAbis>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Android" />
@@ -279,7 +280,7 @@
   <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Ringer\Ringer.csproj">
-      <Project>{D0DDC0AA-358C-47F4-9214-10691A97E1EF}</Project>
+      <Project>{B51282D7-4B5A-45F9-8D1C-4107065486F0}</Project>
       <Name>Ringer</Name>
     </ProjectReference>
   </ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Ringer.Backend.Hubs
@@ -23,6 +24,8 @@ namespace Ringer.Backend.Hubs
         public async Task SendMessageGroup(string group, string user, string message)
         {
             await Clients.Group(group).SendAsync("ReceiveMessage", user, message);
+            var x = Context.User;
+            var c = Context;
         }
 
         public async Task SendMessageToUser(string userid, string message)
@@ -30,30 +33,22 @@ namespace Ringer.Backend.Hubs
             await Clients.User(userid).SendAsync("ReceivePrivateMessage", message);
         }
         /// <summary>
-        /// Hub Calls this method when new connection is established
+        /// Hub Calls this method when a new connection is established
         /// </summary>
         /// <returns></returns>
-        public override Task OnConnectedAsync()
-        {
-            string connectionId = Context.ConnectionId;
-            System.Security.Claims.ClaimsPrincipal user = Context.User;
-            System.Threading.CancellationToken cancellationToken = Context.ConnectionAborted;
-
-            return base.OnConnectedAsync();
-        }
+        //public override Task OnConnectedAsync()
+        //{
+        //    return base.OnConnectedAsync();
+        //}
 
         /// <summary>
-        /// 
+        /// Hub calls this method when a device is disconnected
         /// </summary>
         /// <param name="exception"></param>
         /// <returns></returns>
-        public override Task OnDisconnectedAsync(Exception exception)
-        {
-            string connectionId = Context.ConnectionId;
-            System.Security.Claims.ClaimsPrincipal user = Context.User;
-            System.Threading.CancellationToken cancellationToken = Context.ConnectionAborted;
-
-            return base.OnDisconnectedAsync(exception);
-        }
+        //public override Task OnDisconnectedAsync(Exception exception)
+        //{
+        //    return base.OnDisconnectedAsync(exception);
+        //}
     }
 }

@@ -5,6 +5,7 @@ var userInput = document.getElementById("userInput");
 var messageInput = document.getElementById("messageInput");
 
 var url = "https://localhost:5001/hubs/chat"; // local
+//var url = "localhost";
 //var url = "https://ringerchat.azurewebsites.net/hubs/chat"; // azure:jhylmb@naver.com
 
 console.error(url);
@@ -15,7 +16,7 @@ var user = userInput.value = "Web" + getInt();
 //Disable send button until connection is established
 sendButton.disabled = true;
 
-// init
+// init 
 var connection = new signalR.HubConnectionBuilder().withUrl(url).build();
 
 connection.on("ReceiveMessage", function (user, message) {
