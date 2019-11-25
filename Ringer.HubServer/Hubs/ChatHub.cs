@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using Ringer.HubServer.Data;
 using System;
 using System.Diagnostics;
 using System.Security.Claims;
@@ -10,6 +12,15 @@ namespace Ringer.Backend.Hubs
     [Authorize]
     public class ChatHub : Hub
     {
+        private string Name => Context.User?.FindFirst(ClaimTypes.Name)?.Value;
+
+        private readonly RingerDbContext _dbContext;
+
+        public ChatHub(RingerDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
+
         public async Task AddToGroup(string group, string user)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, group);
@@ -28,26 +39,25 @@ namespace Ringer.Backend.Hubs
         {
             await Clients.Group(group).SendAsync("ReceiveMessage", sender, message);
 
-            var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
+            logMessage = $"{Name}({Context.UserIdentifier}) sent: {message}";
 
-            Debug.WriteLine($"{email}({Context.UserIdentifier}) sent: {message}");
+            Debug.WriteLine(logMessage);
         }
 
         public override Task OnDisconnectedAsync(Exception exception)
         {
-
-            var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
-
-            Debug.WriteLine(exception?.Message);
-            Debug.WriteLine($"{email}({Context.UserIdentifier}) disconnected");
+            logMessage = $"{Name}({Context.UserIdentifier}) disconnected";
 
             return base.OnDisconnectedAsync(exception);
         }
 
+        string logMessage;
+
         public override Task OnConnectedAsync()
         {
-            var email = Context.User?.FindFirst(ClaimTypes.Email)?.Value;
-            Debug.WriteLine($"{email}({Context.UserIdentifier}) Connected");
+
+            logMessage = $"{Name}({Context.UserIdentifier}) Connected";
+            Debug.WriteLine(logMessage);
 
             return base.OnConnectedAsync();
         }

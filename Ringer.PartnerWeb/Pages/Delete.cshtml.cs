@@ -22,8 +22,13 @@ namespace Ringer.PartnerWeb.Pages
         [BindProperty]
         public User User { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int id)
+        public async Task<IActionResult> OnGetAsync(int? id)
         {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
 
             User = await _context.Users.FirstOrDefaultAsync(m => m.ID == id);
 
@@ -34,7 +39,7 @@ namespace Ringer.PartnerWeb.Pages
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(string id)
+        public async Task<IActionResult> OnPostAsync(int? id)
         {
             if (id == null)
             {

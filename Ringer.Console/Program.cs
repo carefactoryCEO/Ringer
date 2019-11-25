@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text;
+using Ringer.Core.Models;
 
 namespace Ringer.ConsoleApp
 {
@@ -19,27 +20,40 @@ namespace Ringer.ConsoleApp
 
         public static async Task Main(string[] args)
         {
-            name = "console-" + random.Next(1, 100);
+            #region Login
 
-            var loginInfo = JsonSerializer.Serialize(new
+            Console.WriteLine("이름? : ");
+            name = Console.ReadLine();
+
+            Console.WriteLine("생년월일? : ");
+            var bdString = Console.ReadLine();
+            DateTime birthDate = DateTime.Parse(bdString);
+
+            Console.WriteLine("성별? 여자: 1, 남자: 2 ");
+            var genderString = Console.ReadLine();
+            GenderType gender = genderString == "1" ? GenderType.Female : GenderType.Male;
+
+            //name = "신모범";
+            //var birthDate = DateTime.Parse("76-07-21");
+            //var gender = GenderType.Male;
+
+            var loginInfo = JsonSerializer.Serialize(new LoginInfo
             {
-                Email = "test@carefactory.co.kr",
-                Password = "some-password",
-                DeviceType = "console",
-                LoginType = "Password",
-                Name = name
+                Name = name,
+                BirthDate = birthDate,
+                Gender = gender,
             });
 
 
             // get Token
-            var response = await client.PostAsync(
+            HttpResponseMessage response = await client.PostAsync(
                 "http://localhost:5000/auth/login",
                 new StringContent(loginInfo, Encoding.UTF8, "application/json"));
 
             var token = await response.Content.ReadAsStringAsync();
 
             Console.WriteLine(token);
-
+            #endregion
 
             messagingService = new SignalRService();
             messagingService.OnReceivedMessage += Service_OnReceivedMessage;
@@ -75,13 +89,6 @@ namespace Ringer.ConsoleApp
                     Console.ReadLine();
 
                     await JoinRoom();
-                }
-
-                else if (text == "test")
-                {
-                    var result = await messagingService.HubConnection.InvokeAsync<string>("ReadyToDisconnect", name);
-
-                    Console.WriteLine(result);
                 }
 
                 else

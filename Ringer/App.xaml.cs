@@ -2,7 +2,6 @@
 using Ringer.Core;
 using System.Diagnostics;
 using System;
-using System.Threading.Tasks;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
@@ -14,11 +13,14 @@ namespace Ringer
 {
     public partial class App : Application
     {
+        public static string Token;
+
         #region private members
         string user;
         string group;
         string chatUrl;
         SignalRService signalR;
+
         #endregion
 
         #region Constructor

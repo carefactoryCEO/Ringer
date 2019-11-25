@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Ringer.Backend.Hubs;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Ringer.HubServer.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace Ringer.HubServer
 {
@@ -23,6 +25,9 @@ namespace Ringer.HubServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<RingerDbContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
+
             // security key
             string securityKey = "this_is_super_long_security_key_for_ringer_service";
 

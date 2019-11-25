@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Ringer.Core.Models;
+using Ringer.HubServer.Data;
+using Ringer.HubServer.Extensions;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,39 +12,25 @@ namespace Ringer.HubServer.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> LoginAsync(LoginInfo loginInfo)
+        private readonly RingerDbContext _dbContext;
+
+        public AuthController(RingerDbContext dbContext)
         {
-            // TODO: compare to server
-            var user = new User
-            {
-                Name = loginInfo.Name,
-                Email = loginInfo.Email,
-                Password = loginInfo.Password
-            };
+            _dbContext = dbContext;
+        }
 
-            var securityKey = "this_is_super_long_security_key_for_ringer_service";
-            var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey));
-            var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.ID.ToString()), // Context.UserIdentifier
-                new Claim(ClaimTypes.Email, user.Email)
-            };
+        [HttpPost("login")]
+        public ActionResult<string> Login(LoginInfo loginInfo)
+        {
+            User user = _dbContext.Users.FirstOrDefault(u =>
+                u.Name == loginInfo.Name &&
+                u.BirthDate.Date == loginInfo.BirthDate.Date &&
+                u.Gender == loginInfo.Gender
+            );
 
-            // create token
-            var token = new JwtSecurityToken
-                (
-                    issuer: "Ringer",
-                    audience: "ringer.co.kr",
-                    expires: DateTime.UtcNow.AddHours(1),
-                    signingCredentials: signingCredentials,
-                    claims: claims
-                );
+            // TODO: DB에서 일치하는 user를 찾지 못했을 때 새 user로 등록
 
-            await Task.Delay(10);
-
-            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+            return Ok(user.JwtToken());
         }
     }
 

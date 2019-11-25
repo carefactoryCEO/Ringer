@@ -348,3 +348,5 @@ Ringer/.DS_Store
 Ringer.ChatServer/.vscode
 Ringer.PartnerWeb/appsettings.json
 *.db
+Ringer.HubServer/appsettings.json
+Ringer.HubServer/appsettings.json

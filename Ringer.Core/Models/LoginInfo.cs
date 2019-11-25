@@ -1,4 +1,6 @@
-﻿namespace Ringer.Core.Models
+﻿using System;
+
+namespace Ringer.Core.Models
 {
     public class LoginInfo
     {
@@ -8,8 +10,8 @@
         public string Password { get; set; }
 
         public string Name { get; set; }
-        public string BirthDate { get; set; }
-        public string Sex { get; set; }
+        public DateTime BirthDate { get; set; }
+        public GenderType Gender { get; set; }
 
         public string DeviceType { get; set; }
         public string DeviceId { get; set; }
