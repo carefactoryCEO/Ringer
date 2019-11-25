@@ -1,15 +1,20 @@
-﻿using Plugin.Media;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Windows.Input;
+using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Ringer.Core;
 using Ringer.Core.Models;
-using System;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using System.Windows.Input;
+using Ringer.Helpers;
+using Ringer.Models;
 using Xamarin.Forms;
 
 namespace Ringer.ViewModels
@@ -17,38 +22,168 @@ namespace Ringer.ViewModels
     class ChatPageViewModel : INotifyPropertyChanged
     {
         #region private members
-        SignalRService signalR;
-        string group = (string)Application.Current.Properties["Group"];
-        string user = (string)Application.Current.Properties["User"];
+        MessagingService messagingService;
+        string room = "Xamarin";
+        string name;
+        DateTime birthDate;
+        UserInfoType userInfoToQuery = UserInfoType.None;
+        GenderType gender;
         #endregion
 
         #region Constructor
         public ChatPageViewModel()
         {
-            signalR = DependencyService.Resolve<SignalRService>();
-            
-            SendMessageCommand  = new Command(async () => await SendMessage());
-            GoBackCommand       = new Command(async () => await Shell.Current.Navigation.PopAsync());
-            ShowVidyoCommand    = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
-            CameraCommand       = new Command<string>(async actionString => await ProcessCameraAction(actionString));
+            messagingService = DependencyService.Resolve<MessagingService>();
+
+            SendMessageCommand = new Command(async () => await SendMessageAsync());
+
+            GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
+            ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
+            CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
+
+            //Settings.Token = null;
+        }
+
+        public async Task CheckLogInAsync()
+        {
+            if (!Settings.IsLoggedIn)
+            {
+                await Task.Delay(2000);
+
+                messagingService.AddLocalMessage("안녕하세요? 건강한 여행의 동반자 링거입니다.", Settings.System);
+                await Task.Delay(1500);
+                messagingService.AddLocalMessage("정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Settings.System);
+                await Task.Delay(1500);
+                messagingService.AddLocalMessage("한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Settings.System);
+                await Task.Delay(2000);
+                messagingService.AddLocalMessage("그럼 정보 입력을 시작하겠습니다.", Settings.System);
+                await Task.Delay(2500);
+                messagingService.AddLocalMessage("이름을 입력하세요.", Settings.System);
+
+                userInfoToQuery = UserInfoType.Name;
+            }
+            else
+            {
+                messagingService.Init(Settings.HubUrl, Settings.Token);
+                await messagingService.ConnectAsync();
+                // TODO: Room name 로직 확정
+                await messagingService.JoinRoomAsync(room, Settings.Name);
+
+                Debug.WriteLine(messagingService.HubConnection.ConnectionId);
+            }
         }
         #endregion
 
         #region Private Methods
-        private async Task SendMessage()
+        private async Task SendMessageAsync()
         {
             if (string.IsNullOrEmpty(TextToSend))
                 return;
 
+            if (!Settings.IsLoggedIn)
+            {
+                switch (userInfoToQuery)
+                {
+                    case UserInfoType.Name:
+
+                        Settings.Name = TextToSend;
+                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+                        // TODO: name validation here
+
+                        // name validation pass
+                        TextToSend = string.Empty;
+                        await Task.Delay(2000);
+
+                        messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Settings.System);
+                        await Task.Delay(2000);
+                        messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Settings.System);
+                        userInfoToQuery = UserInfoType.BirthDate;
+                        break;
+
+                    case UserInfoType.BirthDate:
+
+                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+                        // TODO: birthDate validation (format, range)
+
+                        // birthDate validation pass
+                        birthDate = DateTime.Parse(TextToSend);
+                        TextToSend = string.Empty;
+                        await Task.Delay(1600);
+
+                        messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Settings.System);
+                        userInfoToQuery = UserInfoType.Gender;
+                        break;
+
+                    case UserInfoType.Gender:
+
+                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+
+                        // TODO: Gender validation
+
+                        // Gender validation pass
+                        gender = TextToSend == "여자" ? GenderType.Female : GenderType.Male;
+                        TextToSend = string.Empty;
+
+                        await Task.Delay(1400);
+
+                        messagingService.AddLocalMessage("조회 중입니다. 잠시만 기다려주세요.", Settings.System);
+
+                        // TODO: Get Token!
+                        HttpClient client = new HttpClient();
+
+                        var loginInfo = JsonSerializer.Serialize(new LoginInfo
+                        {
+                            Name = Settings.Name,
+                            BirthDate = birthDate,
+                            Gender = gender,
+                        });
+
+                        // get Token
+                        HttpResponseMessage response = await client.PostAsync(Settings.TokenUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+                        var token = await response.Content.ReadAsStringAsync();
+
+                        // TODO: token 발급되었는지 확인
+                        // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
+
+                        Settings.Token = token;
+
+                        //messagingService.AddLocalMessage($"로그인토큰: {Settings.Token}", Settings.System);
+
+
+                        // Messaging Service Initialize
+                        messagingService.Init(Settings.HubUrl, Settings.Token);
+                        await messagingService.ConnectAsync();
+                        await messagingService.JoinRoomAsync(room, Settings.Name);
+
+                        break;
+
+                    default:
+                        break;
+                }
+
+                if (Settings.IsLoggedIn && messagingService.IsConnected)
+                {
+                    //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Settings.System);
+
+                    messagingService.AddLocalMessage($"{Settings.Name}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Settings.System);
+                    await Task.Delay(2000);
+
+                    messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Settings.System);
+                }
+
+                return;
+            }
+
+
             try
             {
-                await signalR.SendMessageToGroupAsync(group, user, TextToSend);
+                await messagingService.SendMessageToRoomAsync(room, Settings.Name, TextToSend);
 
                 TextToSend = string.Empty;
             }
             catch (Exception ex)
             {
-                signalR.AddLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", String.Empty);
+                messagingService.AddLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", Settings.System);
             }
         }
 
@@ -86,7 +221,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -122,7 +257,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -155,7 +290,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -186,7 +321,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await signalR.SendMessageToGroupAsync((string)Application.Current.Properties["Group"], (string)Application.Current.Properties["User"], $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -362,7 +497,7 @@ namespace Ringer.ViewModels
         public CameraAction CameraAction { get; } = new CameraAction();
         public double NavBarHeight { get; set; } = 0;
         public string NavBarTitle => "링거 상담실";
-        public ObservableCollection<Message> Messages => signalR.Messages;
+        public ObservableCollection<Message> Messages => messagingService.Messages;
         #endregion
 
         #region public Commands

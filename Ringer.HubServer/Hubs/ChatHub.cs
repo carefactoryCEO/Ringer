@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Ringer.Backend.Hubs
 {
-    [Authorize]
+    //[Authorize]
     public class ChatHub : Hub
     {
         private string Name => Context.User?.FindFirst(ClaimTypes.Name)?.Value;

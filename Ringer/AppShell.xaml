@@ -7,7 +7,7 @@
        xmlns:local="clr-namespace:Ringer.Views"
        Title="Ringer"
        x:Class="Ringer.AppShell">
-    
+
     <Shell.Resources>
         <ResourceDictionary>
             <Color x:Key="NavigationPrimary">#2196F3</Color>

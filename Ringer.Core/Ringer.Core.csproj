@@ -8,4 +8,11 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="3.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="FodyWeavers.xsd" />
+    <None Remove="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Models\Device.cs" />
+  </ItemGroup>
 </Project>
