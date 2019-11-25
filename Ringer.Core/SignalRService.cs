@@ -38,7 +38,7 @@ namespace Ringer.Core
         /// </summary>
         /// <param name="urlRoot"></param>
         /// <param name="useHttps"></param>
-        public void Init(string urlRoot, string user, string group, bool useHttps = false)
+        public void Init(string urlRoot, string user, string group, bool useHttps = false, string token = null)
         {
             this.user = user;
             this.group = group;
@@ -56,7 +56,10 @@ namespace Ringer.Core
 
             // Build HubConnection
             HubConnection = new HubConnectionBuilder()
-                .WithUrl(url)
+                .WithUrl(url, options =>
+                {
+                    options.AccessTokenProvider = () => Task.FromResult(token);
+                })
                 .WithAutomaticReconnect() // wait 0,2,10,30 seconds and try to reconnect
                 .Build();
 

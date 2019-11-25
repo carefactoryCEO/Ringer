@@ -24,6 +24,8 @@ namespace Ringer.Backend.Hubs
         public async Task SendMessageGroup(string group, string user, string message)
         {
             await Clients.Group(group).SendAsync("ReceiveMessage", user, message);
+            var x = Context.User;
+            var c = Context;
         }
 
         public async Task SendMessageToUser(string userid, string message)

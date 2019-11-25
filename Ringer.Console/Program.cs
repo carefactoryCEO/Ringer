@@ -1,33 +1,58 @@
 ﻿using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core;
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Text.Json;
+using System.Text;
 
 namespace Ringer.ConsoleApp
 {
     public class Program
     {
-        static SignalRService service;
+        static SignalRService messagingService;
         static string room = "Xamarin";
         static string name;
         static Random random = new Random();
 
+        static readonly HttpClient client = new HttpClient();
+
         public static async Task Main(string[] args)
         {
-            name = "Ringer" + random.Next(1, 100);
+            name = "console-" + random.Next(1, 100);
 
-            service = new SignalRService();
-            service.OnReceivedMessage += Service_OnReceivedMessage;
-            service.Closed += Service_OnConnectionClosed;
-            service.OnEntered += Service_OnEntered;
+            var loginInfo = JsonSerializer.Serialize(new
+            {
+                Email = "test@carefactory.co.kr",
+                Password = "some-password",
+                DeviceType = "console",
+                LoginType = "Password",
+                Name = name
+            });
+
+
+            // get Token
+            var response = await client.PostAsync(
+                "http://localhost:5000/auth/login",
+                new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+
+            var token = await response.Content.ReadAsStringAsync();
+
+            Console.WriteLine(token);
+
+
+            messagingService = new SignalRService();
+            messagingService.OnReceivedMessage += Service_OnReceivedMessage;
+            messagingService.Closed += Service_OnConnectionClosed;
+            messagingService.OnEntered += Service_OnEntered;
 
             //service.Init("ringerchat.azurewebsites.net", name, room);
-            service.Init("localhost", name, room);
+            messagingService.Init("localhost", name, room, token: token);
 
-            await service.ConnectAsync();
+            await messagingService.ConnectAsync();
 
             Console.WriteLine("-----------------------------------");
-            Console.WriteLine($"       OK, 링거 호스트 접속({service.HubConnection.ConnectionId})");
+            Console.WriteLine($"       OK, 링거 호스트 접속({messagingService.HubConnection.ConnectionId})");
 
             await JoinRoom();
 
@@ -44,7 +69,7 @@ namespace Ringer.ConsoleApp
 
                 else if (text == "leave")
                 {
-                    await service.LeaveChannelAsync(room, name);
+                    await messagingService.LeaveChannelAsync(room, name);
 
                     Console.WriteLine("다시 접속할까요?");
                     Console.ReadLine();
@@ -54,14 +79,14 @@ namespace Ringer.ConsoleApp
 
                 else if (text == "test")
                 {
-                    var result = await service.HubConnection.InvokeAsync<string>("ReadyToDisconnect", name);
+                    var result = await messagingService.HubConnection.InvokeAsync<string>("ReadyToDisconnect", name);
 
                     Console.WriteLine(result);
                 }
 
                 else
                 {
-                    await service.SendMessageToGroupAsync(room, name, text);
+                    await messagingService.SendMessageToGroupAsync(room, name, text);
                 }
 
             } while (keepGoing);
@@ -93,7 +118,7 @@ namespace Ringer.ConsoleApp
 
         private static async Task JoinRoom()
         {
-            await service.JoinChannelAsync(room, name);
+            await messagingService.JoinChannelAsync(room, name);
             Console.WriteLine("-----------------------------------");
             Console.WriteLine("         링거 서비스 채팅             ");
             Console.WriteLine("-----------------------------------");
@@ -106,5 +131,10 @@ namespace Ringer.ConsoleApp
 
             Console.WriteLine($"{e.User}: {e.Message}");
         }
+    }
+
+    internal class Payload
+    {
+        public string Name { get; set; }
     }
 }

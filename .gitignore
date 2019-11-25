@@ -345,3 +345,6 @@ healthchecksdb
 Ringer/.DS_Store
 *.DS_Store
 *.ipa
+Ringer.ChatServer/.vscode
+Ringer.PartnerWeb/appsettings.json
+*.db
