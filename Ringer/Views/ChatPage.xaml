@@ -83,6 +83,9 @@
                    HorizontalOptions="Center"
                    VerticalOptions="EndAndExpand"/>
 
+            <Button Text="초기화" Clicked="Reset_Clicked" TextColor="White"
+                    HorizontalOptions="End" VerticalOptions="End" HeightRequest="28"/>
+
             <ImageButton BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
                          Command="{Binding ShowVidyoCommand}"
                          Source="CamButton"
@@ -93,7 +96,7 @@
                          Padding="5, 3"
                          >
             </ImageButton>
-        
+
         </StackLayout>
 
 

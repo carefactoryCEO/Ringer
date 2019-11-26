@@ -65,7 +65,7 @@ namespace Ringer.ConsoleApp
             messagingService.Init(hubUrl, token);
 
             // Connect to hub
-            await messagingService.ConnectAsync();
+            await messagingService.ConnectAsync(Room, name);
 
             Console.WriteLine("-----------------------------------");
             Console.WriteLine($"OK, {hubUrl} 접속({messagingService.HubConnection.ConnectionId})");
@@ -77,8 +77,6 @@ namespace Ringer.ConsoleApp
 
             // TODO: 콘솔은 admin이므로 현재 열려 있는 방의 목록을 보여준다.
             // TODO: 방에 입장.
-
-            await messagingService.JoinRoomAsync(Room, name);
 
             #endregion
 
@@ -126,8 +124,10 @@ namespace Ringer.ConsoleApp
             Console.WriteLine(e.Message);
         }
 
-        private static void Service_Reconnected(object sender, SignalREventArgs e)
+        private static async void Service_Reconnected(object sender, SignalREventArgs e)
         {
+            await messagingService.JoinRoomAsync(Room, name);
+
             Console.WriteLine(e.Message);
         }
 

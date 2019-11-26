@@ -1,4 +1,5 @@
-﻿using Ringer.Helpers;
+﻿using System;
+using Ringer.Helpers;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -40,7 +41,14 @@ namespace Ringer.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
             await ChatPageVM.CheckLogInAsync();
+        }
+
+        void Reset_Clicked(object sender, EventArgs e)
+        {
+            Constants.Token = null;
+            Shell.Current.Navigation.PopAsync();
         }
     }
 }
