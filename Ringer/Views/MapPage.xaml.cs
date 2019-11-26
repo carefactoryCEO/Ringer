@@ -8,6 +8,7 @@ using Ringer.Models;
 using System.Threading.Tasks;
 using Ringer.ViewModels;
 using Map = Xamarin.Forms.Maps.Map;
+using System.Diagnostics;
 
 namespace Ringer.Views
 {
@@ -17,7 +18,7 @@ namespace Ringer.Views
         #region constructor
         public MapPage()
         {
-            InitializeComponent();            
+            InitializeComponent();
         }
         #endregion
 
@@ -43,7 +44,7 @@ namespace Ringer.Views
                 {
                     var position = new Position(location.Latitude, location.Longitude);
                     var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
-                    
+
                     MyMap.MoveToRegion(mapSpan);
                     MyMap.IsShowingUser = true;
 
@@ -99,16 +100,18 @@ namespace Ringer.Views
                     var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
                     MyMap.MoveToRegion(mapSpan);
 
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
+                    Debug.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
                 }
             }
             catch (FeatureNotSupportedException fnsEx)
             {
                 // Feature not supported on device
+                Debug.WriteLine(fnsEx.Message);
             }
             catch (Exception ex)
             {
                 // Handle exception that may have occurred in geocoding
+                Debug.WriteLine(ex.Message);
             }
         }
         #endregion

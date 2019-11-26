@@ -33,10 +33,10 @@ namespace Ringer.Core.Models
 
         public ICollection<MobileDevice> Devices { get; set; }
 
-        public ICollection<Room> Rooms { get; set; }
+        public ICollection<ChattingRoom> Rooms { get; set; }
     }
 
-    public class Room
+    public class ChattingRoom
     {
         public int ID { get; set; }
 

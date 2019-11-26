@@ -21,7 +21,7 @@ namespace Ringer.Core.Models
         /// </summary>
         public int ReceiverId { get; }
         /// <summary>
-        /// the id of Chat room which this delevery was invoked
+        /// the id of Chat Constants.Room which this delevery was invoked
         /// </summary>
         public int RoomId { get; }
         /// <summary>

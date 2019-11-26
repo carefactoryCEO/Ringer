@@ -14,5 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Models\Device.cs" />
+    <Compile Remove="Models\ChattingRoom.cs" />
   </ItemGroup>
 </Project>

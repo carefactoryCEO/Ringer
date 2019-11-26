@@ -6,21 +6,18 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
-using Device = Xamarin.Forms.Device;
-using Xamarin.Essentials;
 using Ringer.Helpers;
 
 namespace Ringer
 {
+    /*
+     *
+     * TODO: [production][ios] info.plist 에서 NSAppTransportSecurity 제거 https://docs.microsoft.com/en-us/xamarin/ios/app-fundamentals/ats#opting-out-of-ats
+     * 
+     */
     public partial class App : Application
     {
         public static string Token;
-
-        #region private members
-        string chatUrl;
-        MessagingService messagingService;
-
-        #endregion
 
         #region Constructor
         public App()
@@ -29,44 +26,21 @@ namespace Ringer
 
             MainPage = new AppShell();
 
-            #region prepare signalR
+            #region Register messagingService
             DependencyService.Register<MessagingService>();
-
-            messagingService = DependencyService.Resolve<MessagingService>();
-
-            messagingService.Reconnected += async (s, e) => await messagingService.JoinRoomAsync("Xamarin", Settings.Name);
-
-            //messagingService.Init(urlRoot: chatUrl, useHttps: https);
-
-            //// Connection events
-            //messagingService.Closed += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
-            //messagingService.Reconnecting += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
-            //messagingService.Reconnected += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
-
-            //// Message events
-            //messagingService.OnEntered += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
-            //messagingService.OnLeft += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
-            //messagingService.OnReceivedMessage += (s, e) => messagingService.AddLocalMessage(e.Message, e.User);
+            var messagingService = DependencyService.Resolve<MessagingService>();
+            messagingService.Reconnected += async (s, e) => await messagingService.JoinRoomAsync("Xamarin", Constants.UserName);
             #endregion
-        }
-
-        private void MessagingService_Reconnected(object sender, Core.EventArgs.SignalREventArgs e)
-        {
-            throw new NotImplementedException();
         }
         #endregion
 
         #region Life Cycle Methods
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Potential Code Quality Issues", "RECS0165:Asynchronous methods should return a Task instead of void", Justification = "<Pending>")]
         protected override async void OnStart()
         {
             base.OnStart();
 
             #region AppCenter
-            AppCenter.Start(
-            "android=776e5a61-2f89-48c3-95b6-5fa3dde1c708;" +
-            "ios=b1b4c859-3d1a-4f7c-bf34-b4e45a2aad65",
-            typeof(Analytics), typeof(Crashes), typeof(Push));
+            AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS, typeof(Analytics), typeof(Crashes), typeof(Push));
 
             if (await Push.IsEnabledAsync())
             {
@@ -76,7 +50,7 @@ namespace Ringer
                 Debug.WriteLine("-------------------------");
 
                 // Set Device Id
-                Settings.DeviceId = id?.ToString();
+                Constants.DeviceId = id?.ToString();
             }
             #endregion
 
@@ -96,7 +70,6 @@ namespace Ringer
 
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Potential Code Quality Issues", "RECS0165:Asynchronous methods should return a Task instead of void", Justification = "<Pending>")]
         protected override void OnResume()
         {
             base.OnResume();

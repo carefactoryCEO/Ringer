@@ -92,7 +92,7 @@ namespace Ringer.Core
                 Connected?.Invoke(this, new SignalREventArgs($"Connected. ConnectionID: {HubConnection.ConnectionId}", "system"));
 
                 // TODO: 방 입장 로직 변경
-                //await JoinRoomAsync("Xamarin", "me");
+                //await JoinConstants.RoomAsync("Xamarin", "me");
             }
             catch (Exception ex)
             {
@@ -130,18 +130,18 @@ namespace Ringer.Core
                 await HubConnection.SendAsync("AddToGroup", room, user);
         }
 
-        public async Task LeaveRoomAsync(string group, string user)
+        public async Task LeaveRoomAsync(string room, string user)
         {
             if (IsConnected)
-                await HubConnection.SendAsync("RemoveFromGroup", group, user);
+                await HubConnection.SendAsync("RemoveFromGroup", room, user);
         }
 
-        public async Task SendMessageToRoomAsync(string group, string sender, string message)
+        public async Task SendMessageToRoomAsync(string room, string sender, string message)
         {
             if (!IsConnected)
                 await ConnectAsync();
 
-            await HubConnection.InvokeAsync("SendMessageGroup", group, sender, message);
+            await HubConnection.InvokeAsync("SendMessageGroup", room, sender, message);
         }
 
         public void AddLocalMessage(string message, string user)

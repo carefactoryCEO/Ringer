@@ -12,15 +12,17 @@ namespace Ringer.ConsoleApp
     public class Program
     {
         #region members
-        static readonly string hubUrl = "https://ringerhub.azurewebsites.net/hubs/chat";
-        static readonly string tokenUrl = "https://ringerhub.azurewebsites.net/auth/login";
+        //static readonly string hubUrl = "https://ringerhub.azurewebsites.net/hubs/chat";
+        static readonly string hubUrl = "http://localhost:5000/hubs/chat";
+        //static readonly string tokenUrl = "https://ringerhub.azurewebsites.net/auth/login";
+        static readonly string tokenUrl = "http://localhost:5000/auth/login";
         static readonly MessagingService messagingService = new MessagingService();
 
         static readonly string name = "admin";
         static readonly DateTime birthDate = DateTime.Parse("11-11-11");
         static readonly GenderType gender = GenderType.Female;
 
-        static readonly string room = "Xamarin";
+        static readonly string Room = "Xamarin";
         static readonly HttpClient client = new HttpClient();
         #endregion
 
@@ -71,12 +73,12 @@ namespace Ringer.ConsoleApp
 
             #endregion
 
-            #region Choose and join the room
+            #region Choose and join the Constants.Room
 
             // TODO: 콘솔은 admin이므로 현재 열려 있는 방의 목록을 보여준다.
             // TODO: 방에 입장.
 
-            await messagingService.JoinRoomAsync(room, name);
+            await messagingService.JoinRoomAsync(Room, name);
 
             #endregion
 
@@ -93,7 +95,7 @@ namespace Ringer.ConsoleApp
 
                 else if (text == "leave")
                 {
-                    await messagingService.LeaveRoomAsync(room, name);
+                    await messagingService.LeaveRoomAsync(Room, name);
 
                     // TODO: 방에서 나와 대기실 -> 방 목록 보여준다.
                     Console.WriteLine("다시 접속할까요?");
@@ -102,7 +104,7 @@ namespace Ringer.ConsoleApp
 
                 else
                 {
-                    await messagingService.SendMessageToRoomAsync(room, name, text);
+                    await messagingService.SendMessageToRoomAsync(Room, name, text);
                 }
 
             } while (keepGoing);

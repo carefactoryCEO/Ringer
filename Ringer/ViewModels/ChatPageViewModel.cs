@@ -23,12 +23,12 @@ namespace Ringer.ViewModels
     {
         #region private members
         MessagingService messagingService;
-        string room = "Xamarin";
-        string name;
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
         GenderType gender;
         #endregion
+
+        public bool IsLoggedIn => Constants.Token != null;
 
         #region Constructor
         public ChatPageViewModel()
@@ -41,33 +41,33 @@ namespace Ringer.ViewModels
             ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
             CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
 
-            //Settings.Token = null;
+            Constants.Token = null;
         }
 
         public async Task CheckLogInAsync()
         {
-            if (!Settings.IsLoggedIn)
+            if (!IsLoggedIn)
             {
                 await Task.Delay(2000);
 
-                messagingService.AddLocalMessage("안녕하세요? 건강한 여행의 동반자 링거입니다.", Settings.System);
+                messagingService.AddLocalMessage("안녕하세요? 건강한 여행의 동반자 링거입니다.", Constants.System);
                 await Task.Delay(1500);
-                messagingService.AddLocalMessage("정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Settings.System);
+                messagingService.AddLocalMessage("정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Constants.System);
                 await Task.Delay(1500);
-                messagingService.AddLocalMessage("한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Settings.System);
+                messagingService.AddLocalMessage("한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Constants.System);
                 await Task.Delay(2000);
-                messagingService.AddLocalMessage("그럼 정보 입력을 시작하겠습니다.", Settings.System);
+                messagingService.AddLocalMessage("그럼 정보 입력을 시작하겠습니다.", Constants.System);
                 await Task.Delay(2500);
-                messagingService.AddLocalMessage("이름을 입력하세요.", Settings.System);
+                messagingService.AddLocalMessage("이름을 입력하세요.", Constants.System);
 
                 userInfoToQuery = UserInfoType.Name;
             }
             else
             {
-                messagingService.Init(Settings.HubUrl, Settings.Token);
+                messagingService.Init(Constants.HubUrl, Constants.Token);
                 await messagingService.ConnectAsync();
                 // TODO: Room name 로직 확정
-                await messagingService.JoinRoomAsync(room, Settings.Name);
+                await messagingService.JoinRoomAsync(Constants.ChattingRoom, Constants.UserName);
 
                 Debug.WriteLine(messagingService.HubConnection.ConnectionId);
             }
@@ -80,29 +80,29 @@ namespace Ringer.ViewModels
             if (string.IsNullOrEmpty(TextToSend))
                 return;
 
-            if (!Settings.IsLoggedIn)
+            if (!IsLoggedIn)
             {
                 switch (userInfoToQuery)
                 {
                     case UserInfoType.Name:
 
-                        Settings.Name = TextToSend;
-                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+                        Constants.UserName = TextToSend;
+                        messagingService.AddLocalMessage(TextToSend, Constants.UserName);
                         // TODO: name validation here
 
                         // name validation pass
                         TextToSend = string.Empty;
                         await Task.Delay(2000);
 
-                        messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Settings.System);
+                        messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Constants.System);
                         await Task.Delay(2000);
-                        messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Settings.System);
+                        messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Constants.System);
                         userInfoToQuery = UserInfoType.BirthDate;
                         break;
 
                     case UserInfoType.BirthDate:
 
-                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+                        messagingService.AddLocalMessage(TextToSend, Constants.UserName);
                         // TODO: birthDate validation (format, range)
 
                         // birthDate validation pass
@@ -110,13 +110,13 @@ namespace Ringer.ViewModels
                         TextToSend = string.Empty;
                         await Task.Delay(1600);
 
-                        messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Settings.System);
+                        messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Constants.System);
                         userInfoToQuery = UserInfoType.Gender;
                         break;
 
                     case UserInfoType.Gender:
 
-                        messagingService.AddLocalMessage(TextToSend, Settings.Name);
+                        messagingService.AddLocalMessage(TextToSend, Constants.UserName);
 
                         // TODO: Gender validation
 
@@ -126,34 +126,34 @@ namespace Ringer.ViewModels
 
                         await Task.Delay(1400);
 
-                        messagingService.AddLocalMessage("조회 중입니다. 잠시만 기다려주세요.", Settings.System);
+                        messagingService.AddLocalMessage("조회 중입니다. 잠시만 기다려주세요.", Constants.System);
 
                         // TODO: Get Token!
                         HttpClient client = new HttpClient();
 
                         var loginInfo = JsonSerializer.Serialize(new LoginInfo
                         {
-                            Name = Settings.Name,
+                            Name = Constants.UserName,
                             BirthDate = birthDate,
                             Gender = gender,
                         });
 
                         // get Token
-                        HttpResponseMessage response = await client.PostAsync(Settings.TokenUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+                        HttpResponseMessage response = await client.PostAsync(Constants.TokenUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
                         var token = await response.Content.ReadAsStringAsync();
 
                         // TODO: token 발급되었는지 확인
                         // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
 
-                        Settings.Token = token;
+                        Constants.Token = token;
 
-                        //messagingService.AddLocalMessage($"로그인토큰: {Settings.Token}", Settings.System);
+                        //messagingService.AddLocalMessage($"로그인토큰: {Constants.Token}", Constants.System);
 
 
                         // Messaging Service Initialize
-                        messagingService.Init(Settings.HubUrl, Settings.Token);
+                        messagingService.Init(Constants.HubUrl, Constants.Token);
                         await messagingService.ConnectAsync();
-                        await messagingService.JoinRoomAsync(room, Settings.Name);
+                        await messagingService.JoinRoomAsync(Constants.ChattingRoom, Constants.UserName);
 
                         break;
 
@@ -161,14 +161,14 @@ namespace Ringer.ViewModels
                         break;
                 }
 
-                if (Settings.IsLoggedIn && messagingService.IsConnected)
+                if (IsLoggedIn && messagingService.IsConnected)
                 {
-                    //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Settings.System);
+                    //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
 
-                    messagingService.AddLocalMessage($"{Settings.Name}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Settings.System);
+                    messagingService.AddLocalMessage($"{Constants.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Constants.System);
                     await Task.Delay(2000);
 
-                    messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Settings.System);
+                    messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
                 }
 
                 return;
@@ -177,13 +177,13 @@ namespace Ringer.ViewModels
 
             try
             {
-                await messagingService.SendMessageToRoomAsync(room, Settings.Name, TextToSend);
+                await messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, Constants.UserName, TextToSend);
 
                 TextToSend = string.Empty;
             }
             catch (Exception ex)
             {
-                messagingService.AddLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", Settings.System);
+                messagingService.AddLocalMessage($"vs.SendMessage:Send failed: {ex.Message}", Constants.System);
             }
         }
 
@@ -221,7 +221,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, Constants.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -257,7 +257,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, Constants.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -290,7 +290,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(Constants.UserName, Constants.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -321,7 +321,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await messagingService.SendMessageToRoomAsync(room, name, $"{action}:{file.Path}");
+                        await messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, Constants.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
