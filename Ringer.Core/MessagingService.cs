@@ -99,10 +99,18 @@ namespace Ringer.Core
 
         public async Task ConnectAsync(string room, string user)
         {
-            await ConnectAsync();
+            try
+            {
+                await ConnectAsync();
 
-            if (IsConnected)
-                await JoinRoomAsync(room, user);
+                if (IsConnected)
+                    await JoinRoomAsync(room, user);
+            }
+            catch (Exception ex)
+            {
+                var exc = ex;
+                Debug.WriteLine(exc.Message);
+            }
 
         }
 

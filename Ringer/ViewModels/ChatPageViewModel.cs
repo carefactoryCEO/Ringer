@@ -178,6 +178,34 @@ namespace Ringer.ViewModels
                         HttpResponseMessage response = await client.PostAsync(Constants.TokenUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
                         var token = await response.Content.ReadAsStringAsync();
 
+                        /**
+                         * 
+                         * 서버에 일치 정보 찾음
+                         * response.StatusCode : System.Net.HttpStatusCode.OK
+                         * response
+                         * {
+                         *      StatusCode: 200, 
+                         *      ReasonPhrase: 'OK', 
+                         *      Version: 1.1, 
+                         *      Content: System.Net.Http.NSUrlSessionHandler+NSUrlSessionDataTaskStreamContent, 
+                         *      Headers:{Transfer-Encoding: IdentityServer: KestrelDate: Tue, 26 Nov 2019 12:35:50 GMTContent-Type: text/plain; charset=utf-8}
+                         *  }
+                         *  
+                         *  
+                         * 서버에 일치 정보 없음
+                         * response.StatusCode : System.Net.HttpStatusCode.NotFound
+                         * response
+                         * {
+                         *      StatusCode: 404, 
+                         *      ReasonPhrase: 'Not Found', 
+                         *      Version: 1.1, 
+                         *      Content: System.Net.Http.NSUrlSessionHandler+NSUrlSessionDataTaskStreamContent, 
+                         *      Headers:{Transfer-Encoding: IdentityServer: KestrelDate: 2019-11-26 오후 12:25:53 +00:00Content-Type: text/plain; charset=utf-8}
+                         *  }
+                         *  
+                         **/
+
+
                         // TODO: token 발급되었는지 확인
                         // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
 
