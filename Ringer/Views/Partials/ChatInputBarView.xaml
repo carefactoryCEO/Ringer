@@ -47,7 +47,7 @@
             Text="{Binding TextToSend}"
             TextColor="Black"
             FontSize="{OnPlatform iOS=15, Android=14}"
-            Keyboard="Chat"
+            Keyboard="{Binding Keyboard}"
             IsExpandable="true"
             HorizontalOptions="Fill"
             AutoSize="Disabled"
@@ -66,7 +66,7 @@
                 <TapGestureRecognizer Tapped="SendButton_Tapped"/>
             </BoxView.GestureRecognizers>
         </BoxView>
-        
+
         <Image x:Name="sendButton"
                Source="SendIcon"
                Grid.Column="2"

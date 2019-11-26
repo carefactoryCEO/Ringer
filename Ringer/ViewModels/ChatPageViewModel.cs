@@ -25,7 +25,7 @@ namespace Ringer.ViewModels
         MessagingService messagingService;
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
-        GenderType gender;
+        GenderType genderType;
         #endregion
 
         public bool IsLoggedIn => Constants.Token != null;
@@ -41,14 +41,16 @@ namespace Ringer.ViewModels
             ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
             CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
 
-            Constants.Token = null;
+            Keyboard = Keyboard.Chat;
+
+            //Constants.Token = null;
         }
 
         public async Task CheckLogInAsync()
         {
             if (!IsLoggedIn)
             {
-                await Task.Delay(2000);
+                await Task.Delay(1000);
 
                 messagingService.AddLocalMessage("안녕하세요? 건강한 여행의 동반자 링거입니다.", Constants.System);
                 await Task.Delay(1500);
@@ -65,9 +67,8 @@ namespace Ringer.ViewModels
             else
             {
                 messagingService.Init(Constants.HubUrl, Constants.Token);
-                await messagingService.ConnectAsync();
+                await messagingService.ConnectAsync(Constants.ChattingRoom, Constants.UserName);
                 // TODO: Room name 로직 확정
-                await messagingService.JoinRoomAsync(Constants.ChattingRoom, Constants.UserName);
 
                 Debug.WriteLine(messagingService.HubConnection.ConnectionId);
             }
@@ -92,41 +93,76 @@ namespace Ringer.ViewModels
 
                         // name validation pass
                         TextToSend = string.Empty;
-                        await Task.Delay(2000);
+                        await Task.Delay(1000);
 
-                        messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Constants.System);
-                        await Task.Delay(2000);
-                        messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Constants.System);
+                        messagingService.AddLocalMessage("생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Constants.System);
+                        await Task.Delay(600);
+
+                        Keyboard = Keyboard.Numeric;
+                        messagingService.AddLocalMessage("예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Constants.System);
+
                         userInfoToQuery = UserInfoType.BirthDate;
                         break;
 
+
+
+                    //    messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Constants.System);
+                    //    await Task.Delay(2000);
+                    //    messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Constants.System);
+                    //    Keyboard = Keyboard.Numeric;
+                    //    userInfoToQuery = UserInfoType.BirthDate;
+                    //    break;
+
                     case UserInfoType.BirthDate:
 
-                        messagingService.AddLocalMessage(TextToSend, Constants.UserName);
-                        // TODO: birthDate validation (format, range)
+                        //    messagingService.AddLocalMessage(TextToSend, Constants.UserName);
+                        //    // TODO: birthDate validation (format, range)
 
-                        // birthDate validation pass
-                        birthDate = DateTime.Parse(TextToSend);
+                        //    // birthDate validation pass
+                        //    birthDate = DateTime.Parse(TextToSend);
+                        //    TextToSend = string.Empty;
+                        //    await Task.Delay(1600);
+
+                        //    messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Constants.System);
+                        //    userInfoToQuery = UserInfoType.Gender;
+
+
+                        //break;
+
+                        //case UserInfoType.Gender:
+
+                        //messagingService.AddLocalMessage(TextToSend, Constants.UserName);
+
+                        //// TODO: Gender validation
+
+                        //// Gender validation pass
+                        //gender = TextToSend == "여자" ? GenderType.Female : GenderType.Male;
+                        //TextToSend = string.Empty;
+
+
+
+                        var numeric = TextToSend;
                         TextToSend = string.Empty;
-                        await Task.Delay(1600);
 
-                        messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Constants.System);
-                        userInfoToQuery = UserInfoType.Gender;
-                        break;
+                        string year = numeric.Substring(0, 2);
+                        string month = numeric.Substring(2, 2);
+                        string day = numeric.Substring(4, 2);
+                        string gender = numeric.Substring(6, 1);
 
-                    case UserInfoType.Gender:
+                        year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
 
-                        messagingService.AddLocalMessage(TextToSend, Constants.UserName);
+                        birthDate = DateTime.Parse($"{year}-{month}-{day}");
+                        genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
 
-                        // TODO: Gender validation
+                        messagingService.AddLocalMessage($"{year}년 {month}월 {day}일 {genderType}", Constants.UserName);
 
-                        // Gender validation pass
-                        gender = TextToSend == "여자" ? GenderType.Female : GenderType.Male;
-                        TextToSend = string.Empty;
+                        await Task.Delay(500);
 
-                        await Task.Delay(1400);
+                        Keyboard = Keyboard.Chat;
 
                         messagingService.AddLocalMessage("조회 중입니다. 잠시만 기다려주세요.", Constants.System);
+
+                        await Task.Delay(500);
 
                         // TODO: Get Token!
                         HttpClient client = new HttpClient();
@@ -135,7 +171,7 @@ namespace Ringer.ViewModels
                         {
                             Name = Constants.UserName,
                             BirthDate = birthDate,
-                            Gender = gender,
+                            Gender = genderType,
                         });
 
                         // get Token
@@ -152,8 +188,7 @@ namespace Ringer.ViewModels
 
                         // Messaging Service Initialize
                         messagingService.Init(Constants.HubUrl, Constants.Token);
-                        await messagingService.ConnectAsync();
-                        await messagingService.JoinRoomAsync(Constants.ChattingRoom, Constants.UserName);
+                        await messagingService.ConnectAsync(Constants.ChattingRoom, Constants.UserName);
 
                         break;
 
@@ -166,9 +201,9 @@ namespace Ringer.ViewModels
                     //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
 
                     messagingService.AddLocalMessage($"{Constants.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Constants.System);
-                    await Task.Delay(2000);
+                    //await Task.Delay(2000);
 
-                    messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
+                    //messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
                 }
 
                 return;
@@ -494,6 +529,7 @@ namespace Ringer.ViewModels
 
         #region Public Properties
         public string TextToSend { get; set; }
+        public Keyboard Keyboard { get; set; }
         public CameraAction CameraAction { get; } = new CameraAction();
         public double NavBarHeight { get; set; } = 0;
         public string NavBarTitle => "링거 상담실";

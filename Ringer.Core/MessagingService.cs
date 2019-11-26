@@ -10,12 +10,10 @@ namespace Ringer.Core
 {
     public class MessagingService
     {
-        private static bool IsInitialized = false;
-
         #region Initializer
         public void Init(string url, string token)
         {
-            if (IsInitialized)
+            if (HubConnection != null)
                 return;
 
             HubConnection = new HubConnectionBuilder()
@@ -62,8 +60,6 @@ namespace Ringer.Core
                 OnLeft?.Invoke(this, new SignalREventArgs($"{user} left.", user));
                 AddLocalMessage($"{user} left.", user);
             });
-
-            IsInitialized = true;
         }
         #endregion
 
@@ -100,6 +96,16 @@ namespace Ringer.Core
                 AddLocalMessage("Connection Failed: " + ex.Message, "system");
             }
         }
+
+        public async Task ConnectAsync(string room, string user)
+        {
+            await ConnectAsync();
+
+            if (IsConnected)
+                await JoinRoomAsync(room, user);
+
+        }
+
         public async Task DisconnectAsync()
         {
             if (!IsConnected)
@@ -139,7 +145,7 @@ namespace Ringer.Core
         public async Task SendMessageToRoomAsync(string room, string sender, string message)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync(room, sender);
 
             await HubConnection.InvokeAsync("SendMessageGroup", room, sender, message);
         }
