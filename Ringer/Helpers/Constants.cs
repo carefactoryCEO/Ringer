@@ -11,22 +11,15 @@ namespace Ringer.Helpers
         public static readonly string System = "system";
         public static readonly string ChattingRoom = "Xamarin";
 
-        public static string DeviceId
-        {
-            get => Preferences.Get(nameof(DeviceId), null);
-            set => Preferences.Set(nameof(DeviceId), value);
-        }
+        // Camera action
+        public static readonly string Title = "작업을 선택하세요.";
+        public static readonly string Cancle = "취소";
+        public static readonly string Destruction = "파파괴";
+        public static readonly string TakingPhoto = "사진 촬영";
+        public static readonly string AttachingPhoto = "사진 불러오기";
+        public static readonly string TakingVideo = "동영상 촬영";
+        public static readonly string AttachingVideo = "동영상 불러오기";
 
-        public static string Token
-        {
-            get => Preferences.Get(nameof(Token), null);
-            set => Preferences.Set(nameof(Token), value);
-        }
 
-        public static string UserName
-        {
-            get => Preferences.Get(nameof(UserName), null);
-            set => Preferences.Set(nameof(UserName), value);
-        }
     }
 }

@@ -21,7 +21,7 @@ namespace Ringer.Helpers
             if (messageVm == null)
                 return null;
 
-            return (messageVm.Sender == Constants.UserName) ? outgoingDataTemplate : incomingDataTemplate;
+            return (messageVm.Sender == App.UserName) ? outgoingDataTemplate : incomingDataTemplate;
         }
 
     }

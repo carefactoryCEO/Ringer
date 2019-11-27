@@ -51,24 +51,27 @@ namespace Ringer.ConsoleApp
 
             #region Init and Connect to SignalR
 
-            // Subscribe hubconnection messages
-            messagingService.Connected += Service_Connected;
-            messagingService.Closed += Service_Closed;
-            messagingService.Reconnecting += Service_Reconnecting;
-            messagingService.Reconnected += Service_Reconnected;
+            // Subscribe messagingService events
+            messagingService.Connecting += (s, e) => Console.WriteLine(e.Message);
+            messagingService.ConnectionFailed += (s, e) => Console.WriteLine(e.Message);
+            messagingService.Connected += (s, e) => Console.WriteLine(e.Message);
 
-            messagingService.OnMessageReceived += Service_OnMessageReceived;
-            messagingService.OnEntered += Service_OnEntered;
-            messagingService.OnLeft += Service_OnLeft;
+            messagingService.Closed += (s, e) => Console.WriteLine(e.Message);
+            messagingService.Reconnecting += (s, e) => Console.WriteLine(e.Message);
+            messagingService.Reconnected += (s, e) => Console.WriteLine(e.Message);
+
+            messagingService.MessageReceived += Service_OnMessageReceived;
+            messagingService.SomeoneEntered += Service_OnEntered;
+            messagingService.SomeoneLeft += Service_OnLeft;
 
             // Initialize the messaging service
-            messagingService.Init(hubUrl, token);
+            await messagingService.Init(hubUrl, token);
 
             // Connect to hub
             await messagingService.ConnectAsync(Room, name);
 
             Console.WriteLine("-----------------------------------");
-            Console.WriteLine($"OK, {hubUrl} 접속({messagingService.HubConnection.ConnectionId})");
+            Console.WriteLine($"OK, {hubUrl} 접속({messagingService.ConnectionId})");
             Console.WriteLine("-----------------------------------");
 
             #endregion
@@ -109,27 +112,6 @@ namespace Ringer.ConsoleApp
             #endregion
         }
 
-        private static void Service_Connected(object sender, SignalREventArgs e)
-        {
-            Console.WriteLine(e.Message);
-        }
-
-        private static void Service_Closed(object sender, SignalREventArgs e)
-        {
-            Console.WriteLine(e.Message);
-        }
-
-        private static void Service_Reconnecting(object sender, SignalREventArgs e)
-        {
-            Console.WriteLine(e.Message);
-        }
-
-        private static async void Service_Reconnected(object sender, SignalREventArgs e)
-        {
-            await messagingService.JoinRoomAsync(Room, name);
-
-            Console.WriteLine(e.Message);
-        }
 
         private static void Service_OnMessageReceived(object sender, SignalREventArgs e)
         {

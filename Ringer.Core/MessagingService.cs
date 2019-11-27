@@ -1,22 +1,31 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core.EventArgs;
 using Ringer.Core.Models;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Ringer.Core
 {
     public class MessagingService
     {
-        #region Initializer
-        public void Init(string url, string token)
-        {
-            if (HubConnection != null)
-                return;
+        #region private members
+        public HubConnection _hubConnection;
+        #endregion
 
-            HubConnection = new HubConnectionBuilder()
+        #region Initializer
+        public async Task Init(string url, string token)
+        {
+            if (_hubConnection != null)
+            {
+                await _hubConnection.DisposeAsync();
+                _hubConnection = null;
+            }
+
+            _hubConnection = new HubConnectionBuilder()
                 .WithUrl(url, options =>
                 {
                     options.AccessTokenProvider = () => Task.FromResult(token);
@@ -25,52 +34,50 @@ namespace Ringer.Core
                 .Build();
 
             // Handle Hub connection events
-            HubConnection.Closed += err =>
+            _hubConnection.Closed += err =>
             {
-                Closed?.Invoke(this, new SignalREventArgs($"HubConnection.Closed event fired\n{err.Message}\n{DateTime.Now}", "system"));
-                AddLocalMessage($"HubConnection.Closed event fired\n{err.Message}\n{DateTime.Now}", "system");
+                Closed?.Invoke(this, new ConnectionEventArgs($"HubConnection.Closed event fired\n{err.Message}\n{DateTime.Now}"));
                 return Task.CompletedTask;
             };
-            HubConnection.Reconnecting += err =>
+            _hubConnection.Reconnecting += err =>
             {
-                Reconnecting?.Invoke(this, new SignalREventArgs($"HubConnection.Reconnecting event fired\n{err.Message}\n{DateTime.Now}", "system"));
-                AddLocalMessage($"HubConnection.Reconnecting event fired\n{err.Message}\n{DateTime.Now}", "system");
+                Reconnecting?.Invoke(this, new ConnectionEventArgs($"HubConnection.Reconnecting event fired\n{err.Message}\n{DateTime.Now}"));
                 return Task.CompletedTask;
             };
-            HubConnection.Reconnected += message =>
+            _hubConnection.Reconnected += message =>
             {
-                Reconnected?.Invoke(this, new SignalREventArgs($"HubConnection.Reconnected event fired\n{message}\n{DateTime.Now}", "system"));
-                AddLocalMessage($"HubConnection.Reconnected event fired\n{message}\n{DateTime.Now}", "system");
+                Reconnected?.Invoke(this, new ConnectionEventArgs($"HubConnection.Reconnected event fired\n{message}\n{DateTime.Now}"));
                 return Task.CompletedTask;
             };
 
             // Handle Hub messages
-            HubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+            _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
             {
-                OnMessageReceived?.Invoke(this, new SignalREventArgs(message, user));
-                AddLocalMessage(message, user);
+                MessageReceived?.Invoke(this, new SignalREventArgs(message, user));
             });
-            HubConnection.On<string>("Entered", user =>
+
+            _hubConnection.On<string>("Entered", user =>
             {
-                OnEntered?.Invoke(this, new SignalREventArgs($"{user} entered.", user));
+                SomeoneEntered?.Invoke(this, new SignalREventArgs($"{user} entered.", user));
                 //AddLocalMessage($"{user} entered.", user);
             });
-            HubConnection.On<string>("Left", user =>
+
+            _hubConnection.On<string>("Left", user =>
             {
-                OnLeft?.Invoke(this, new SignalREventArgs($"{user} left.", user));
-                AddLocalMessage($"{user} left.", user);
+                SomeoneLeft?.Invoke(this, new SignalREventArgs($"{user} left.", user));
             });
         }
         #endregion
 
         #region public properties
-        public bool IsConnected => HubConnection.State == HubConnectionState.Connected;
-        public bool IsConnecting => HubConnection.State == HubConnectionState.Connecting;
-        public bool IsDisconnected => HubConnection.State == HubConnectionState.Disconnected;
-        public bool IsReconnecting => HubConnection.State == HubConnectionState.Reconnecting;
+        public bool IsConnected => _hubConnection.State == HubConnectionState.Connected;
+        public bool IsConnecting => _hubConnection.State == HubConnectionState.Connecting;
+        public bool IsDisconnected => _hubConnection.State == HubConnectionState.Disconnected;
+        public bool IsReconnecting => _hubConnection.State == HubConnectionState.Reconnecting;
 
-        public HubConnection HubConnection { get; private set; }
-        public ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
+
+        //public ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
+        public string ConnectionId => _hubConnection.ConnectionId;
         #endregion
 
         #region Public Methods
@@ -80,38 +87,28 @@ namespace Ringer.Core
                 return;
             try
             {
-                await HubConnection.StartAsync();
+                Connecting?.Invoke(this, new ConnectionEventArgs($"Try to Connect\n{DateTime.Now}"));
+
+                await _hubConnection.StartAsync();
 
                 if (!IsConnected)
-                    throw new InvalidOperationException("SignalRService.ConnectAsync() faild");
+                    throw new InvalidOperationException($"Connection failed.");
 
-                Connected?.Invoke(this, new SignalREventArgs($"Connected. ConnectionID: {HubConnection.ConnectionId}", "system"));
-
-                // TODO: 방 입장 로직 변경
-                //await JoinConstants.RoomAsync("Xamarin", "me");
+                Connected?.Invoke(this, new ConnectionEventArgs($"Connected\n{DateTime.Now}\n{_hubConnection.ConnectionId}"));
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Connection Failed: " + ex.Message);
-                AddLocalMessage("Connection Failed: " + ex.Message, "system");
+                ConnectionFailed?.Invoke(this, new ConnectionEventArgs("Connection Failed: " + ex.Message));
             }
         }
 
         public async Task ConnectAsync(string room, string user)
         {
-            try
-            {
-                await ConnectAsync();
+            await ConnectAsync();
 
-                if (IsConnected)
-                    await JoinRoomAsync(room, user);
-            }
-            catch (Exception ex)
-            {
-                var exc = ex;
-                Debug.WriteLine(exc.Message);
-            }
-
+            if (IsConnected)
+                await JoinRoomAsync(room, user);
         }
 
         public async Task DisconnectAsync()
@@ -120,34 +117,38 @@ namespace Ringer.Core
                 return;
             try
             {
-                Debug.WriteLine($"Try to Disconnect\n{DateTime.Now}\n{HubConnection.ConnectionId}");
-                AddLocalMessage($"Try to Disconnect\n{DateTime.Now}\n{HubConnection.ConnectionId}", "system");
+                Disconnecting?.Invoke(this, new ConnectionEventArgs($"Try to Disconnect\n{DateTime.Now}\n{_hubConnection.ConnectionId}"));
 
-                await HubConnection.StopAsync();
+                await _hubConnection.StopAsync();
 
                 if (IsConnected)
-                    throw new InvalidOperationException("SignalRService.DisconnectAsync() faild");
+                    throw new InvalidOperationException("Disconnection faild");
 
+                Disconnected?.Invoke(this, new ConnectionEventArgs($"Disconnected\n{DateTime.Now}"));
                 Debug.WriteLine($"Disconnection completed\n{DateTime.Now}");
-                AddLocalMessage($"Disconnection completed\n{DateTime.Now}", "system");
+
             }
             catch (Exception ex)
             {
                 Debug.WriteLine("Disconnection Failed: " + ex.Message);
-                AddLocalMessage("Disconnection Failed: " + ex.Message, "system");
+                DisconnectionFailed?.Invoke(this, new ConnectionEventArgs("Disconnection Failed: " + ex.Message));
             }
         }
 
         public async Task JoinRoomAsync(string room, string user)
         {
-            if (IsConnected)
-                await HubConnection.SendAsync("AddToGroup", room, user);
+            if (!IsConnected)
+                await ConnectAsync(room, user);
+
+            await _hubConnection.SendAsync("AddToGroup", room, user);
         }
 
         public async Task LeaveRoomAsync(string room, string user)
         {
-            if (IsConnected)
-                await HubConnection.SendAsync("RemoveFromGroup", room, user);
+            if (!IsConnected)
+                await ConnectAsync(room, user);
+
+            await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
 
         public async Task SendMessageToRoomAsync(string room, string sender, string message)
@@ -155,28 +156,36 @@ namespace Ringer.Core
             if (!IsConnected)
                 await ConnectAsync(room, sender);
 
-            await HubConnection.InvokeAsync("SendMessageGroup", room, sender, message);
-        }
-
-        public void AddLocalMessage(string message, string user)
-        {
-            Messages.Insert(0, new Message
-            {
-                Content = $"{user}: {message}",
-                Sender = user
-            });
+            await _hubConnection.InvokeAsync("SendMessageGroup", room, sender, message);
         }
         #endregion
 
         #region Public Events
-        public event EventHandler<SignalREventArgs> Connected;
-        public event EventHandler<SignalREventArgs> Closed;
-        public event EventHandler<SignalREventArgs> Reconnecting;
-        public event EventHandler<SignalREventArgs> Reconnected;
+        public event EventHandler<ConnectionEventArgs> Connecting;
+        public event EventHandler<ConnectionEventArgs> Connected;
+        public event EventHandler<ConnectionEventArgs> ConnectionFailed;
 
-        public event EventHandler<SignalREventArgs> OnEntered;
-        public event EventHandler<SignalREventArgs> OnLeft;
-        public event EventHandler<SignalREventArgs> OnMessageReceived;
+        public event EventHandler<ConnectionEventArgs> Disconnecting;
+        public event EventHandler<ConnectionEventArgs> Disconnected;
+        public event EventHandler<ConnectionEventArgs> DisconnectionFailed;
+
+        public event EventHandler<ConnectionEventArgs> Closed;
+        public event EventHandler<ConnectionEventArgs> Reconnecting;
+        public event EventHandler<ConnectionEventArgs> Reconnected;
+
+        public event EventHandler<SignalREventArgs> SomeoneEntered;
+        public event EventHandler<SignalREventArgs> SomeoneLeft;
+        public event EventHandler<SignalREventArgs> MessageReceived;
         #endregion
+    }
+
+    public class ConnectionEventArgs : IChatEventArgs
+    {
+        public string Message { get; private set; }
+
+        public ConnectionEventArgs(string message)
+        {
+            Message = message;
+        }
     }
 }

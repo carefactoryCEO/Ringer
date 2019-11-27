@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Ringer.HubServer.Data;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -54,13 +55,30 @@ namespace Ringer.Backend.Hubs
 
         string logMessage;
 
-        public override Task OnConnectedAsync()
+        public override async Task OnConnectedAsync()
         {
+            // Get user id
+            var id = int.Parse(Context.UserIdentifier);
+            
+            // Query DB using user id
+            var user = _dbContext.Users.FirstOrDefault(u => u.ID == id);
 
-            logMessage = $"{Name}({Context.UserIdentifier}) Connected";
+            // TODO: Mark User as connected
+            //user.IsConnected = true;
+
+            // Save Changes
+            //await _dbContext.SaveChangesAsync(); 
+            
+            string claimName = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
+
+            logMessage = $"[ChatHub]{Context.User}({Context.UserIdentifier}) Connected";
+
             Debug.WriteLine(logMessage);
 
-            return base.OnConnectedAsync();
+            // TODO: base method를 실행할 필요가 있을까? 판단해야.
+            // 이미 커넥션 자체는 이루어졌고 그 후처리를 할 뿐이므로 필요 없나?
+            // 아니면 base에서도 커넥션 이후에 후처리할 일이 있을 수도 있겠다.
+            await base.OnConnectedAsync();
         }
     }
 }

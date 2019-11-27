@@ -34,6 +34,9 @@ namespace Ringer.Core.Models
         public ICollection<MobileDevice> Devices { get; set; }
 
         public ICollection<ChattingRoom> Rooms { get; set; }
+
+        // TODO: migration으로 전환하고 IsConnected, ConnectionID, DeviceID 등 필요한 property를 추가한다.
+        //public bool IsConnected { get; set; }
     }
 
     public class ChattingRoom
@@ -64,6 +67,14 @@ namespace Ringer.Core.Models
 
     public class Message
     {
+        public Message() { }
+
+        public Message(string content, string sender = "system") : this()
+        {
+            Content = content;
+            Sender = sender;
+        }
+
         public string Content { get; set; }
         public string Sender { get; set; } // sender
     }

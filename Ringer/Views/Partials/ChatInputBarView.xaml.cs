@@ -1,4 +1,5 @@
-﻿using Ringer.ViewModels;
+﻿using Ringer.Helpers;
+using Ringer.ViewModels;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -33,12 +34,12 @@ namespace Ringer.Views.Partials
         {
             string action = await Shell.Current.DisplayActionSheet(
                 null,
-                vm.CameraAction.Cancle,
+                Constants.Cancle,
                 null,
-                vm.CameraAction.TakingPhoto,
-                vm.CameraAction.TakingVideo,
-                vm.CameraAction.AttachingPhoto,
-                vm.CameraAction.AttachingVideo,
+                Constants.TakingPhoto,
+                Constants.TakingVideo,
+                Constants.AttachingPhoto,
+                Constants.AttachingVideo,
                 "설정 열기");
 
             vm?.CameraCommand.Execute(action);
