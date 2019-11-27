@@ -65,7 +65,7 @@ namespace Ringer.ConsoleApp
             messagingService.SomeoneLeft += Service_OnLeft;
 
             // Initialize the messaging service
-            await messagingService.Init(hubUrl, token);
+            messagingService.Init(hubUrl, token);
 
             // Connect to hub
             await messagingService.ConnectAsync(Room, name);

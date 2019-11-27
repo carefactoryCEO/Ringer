@@ -25,11 +25,15 @@ namespace Ringer.Backend.Hubs
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, group);
 
+            // TODO: user가 방에 원래 있었다면 들어왔다는 메시지를 보내지 않는다.
+
             await Clients.Group(group).SendAsync("Entered", user);
         }
 
         public async Task RemoveFromGroup(string group, string user)
         {
+            // TODO: user가 원래 방에 있었는지 확인
+
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, group);
 
             await Clients.Group(group).SendAsync("Left", user);
@@ -59,7 +63,7 @@ namespace Ringer.Backend.Hubs
         {
             // Get user id
             var id = int.Parse(Context.UserIdentifier);
-            
+
             // Query DB using user id
             var user = _dbContext.Users.FirstOrDefault(u => u.ID == id);
 
@@ -68,7 +72,7 @@ namespace Ringer.Backend.Hubs
 
             // Save Changes
             //await _dbContext.SaveChangesAsync(); 
-            
+
             string claimName = Context.User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name).Value;
 
             logMessage = $"[ChatHub]{Context.User}({Context.UserIdentifier}) Connected";

@@ -17,12 +17,13 @@ namespace Ringer.Core
         #endregion
 
         #region Initializer
-        public async Task Init(string url, string token)
+        public void Init(string url, string token)
         {
             if (_hubConnection != null)
             {
-                await _hubConnection.DisposeAsync();
-                _hubConnection = null;
+                return;
+                //await _hubConnection.DisposeAsync();
+                //_hubConnection = null;
             }
 
             _hubConnection = new HubConnectionBuilder()

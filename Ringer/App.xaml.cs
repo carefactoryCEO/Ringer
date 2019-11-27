@@ -64,6 +64,10 @@ namespace Ringer
             messagingService.ConnectionFailed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
             messagingService.Connected += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
 
+            messagingService.Disconnecting += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
+            messagingService.DisconnectionFailed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
+            messagingService.Disconnected += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
+
             messagingService.Closed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
             messagingService.Reconnecting += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
             messagingService.Reconnected += async (s, e) =>

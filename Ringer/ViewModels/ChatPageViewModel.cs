@@ -87,7 +87,7 @@ namespace Ringer.ViewModels
             {
                 // TODO: Token이 valid한지 체크한다.
 
-                await _messagingService.Init(Constants.HubUrl, App.Token);
+                _messagingService.Init(Constants.HubUrl, App.Token);
                 await _messagingService.ConnectAsync(Constants.ChattingRoom, App.UserName);
 
                 Debug.WriteLine(_messagingService.ConnectionId);
@@ -236,7 +236,7 @@ namespace Ringer.ViewModels
 
                         // Messaging Service Initialize
                         // 
-                        await _messagingService.Init(Constants.HubUrl, App.Token);
+                        _messagingService.Init(Constants.HubUrl, App.Token);
                         await _messagingService.ConnectAsync(Constants.ChattingRoom, App.UserName);
 
                         break;
