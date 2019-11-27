@@ -85,9 +85,10 @@ namespace Ringer.ViewModels
             }
             else
             {
+                // TODO: Token이 valid한지 체크한다.
+
                 await _messagingService.Init(Constants.HubUrl, App.Token);
                 await _messagingService.ConnectAsync(Constants.ChattingRoom, App.UserName);
-                // TODO: Room name 로직 확정
 
                 Debug.WriteLine(_messagingService.ConnectionId);
             }
