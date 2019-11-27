@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using Ringer.HubServer.Data;
 using System;
@@ -40,6 +39,8 @@ namespace Ringer.Backend.Hubs
             await Clients.Group(group).SendAsync("ReceiveMessage", sender, message);
 
             logMessage = $"{Name}({Context.UserIdentifier}) sent: {message}";
+
+            //_logger.LogWarning(logMessage);
 
             Debug.WriteLine(logMessage);
         }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Ringer.Core;
 using Ringer.Helpers;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -43,12 +44,6 @@ namespace Ringer.Views
             base.OnAppearing();
 
             await ChatPageVM.CheckLogInAsync();
-        }
-
-        void Reset_Clicked(object sender, EventArgs e)
-        {
-            Constants.Token = null;
-            Shell.Current.Navigation.PopAsync();
         }
     }
 }

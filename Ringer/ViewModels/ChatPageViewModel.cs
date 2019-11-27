@@ -41,25 +41,44 @@ namespace Ringer.ViewModels
             ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
             CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
 
+            CameraAction = new CameraAction();
+            NavBarHeight = 0;
+
             Keyboard = Keyboard.Chat;
 
             //Constants.Token = null;
+            ResetConnectionCommand = new Command(async () =>
+            {
+                // Reset Token
+                Constants.Token = null;
+
+                // Disconnect Connection
+                if (messagingService.IsConnected)
+                    await messagingService.DisconnectAsync();
+
+                // Clear Messages
+                messagingService.Messages.Clear();
+
+                // Go Back
+                await Shell.Current.Navigation.PopAsync();
+            });
+
         }
 
         public async Task CheckLogInAsync()
         {
             if (!IsLoggedIn)
             {
-                await Task.Delay(1000);
+                // await Task.Delay(1000);
 
                 messagingService.AddLocalMessage("안녕하세요? 건강한 여행의 동반자 링거입니다.", Constants.System);
-                await Task.Delay(1500);
+                // await Task.Delay(1500);
                 messagingService.AddLocalMessage("정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Constants.System);
-                await Task.Delay(1500);
+                // await Task.Delay(1500);
                 messagingService.AddLocalMessage("한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Constants.System);
-                await Task.Delay(2000);
+                // await Task.Delay(2000);
                 messagingService.AddLocalMessage("그럼 정보 입력을 시작하겠습니다.", Constants.System);
-                await Task.Delay(2500);
+                // await Task.Delay(2500);
                 messagingService.AddLocalMessage("이름을 입력하세요.", Constants.System);
 
                 userInfoToQuery = UserInfoType.Name;
@@ -93,10 +112,10 @@ namespace Ringer.ViewModels
 
                         // name validation pass
                         TextToSend = string.Empty;
-                        await Task.Delay(1000);
+                        // await Task.Delay(1000);
 
                         messagingService.AddLocalMessage("생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Constants.System);
-                        await Task.Delay(600);
+                        // await Task.Delay(600);
 
                         Keyboard = Keyboard.Numeric;
                         messagingService.AddLocalMessage("예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Constants.System);
@@ -107,7 +126,7 @@ namespace Ringer.ViewModels
 
 
                     //    messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Constants.System);
-                    //    await Task.Delay(2000);
+                    //    // await Task.Delay(2000);
                     //    messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Constants.System);
                     //    Keyboard = Keyboard.Numeric;
                     //    userInfoToQuery = UserInfoType.BirthDate;
@@ -121,7 +140,7 @@ namespace Ringer.ViewModels
                         //    // birthDate validation pass
                         //    birthDate = DateTime.Parse(TextToSend);
                         //    TextToSend = string.Empty;
-                        //    await Task.Delay(1600);
+                        //    // await Task.Delay(1600);
 
                         //    messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Constants.System);
                         //    userInfoToQuery = UserInfoType.Gender;
@@ -156,13 +175,13 @@ namespace Ringer.ViewModels
 
                         messagingService.AddLocalMessage($"{year}년 {month}월 {day}일 {genderType}", Constants.UserName);
 
-                        await Task.Delay(500);
+                        // await Task.Delay(500);
 
                         Keyboard = Keyboard.Chat;
 
                         messagingService.AddLocalMessage("조회 중입니다. 잠시만 기다려주세요.", Constants.System);
 
-                        await Task.Delay(500);
+                        // await Task.Delay(500);
 
                         // TODO: Get Token!
                         HttpClient client = new HttpClient();
@@ -229,7 +248,7 @@ namespace Ringer.ViewModels
                     //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
 
                     messagingService.AddLocalMessage($"{Constants.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Constants.System);
-                    //await Task.Delay(2000);
+                    //// await Task.Delay(2000);
 
                     //messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
                 }
@@ -558,8 +577,8 @@ namespace Ringer.ViewModels
         #region Public Properties
         public string TextToSend { get; set; }
         public Keyboard Keyboard { get; set; }
-        public CameraAction CameraAction { get; } = new CameraAction();
-        public double NavBarHeight { get; set; } = 0;
+        public CameraAction CameraAction { get; }
+        public double NavBarHeight { get; set; }
         public string NavBarTitle => "링거 상담실";
         public ObservableCollection<Message> Messages => messagingService.Messages;
         #endregion
@@ -569,23 +588,11 @@ namespace Ringer.ViewModels
         public ICommand CameraCommand { get; }
         public ICommand GoBackCommand { get; }
         public ICommand ShowVidyoCommand { get; }
+        public ICommand ResetConnectionCommand { get; }
         #endregion
 
         #region Events
         public event PropertyChangedEventHandler PropertyChanged;
         #endregion
     }
-
-    #region CamaraAction Class
-    class CameraAction
-    {
-        public string Title { get; } = "작업을 선택하세요.";
-        public string Cancle { get; } = "취소";
-        public string Destruction { get; } = "파파괴";
-        public string TakingPhoto { get; } = "사진 촬영";
-        public string AttachingPhoto { get; } = "사진 불러오기";
-        public string TakingVideo { get; } = "동영상 촬영";
-        public string AttachingVideo { get; } = "동영상 불러오기";
-    }
-    #endregion
 }
