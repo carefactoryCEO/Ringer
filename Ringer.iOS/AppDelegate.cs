@@ -32,19 +32,5 @@ namespace Ringer.iOS
 
             return base.FinishedLaunching(app, options);
         }
-
-        public override void DidReceiveRemoteNotification(UIApplication application, NSDictionary userInfo, System.Action<UIBackgroundFetchResult> completionHandler)
-        {
-            var result = Push.DidReceiveRemoteNotification(userInfo);
-
-            if (result)
-            {
-                completionHandler?.Invoke(UIBackgroundFetchResult.NewData);
-            }
-            else
-            {
-                completionHandler?.Invoke(UIBackgroundFetchResult.NoData);
-            }
-        }
     }
 }
