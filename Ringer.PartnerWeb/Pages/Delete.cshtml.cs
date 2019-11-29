@@ -30,7 +30,7 @@ namespace Ringer.PartnerWeb.Pages
             }
 
 
-            User = await _context.Users.FirstOrDefaultAsync(m => m.ID == id);
+            User = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
 
             if (User == null)
             {

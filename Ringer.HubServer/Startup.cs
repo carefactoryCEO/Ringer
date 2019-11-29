@@ -26,7 +26,7 @@ namespace Ringer.HubServer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<RingerDbContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
+                    options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
 
             // security key
             string securityKey = "this_is_super_long_security_key_for_ringer_service";
@@ -47,6 +47,7 @@ namespace Ringer.HubServer
                     // What to validate
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidateLifetime = false,
                     ValidateIssuerSigningKey = true,
 
                     // setup validate data

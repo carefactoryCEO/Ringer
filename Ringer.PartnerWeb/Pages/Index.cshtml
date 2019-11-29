@@ -35,7 +35,7 @@
         {
             <tr>
                 <td>
-                    <a asp-page="./Details" asp-route-id="@item.ID">@Html.DisplayFor(modelItem => item.Name)</a>
+                    <a asp-page="./Details" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a>
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.BirthDate)
@@ -47,8 +47,8 @@
                     @Html.DisplayFor(modelItem => item.PhoneNumber)
                 </td>
                 <td>
-                    <a asp-page="./Edit" asp-route-id="@item.ID">수정</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.ID">삭제</a>
+                    <a asp-page="./Edit" asp-route-id="@item.Id">수정</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">삭제</a>
                 </td>
             </tr>
         }

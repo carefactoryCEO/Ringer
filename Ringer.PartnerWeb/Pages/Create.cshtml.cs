@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.PartnerWeb.Data;
 

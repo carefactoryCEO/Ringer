@@ -13,7 +13,7 @@ namespace Ringer.Core.Data
         public DateTime BirthDate { get; set; }
         public GenderType Gender { get; set; }
 
-        public string DeviceType { get; set; }
+        public DeviceType DeviceType { get; set; }
         public string DeviceId { get; set; }
     }
 }

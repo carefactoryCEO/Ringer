@@ -23,7 +23,7 @@ namespace Ringer.PartnerWeb.Pages
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
-            User = await _context.Users.FirstOrDefaultAsync(m => m.ID == id);
+            User = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
 
             if (User == null)
             {

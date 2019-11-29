@@ -12,10 +12,12 @@ using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Ringer.Core;
+using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.Helpers;
 using Ringer.Models;
 using Xamarin.Forms;
+using XFDevice = Xamarin.Forms.Device;
 
 namespace Ringer.ViewModels
 {
@@ -54,7 +56,7 @@ namespace Ringer.ViewModels
 
                 // Disconnect Connection
                 if (_messagingService.IsConnected)
-                    await _messagingService.DisconnectAsync();
+                    await _messagingService.DisconnectAsync(App.RoomName, App.UserName);
 
                 // Clear Messages
                 _messageRepository.Messages.Clear();
@@ -67,6 +69,9 @@ namespace Ringer.ViewModels
 
         public async Task CheckLogInAsync()
         {
+            App.Trace(App.Token);
+            App.Trace(App.UserName);
+
             if (!IsLoggedIn)
             {
                 // await Task.Delay(1000);
@@ -87,10 +92,12 @@ namespace Ringer.ViewModels
             {
                 // TODO: Token이 valid한지 체크한다.
 
-                _messagingService.Init(Constants.HubUrl, App.Token);
-                await _messagingService.ConnectAsync(Constants.ChattingRoom, App.UserName);
 
-                Debug.WriteLine(_messagingService.ConnectionId);
+
+                await _messagingService.Init(Constants.HubUrl, App.Token);
+                await _messagingService.ConnectAsync(App.RoomName, App.UserName);
+
+                App.Trace(_messagingService.ConnectionId);
             }
         }
         #endregion
@@ -98,6 +105,9 @@ namespace Ringer.ViewModels
         #region Private Methods
         private async Task SendMessageAsync()
         {
+            App.Trace(App.Token);
+            App.Trace(App.UserName);
+
             if (string.IsNullOrEmpty(TextToSend))
                 return;
 
@@ -124,42 +134,7 @@ namespace Ringer.ViewModels
                         userInfoToQuery = UserInfoType.BirthDate;
                         break;
 
-
-
-                    //    messagingService.AddLocalMessage("생년월일을 yy-mm-dd 형식으로 입력하세요. 예를들어 1995년 3월 15일이 생일이라면 95-03-15라고 입력하세요.", Constants.System);
-                    //    // await Task.Delay(2000);
-                    //    messagingService.AddLocalMessage("여행사를 통해 링거에 가입할 때 입력한 것과 일치해야 합니다. 여권, 주민등록증에 기재된 생년월일을 입력하시는 게 가장 좋습니다.", Constants.System);
-                    //    Keyboard = Keyboard.Numeric;
-                    //    userInfoToQuery = UserInfoType.BirthDate;
-                    //    break;
-
                     case UserInfoType.BirthDate:
-
-                        //    messagingService.AddLocalMessage(TextToSend, App.UserName);
-                        //    // TODO: birthDate validation (format, range)
-
-                        //    // birthDate validation pass
-                        //    birthDate = DateTime.Parse(TextToSend);
-                        //    TextToSend = string.Empty;
-                        //    // await Task.Delay(1600);
-
-                        //    messagingService.AddLocalMessage("성별을 입력하세요. 여자는 여자, 남자는 남자라고 쓰시면 됩니다.", Constants.System);
-                        //    userInfoToQuery = UserInfoType.Gender;
-
-
-                        //break;
-
-                        //case UserInfoType.Gender:
-
-                        //messagingService.AddLocalMessage(TextToSend, App.UserName);
-
-                        //// TODO: Gender validation
-
-                        //// Gender validation pass
-                        //gender = TextToSend == "여자" ? GenderType.Female : GenderType.Male;
-                        //TextToSend = string.Empty;
-
-
 
                         var numeric = TextToSend;
                         TextToSend = string.Empty;
@@ -187,11 +162,30 @@ namespace Ringer.ViewModels
                         // TODO: Get Token!
                         HttpClient client = new HttpClient();
 
+                        /*
+                         *  public class LoginInfo
+                            {
+                                public string LoginType { get; set; }
+
+                                public string Email { get; set; }
+                                public string Password { get; set; }
+
+                                public string Name { get; set; }
+                                public DateTime BirthDate { get; set; }
+                                public GenderType Gender { get; set; }
+
+                                public DeviceType DeviceType { get; set; }
+                                public string DeviceId { get; set; }
+                            }
+                         */
+
                         var loginInfo = JsonSerializer.Serialize(new LoginInfo
                         {
                             Name = App.UserName,
                             BirthDate = birthDate,
                             Gender = genderType,
+                            DeviceId = App.DeviceId,
+                            DeviceType = XFDevice.RuntimePlatform == XFDevice.iOS ? DeviceType.iOS : DeviceType.Android
                         });
 
                         // get Token
@@ -236,8 +230,8 @@ namespace Ringer.ViewModels
 
                         // Messaging Service Initialize
                         // 
-                        _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync(Constants.ChattingRoom, App.UserName);
+                        await _messagingService.Init(Constants.HubUrl, App.Token);
+                        await _messagingService.ConnectAsync(App.RoomName, App.UserName);
 
                         break;
 
@@ -261,7 +255,7 @@ namespace Ringer.ViewModels
 
             try
             {
-                await _messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, App.UserName, TextToSend);
+                await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, TextToSend);
 
                 TextToSend = string.Empty;
             }
@@ -305,7 +299,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -341,7 +335,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -405,7 +399,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(Constants.ChattingRoom, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -437,7 +431,7 @@ namespace Ringer.ViewModels
                     return true;
                 else if (status != PermissionStatus.Unknown)
                 {
-                    if (Device.RuntimePlatform == Device.iOS)
+                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "사진 접근 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -495,7 +489,7 @@ namespace Ringer.ViewModels
                     return true;
                 else if (cameraPermissionStatus != PermissionStatus.Unknown)
                 {
-                    if (Device.RuntimePlatform == Device.iOS)
+                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "카메라 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -509,7 +503,7 @@ namespace Ringer.ViewModels
         }
         private async Task<bool> CheckMicPermissionAsync()
         {
-            if (Device.RuntimePlatform == Device.Android)
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
                 return true;
 
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<MicrophonePermission>();
@@ -535,7 +529,7 @@ namespace Ringer.ViewModels
                     return true;
                 else if (status != PermissionStatus.Unknown)
                 {
-                    if (Device.RuntimePlatform == Device.iOS)
+                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "마이크 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -554,10 +548,10 @@ namespace Ringer.ViewModels
         private bool AttachingVideoPermitted() => true;
         private async Task<bool> TakingPhotoPermittedAsync()
         {
-            if (Device.RuntimePlatform == Device.iOS)
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                 return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync();
 
-            else if (Device.RuntimePlatform == Device.Android)
+            else if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
                 return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
 
             else
@@ -565,10 +559,10 @@ namespace Ringer.ViewModels
         }
         private async Task<bool> TakingVideoPermittedAsync()
         {
-            if (Device.RuntimePlatform == Device.iOS)
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                 return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync();
 
-            else if (Device.RuntimePlatform == Device.Android)
+            else if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
                 return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
 
             else

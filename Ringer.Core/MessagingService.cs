@@ -17,13 +17,12 @@ namespace Ringer.Core
         #endregion
 
         #region Initializer
-        public void Init(string url, string token)
+        public async Task Init(string url, string token)
         {
             if (_hubConnection != null)
             {
-                return;
-                //await _hubConnection.DisposeAsync();
-                //_hubConnection = null;
+                await _hubConnection.DisposeAsync();
+                _hubConnection = null;
             }
 
             _hubConnection = new HubConnectionBuilder()
@@ -31,7 +30,13 @@ namespace Ringer.Core
                 {
                     options.AccessTokenProvider = () => Task.FromResult(token);
                 })
-                .WithAutomaticReconnect() // wait 0,2,10,30 seconds and try to reconnect
+                .WithAutomaticReconnect(new[]
+                {
+                    TimeSpan.FromSeconds(0),
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(2),
+                    TimeSpan.FromSeconds(2)
+                })// default: wait 0,2,10,30 seconds and try to reconnect
                 .Build();
 
             // Handle Hub connection events
@@ -134,6 +139,14 @@ namespace Ringer.Core
                 Debug.WriteLine("Disconnection Failed: " + ex.Message);
                 DisconnectionFailed?.Invoke(this, new ConnectionEventArgs("Disconnection Failed: " + ex.Message));
             }
+        }
+
+        public async Task DisconnectAsync(string room, string user)
+        {
+            if (IsConnected)
+                await LeaveRoomAsync(room, user);
+
+            await DisconnectAsync();
         }
 
         public async Task JoinRoomAsync(string room, string user)

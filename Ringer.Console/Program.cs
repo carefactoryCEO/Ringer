@@ -4,8 +4,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.Json;
 using System.Text;
-using Ringer.Core.Models;
 using Ringer.Core.EventArgs;
+using Ringer.Core.Data;
 
 namespace Ringer.ConsoleApp
 {
@@ -13,14 +13,14 @@ namespace Ringer.ConsoleApp
     {
         #region members
         //static readonly string hubUrl = "https://ringerhub.azurewebsites.net/hubs/chat";
-        static readonly string hubUrl = "http://localhost:5000/hubs/chat";
         //static readonly string tokenUrl = "https://ringerhub.azurewebsites.net/auth/login";
+        static readonly string hubUrl = "http://localhost:5000/hubs/chat";
         static readonly string tokenUrl = "http://localhost:5000/auth/login";
         static readonly MessagingService messagingService = new MessagingService();
 
-        static readonly string name = "admin";
-        static readonly DateTime birthDate = DateTime.Parse("11-11-11");
-        static readonly GenderType gender = GenderType.Female;
+        static readonly string name = "Admin";
+        static readonly DateTime birthDate = DateTime.Parse("76-07-21");
+        static readonly GenderType gender = GenderType.Male;
 
         static readonly string Room = "Xamarin";
         static readonly HttpClient client = new HttpClient();
@@ -36,6 +36,8 @@ namespace Ringer.ConsoleApp
                 Name = name,
                 BirthDate = birthDate,
                 Gender = gender,
+                DeviceType = DeviceType.Console,
+                DeviceId = "87989c4a-0bf7-42e3-89dd-abc17bacd2bd"
             });
 
             // get Token
@@ -65,7 +67,7 @@ namespace Ringer.ConsoleApp
             messagingService.SomeoneLeft += Service_OnLeft;
 
             // Initialize the messaging service
-            messagingService.Init(hubUrl, token);
+            await messagingService.Init(hubUrl, token);
 
             // Connect to hub
             await messagingService.ConnectAsync(Room, name);

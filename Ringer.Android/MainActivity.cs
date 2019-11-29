@@ -8,6 +8,7 @@ using Android.Widget;
 using Android.OS;
 using Android;
 using Plugin.CurrentActivity;
+using Microsoft.AppCenter.Push;
 
 namespace Ringer.Droid
 {
@@ -57,6 +58,12 @@ namespace Ringer.Droid
             }
             base.OnStart();
 
+        }
+
+        protected override void OnNewIntent(Android.Content.Intent intent)
+        {
+            base.OnNewIntent(intent);
+            Push.CheckLaunchedFromNotification(this, intent);
         }
     }
 }
