@@ -1,11 +1,9 @@
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
@@ -15,17 +13,19 @@ namespace Ringer.PartnerWeb.Pages
 {
     public class EditModel : PageModel
     {
-        private readonly Ringer.PartnerWeb.Data.PartnerContext _context;
+        private readonly PartnerContext _context;
 
-        public EditModel(Ringer.PartnerWeb.Data.PartnerContext context)
+        public EditModel(PartnerContext context)
         {
             _context = context;
         }
 
         [BindProperty]
         public User RingerUser { get; set; }
+
         [BindProperty]
         public GenderType Gender { get; set; }
+
         [BindProperty]
         [Required]
         public string BirthDateString

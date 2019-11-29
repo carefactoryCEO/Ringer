@@ -20,6 +20,8 @@ namespace Ringer.Core.Models
         public string Sender { get; set; } // sender
         public int SenderId { get; set; }
 
-        public ICollection<Pending> Pendings { get; set; }
+        public string Room { get; set; }
+        public int RoomId { get; set; }
+
     }
 }

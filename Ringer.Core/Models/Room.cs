@@ -6,6 +6,7 @@ namespace Ringer.Core.Models
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public bool IsClosed { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; }
     }

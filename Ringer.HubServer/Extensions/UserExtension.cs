@@ -37,5 +37,6 @@ namespace Ringer.HubServer.Extensions
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
     }
 }

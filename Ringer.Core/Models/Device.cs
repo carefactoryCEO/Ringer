@@ -10,10 +10,11 @@ namespace Ringer.Core.Models
         public string Id { get; set; }
         public DeviceType DeviceType { get; set; }
         public bool IsOn { get; set; }
+        public string ConnectionId { get; set; }
 
         public int OwnerId { get; set; }
         public User Owner { get; set; }
 
-        public ICollection<Pending> Pendings { get; set; }
+        public ICollection<Message> PendingMessages { get; set; }
     }
 }

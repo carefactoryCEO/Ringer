@@ -109,9 +109,6 @@ namespace Ringer.HubServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
@@ -148,6 +145,12 @@ namespace Ringer.HubServer.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("UserType")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT")
+                        .HasDefaultValue("Consumer");
+
                     b.HasKey("Id");
 
                     b.ToTable("User");
@@ -157,41 +160,46 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 9, 6, 47, 98, DateTimeKind.Local).AddTicks(7100),
+                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 433, DateTimeKind.Local).AddTicks(7520),
                             Gender = "Male",
-                            Name = "Admin"
+                            Name = "Admin",
+                            UserType = "Admin"
                         },
                         new
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 9, 6, 47, 101, DateTimeKind.Local).AddTicks(2750),
+                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9280),
                             Gender = "Male",
-                            Name = "신모범"
+                            Name = "신모범",
+                            UserType = "Consumer"
                         },
                         new
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 9, 6, 47, 101, DateTimeKind.Local).AddTicks(2780),
+                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310),
                             Gender = "Female",
-                            Name = "김은미"
+                            Name = "김은미",
+                            UserType = "Consumer"
                         },
                         new
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 9, 6, 47, 101, DateTimeKind.Local).AddTicks(2790),
+                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310),
                             Gender = "Male",
-                            Name = "김순용"
+                            Name = "김순용",
+                            UserType = "Consumer"
                         },
                         new
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 9, 6, 47, 101, DateTimeKind.Local).AddTicks(2790),
+                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9320),
                             Gender = "Female",
-                            Name = "함주희"
+                            Name = "함주희",
+                            UserType = "Consumer"
                         });
                 });
 

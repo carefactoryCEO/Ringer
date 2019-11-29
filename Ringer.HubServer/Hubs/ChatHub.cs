@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Ringer.Core.Models;
 using Ringer.HubServer.Data;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -58,79 +59,75 @@ namespace Ringer.Backend.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            // Get user id
-            string userId = Context.UserIdentifier;
-
-            // null check
-            if (userId != null)
+            try
             {
-                Console.WriteLine($"------------- userId: {userId} --------------");
+                // 접속한 Device의 Owner(User)가 속한 모든 방에 Device를 추가
+                int userId = int.Parse(Context.UserIdentifier);
+
+                User user = await _dbContext.Users
+                    .Include(u => u.Enrollments)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                foreach (Enrollment enrollment in user.Enrollments)
+                    await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.RoomId.ToString());
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
             }
 
-            // Get Device id
-            string deviceId = Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
-
-            // null check
-            if (deviceId != null)
-            {
-                Console.WriteLine($"------------- deviceId: {deviceId} --------------");
-
-                var device = await _dbContext.Devices.Include(d => d.Owner).FirstOrDefaultAsync(d => d.Id == deviceId);
-                device.IsOn = true;
-                await _dbContext.SaveChangesAsync();
-
-                Console.WriteLine($"------------- Owner: {device.Owner.Name} --------------");
-
-                Console.WriteLine($"------------- change saved --------------");
-            }
-
-            // Query DB using user id
-            User user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == int.Parse(userId));
-
-
-
-            // TODO: Mark User as connected
-            //user.IsConnected = true;
-
-            // Save Changes
-            //await _dbContext.SaveChangesAsync(); 
-
-            string claimName = Context.User?.FindFirstValue(ClaimTypes.Name);
-            string claimId = Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            string claimBabo = Context?.User?.Claims?.FirstOrDefault(c => c.Type == "testClaim")?.Value;
-
-            // TODO: base method를 실행할 필요가 있을까? 판단해야.
-            // 이미 커넥션 자체는 이루어졌고 그 후처리를 할 뿐이므로 필요 없나?
-            // 아니면 base에서도 커넥션 이후에 후처리할 일이 있을 수도 있겠다.
             await base.OnConnectedAsync();
         }
         public override async Task OnDisconnectedAsync(Exception exception)
         {
             await base.OnDisconnectedAsync(exception);
 
-            var deviceId = Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
-
-            // null check
-            if (deviceId != null)
+            try
             {
-                var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == deviceId);
-                device.IsOn = false;
-                await _dbContext.SaveChangesAsync();
+                // 접속한 Device의 Ower(User)가 속한 모든 방에서 Device를 제거
+                User user = await _dbContext.Users
+                    .Include(u => u.Enrollments)
+                    .FirstOrDefaultAsync(u => u.Id == int.Parse(Context.UserIdentifier));
+
+                foreach (Enrollment enrollment in user.Enrollments)
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, enrollment.RoomId.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
             }
         }
         public async Task SendMessageToRoomAsyc(string content, string sender, int roomId)
         {
-            // send all connected devices 접속중인 기계는 다 보낸다.
+            // 접속중인 디바이스는 일단 다 보낸다.
             await Clients.Group(roomId.ToString()).SendAsync("ReceiveMessage", sender, content);
 
-            // save message to db
+            // 디비에 메시지 저장
             var message = new Message(content, sender);
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
 
-            // 룸에 속한 user들을 찾는다.
+            // 룸에 속한 유저의 디바이스들 중 !IsOn인 디바이스는 푸시
+            var room = await _dbContext.Rooms
+                .Include(room => room.Enrollments)
+                    .ThenInclude(enrollment => enrollment.User)
+                        .ThenInclude(user => user.Devices.Where(device => !device.IsOn))
+                .AsNoTracking()
+                .FirstOrDefaultAsync(r => r.Id == roomId);
 
-            // 각 유저의 디바이스들 중에서 IsOn == false인 디바이스에 푸시
+            foreach (Enrollment enroll in room.Enrollments)
+                foreach (Device device in enroll.User.Devices)
+                {
+                    // device.pendings에 message 추가
+
+                    // device에 push
+
+                    Console.WriteLine($"{enroll.User.Name}({device.DeviceType}): {device.Id}");
+
+                }
         }
     }
 }
