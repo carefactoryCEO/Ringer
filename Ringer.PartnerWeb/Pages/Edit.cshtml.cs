@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.PartnerWeb.Data;
 
@@ -45,7 +46,7 @@ namespace Ringer.PartnerWeb.Pages
         public async Task<IActionResult> OnGetAsync(int id)
         {
 
-            RingerUser = await _context.Users.FirstOrDefaultAsync(m => m.ID == id);
+            RingerUser = await _context.Users.FirstOrDefaultAsync(m => m.Id == id);
 
             if (RingerUser == null)
             {
@@ -74,7 +75,7 @@ namespace Ringer.PartnerWeb.Pages
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!UserExists(RingerUser.ID))
+                if (!UserExists(RingerUser.Id))
                 {
                     return NotFound();
                 }
@@ -89,7 +90,7 @@ namespace Ringer.PartnerWeb.Pages
 
         private bool UserExists(int id)
         {
-            return _context.Users.Any(e => e.ID == id);
+            return _context.Users.Any(e => e.Id == id);
         }
     }
 }

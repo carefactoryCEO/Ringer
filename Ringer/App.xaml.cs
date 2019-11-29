@@ -10,6 +10,7 @@ using Ringer.Helpers;
 using Xamarin.Essentials;
 using Ringer.Core.Models;
 using Ringer.Models;
+using System.Runtime.CompilerServices;
 
 namespace Ringer
 {
@@ -35,14 +36,14 @@ namespace Ringer
 
         public static string UserName
         {
-            get => Preferences.Get(nameof(UserName), "링거식");
+            get => Preferences.Get(nameof(UserName), "링거");
             set => Preferences.Set(nameof(UserName), value);
         }
 
         public static string RoomName
         {
-            get => Preferences.Get(nameof(UserName), "Xamarin");
-            set => Preferences.Set(nameof(UserName), value);
+            get => Preferences.Get(nameof(RoomName), Constants.ChattingRoom);
+            set => Preferences.Set(nameof(RoomName), value);
         }
 
         #region Constructor
@@ -60,29 +61,142 @@ namespace Ringer
             var messageRepository = DependencyService.Resolve<IMessageRepository>();
 
 
-            messagingService.Connecting += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.ConnectionFailed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.Connected += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-
-            messagingService.Disconnecting += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.DisconnectionFailed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.Disconnected += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-
-            messagingService.Closed += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.Reconnecting += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message));
-            messagingService.Reconnected += async (s, e) =>
+            messagingService.Connecting += (s, e) =>
             {
-                messageRepository.AddLocalMessage(new Message(e.Message));
-                await messagingService.JoinRoomAsync(RoomName, UserName);
+                Conncting(e, messageRepository);
+            };
+            messagingService.ConnectionFailed += (s, e) =>
+            {
+                ConnectionFailed(e, messageRepository);
+            };
+            messagingService.Connected += (s, e) =>
+            {
+                Connected(e, messageRepository);
             };
 
-            messagingService.MessageReceived += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message, e.User));
-            messagingService.SomeoneEntered += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message, e.User));
-            messagingService.SomeoneLeft += (s, e) => messageRepository.AddLocalMessage(new Message(e.Message, e.User));
+            messagingService.Disconnecting += (s, e) =>
+            {
+                Disconnecting(e, messageRepository);
+            };
+            messagingService.DisconnectionFailed += (s, e) =>
+            {
+                DisconnectionFailed(e, messageRepository);
+            };
+            messagingService.Disconnected += (s, e) =>
+            {
+                Disconnected(e, messageRepository);
+            };
+
+            messagingService.Closed += (s, e) =>
+            {
+                Closed(e, messageRepository);
+            };
+            messagingService.Reconnecting += (s, e) =>
+            {
+                reconnecting(e, messageRepository);
+            };
+            messagingService.Reconnected += async (s, e) =>
+            {
+                await messagingService.JoinRoomAsync(RoomName, UserName);
+                Reconnedted(e, messageRepository);
+            };
+
+            messagingService.MessageReceived += (s, e) =>
+            {
+                MessageReceived(e, messageRepository);
+            };
+            messagingService.SomeoneEntered += (s, e) =>
+            {
+                SomeoneEntered(e, messageRepository);
+            };
+            messagingService.SomeoneLeft += (s, e) =>
+            {
+                SomeoneLeft(e, messageRepository);
+            };
 
             #endregion
         }
+
+        private static void SomeoneLeft(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        {
+            if (e.User != UserName)
+                messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void SomeoneEntered(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        {
+            if (e.User != UserName)
+                messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void MessageReceived(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        {
+            var name = e.User == UserName ? string.Empty : $"{e.User}: ";
+            messageRepository.AddLocalMessage(new Message($"{name}{e.Message}", e.User));
+            Trace(e.Message);
+        }
+
+        private void Reconnedted(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void reconnecting(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void Closed(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void Disconnected(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void DisconnectionFailed(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void Disconnecting(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void Connected(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void ConnectionFailed(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
+
+        private void Conncting(ConnectionEventArgs e, IMessageRepository messageRepository)
+        {
+            //messageRepository.AddLocalMessage(new Message(e.Message));
+            Trace(e.Message);
+        }
         #endregion
+
+        public static void Trace(string message = "", [CallerMemberName] string name = "")
+        {
+            Debug.WriteLine($"{name}: {message}\n");
+        }
 
         #region Life Cycle Methods
         protected override async void OnStart()

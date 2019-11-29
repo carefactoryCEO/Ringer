@@ -25,7 +25,7 @@ namespace Ringer.PartnerWeb
             // TODO: Reset Connection String before Open Service!!!
             // TODO: SUPER IMPORTANT!!!
             services.AddDbContext<PartnerContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("PartnerContext")));
+                    options.UseSqlite(Configuration.GetConnectionString("PartnerContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

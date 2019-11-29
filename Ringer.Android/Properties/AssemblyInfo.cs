@@ -40,3 +40,6 @@ using Android.App;
 
 [assembly: UsesFeature("android.hardware.camera", Required = true)]
 [assembly: UsesFeature("android.hardware.camera.autofocus", Required = true)]
+
+// TODO: remove UsesClearTextTraffic = true before public publishment
+//[assembly: Application(UsesCleartextTraffic = true)]
