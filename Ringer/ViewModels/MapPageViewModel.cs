@@ -4,11 +4,9 @@ using Ringer.Models;
 using Xamarin.Essentials;
 using System.Linq;
 using System.ComponentModel;
-using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
-using System.Reflection;
 
 namespace Ringer.ViewModels
 {
@@ -103,7 +101,7 @@ namespace Ringer.ViewModels
 
             GoToChatPageCommand = new Command(async () =>
             {
-                await Shell.Current.GoToAsync("chatpage");
+                await Shell.Current.GoToAsync("chatpage?room=fromMap");
             });
         }
 
@@ -111,7 +109,7 @@ namespace Ringer.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        bool isCurrentLocationInserted = false;
+        bool isCurrentLocationInserted;
 
         public async Task InsertCurrentLocationAsync(Location location)
         {

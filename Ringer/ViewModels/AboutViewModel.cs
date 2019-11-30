@@ -14,7 +14,7 @@ namespace Ringer.ViewModels
         {
             Title = "About";
 
-            OpenWebCommand = new Command(() => Shell.Current.Navigation.PopModalAsync());
+            //OpenWebCommand = new Command(() => Shell.Current.Navigation.PopModalAsync());
             //OpenWebCommand = new Command(() => Device.OpenUri(new Uri("https://xamarin.com/platform")));
         }
 

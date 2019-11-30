@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Ringer.Core.Models;
 using Ringer.HubServer.Data;
 using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Ringer.Backend.Hubs
@@ -15,10 +17,12 @@ namespace Ringer.Backend.Hubs
     public class ChatHub : Hub
     {
         private readonly RingerDbContext _dbContext;
+        private readonly ILogger<ChatHub> _logger;
 
-        public ChatHub(RingerDbContext dbContext)
+        public ChatHub(RingerDbContext dbContext, ILogger<ChatHub> logger)
         {
             _dbContext = dbContext;
+            this._logger = logger;
         }
 
         #region present methods
@@ -65,16 +69,22 @@ namespace Ringer.Backend.Hubs
                 int userId = int.Parse(Context.UserIdentifier);
 
                 User user = await _dbContext.Users
-                    .Include(u => u.Enrollments)
+                    .Include(user => user.Enrollments)
+                        .ThenInclude(enrollment => enrollment.Room)
                     .FirstOrDefaultAsync(u => u.Id == userId);
 
-                foreach (Enrollment enrollment in user.Enrollments)
-                    await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.RoomId.ToString());
+                _logger.LogInformation($"user {user.Name}({Context.ConnectionId}) Connected.");
 
+                foreach (Enrollment enrollment in user.Enrollments)
+                {
+                    await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.Room.Name);
+
+                    _logger.LogInformation($"user {user.Name}({Context.ConnectionId}) added to romm {enrollment.Room.Name}.");
+                }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
+                _logger.LogError(ex.Message);
                 await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
             }
 
@@ -89,10 +99,17 @@ namespace Ringer.Backend.Hubs
                 // 접속한 Device의 Ower(User)가 속한 모든 방에서 Device를 제거
                 User user = await _dbContext.Users
                     .Include(u => u.Enrollments)
+                        .ThenInclude(enrollment => enrollment.Room)
                     .FirstOrDefaultAsync(u => u.Id == int.Parse(Context.UserIdentifier));
 
+                _logger.LogInformation($"user {user.Name}({Context.ConnectionId}) Disconnected.");
+
                 foreach (Enrollment enrollment in user.Enrollments)
-                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, enrollment.RoomId.ToString());
+                {
+                    await Groups.RemoveFromGroupAsync(Context.ConnectionId, enrollment.Room.Name);
+
+                    _logger.LogInformation($"user {user.Name}({Context.ConnectionId}) removed from romm {enrollment.Room.Name}.");
+                }
             }
             catch (Exception ex)
             {

@@ -23,6 +23,14 @@ namespace Ringer
     public partial class App : Application
     {
         #region public static properties
+        public static bool IsLoggedIn => Token != null;
+
+        public static string CurrentRoomId
+        {
+            get => Preferences.Get(nameof(CurrentRoomId), null);
+            set => Preferences.Set(nameof(CurrentRoomId), value);
+        }
+
         public static string DeviceId
         {
             get => Preferences.Get(nameof(DeviceId), null);
@@ -64,149 +72,69 @@ namespace Ringer
             var messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
 
-            messagingService.Connecting += (s, e) =>
-            {
-                Conncting(e, _messageRepository);
-            };
-            messagingService.ConnectionFailed += (s, e) =>
-            {
-                ConnectionFailed(e, _messageRepository);
-            };
-            messagingService.Connected += (s, e) =>
-            {
-                Connected(e, _messageRepository);
-            };
+            messagingService.Connecting += (s, e) => Trace(e.Message);
+            messagingService.Connected += (s, e) => Trace(e.Message);
+            messagingService.ConnectionFailed += (s, e) => Trace(e.Message, true);
 
-            messagingService.Disconnecting += (s, e) =>
-            {
-                Disconnecting(e, _messageRepository);
-            };
-            messagingService.DisconnectionFailed += (s, e) =>
-            {
-                DisconnectionFailed(e, _messageRepository);
-            };
-            messagingService.Disconnected += (s, e) =>
-            {
-                Disconnected(e, _messageRepository);
-            };
+            messagingService.Disconnecting += (s, e) => Trace(e.Message);
+            messagingService.Disconnected += (s, e) => Trace(e.Message);
+            messagingService.DisconnectionFailed += (s, e) => Trace(e.Message, true);
 
-            messagingService.Closed += (s, e) =>
-            {
-                Closed(e, _messageRepository);
-            };
-            messagingService.Reconnecting += (s, e) =>
-            {
-                reconnecting(e, _messageRepository);
-            };
-            messagingService.Reconnected += async (s, e) =>
-            {
-                await messagingService.JoinRoomAsync(RoomName, UserName);
-                Reconnedted(e, _messageRepository);
-            };
+            messagingService.Closed += (s, e) => Trace(e.Message);
+            messagingService.Reconnecting += (s, e) => Trace(e.Message);
+            messagingService.Reconnected += (s, e) => Trace(e.Message, true);
 
-            messagingService.MessageReceived += (s, e) =>
-            {
-                MessageReceived(e, _messageRepository);
-            };
-            messagingService.SomeoneEntered += (s, e) =>
-            {
-                SomeoneEntered(e, _messageRepository);
-            };
-            messagingService.SomeoneLeft += (s, e) =>
-            {
-                SomeoneLeft(e, _messageRepository);
-            };
+            messagingService.MessageReceived += MessageReceived;
+            messagingService.SomeoneEntered += SomeoneEntered;
+            messagingService.SomeoneLeft += SomeoneLeft;
 
             #endregion
         }
         #endregion
 
         #region messaging handlers
-        private static void SomeoneLeft(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
+        {
+            message = $"\n[{DateTime.Now.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
+
+            Debug.WriteLine(message);
+
+            if (analyticsAlso)
+                Analytics.TrackEvent(message);
+        }
+        private void SomeoneLeft(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.User != UserName)
-                messageRepository.AddLocalMessage(new Message(e.Message));
+                _messageRepository.AddLocalMessage(new Message(e.Message));
+
             Trace(e.Message);
         }
 
-        private void SomeoneEntered(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        private void SomeoneEntered(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.User != UserName)
-                messageRepository.AddLocalMessage(new Message(e.Message));
+                _messageRepository.AddLocalMessage(new Message(e.Message));
+
             Trace(e.Message);
         }
 
-        private void MessageReceived(Core.EventArgs.SignalREventArgs e, IMessageRepository messageRepository)
+        private void MessageReceived(object sender, Core.EventArgs.SignalREventArgs e)
         {
             var name = e.User == UserName ? string.Empty : $"{e.User}: ";
-            messageRepository.AddLocalMessage(new Message($"{name}{e.Message}", e.User));
+            _messageRepository.AddLocalMessage(new Message($"{name}{e.Message}", e.User));
+
             Trace(e.Message);
         }
 
-        private void Reconnedted(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void reconnecting(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void Closed(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void Disconnected(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void DisconnectionFailed(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void Disconnecting(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void Connected(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void ConnectionFailed(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        private void Conncting(ConnectionEventArgs e, IMessageRepository messageRepository)
-        {
-            //messageRepository.AddLocalMessage(new Message(e.Message));
-            Trace(e.Message);
-        }
-
-        public static void Trace(string message = "", [CallerMemberName] string name = "")
-        {
-            Debug.WriteLine($"{name}: {message}\n");
-        }
         #endregion
 
         #region Life Cycle Methods
         protected override async void OnStart()
         {
             base.OnStart();
+
+            if (DesignMode.IsDesignModeEnabled)
+                return;
 
             #region AppCenter
             // Intercept Push Notification
@@ -233,12 +161,18 @@ namespace Ringer
                     // Send the notification summary to debug output
                     Debug.WriteLine(summary);
                     _messageRepository.AddLocalMessage(new Message(summary));
+                    Debug.WriteLine(_messageRepository.Messages.Count);
+
+                    //Shell.Current.GoToAsync("chatpage");
+                    //Shell.Current.Navigation.PopAsync();
 
                 };
             }
 
 
             AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS, typeof(Analytics), typeof(Crashes), typeof(Push));
+
+            Analytics.TrackEvent("Ringer started");
 
             if (await Push.IsEnabledAsync())
             {
@@ -253,9 +187,6 @@ namespace Ringer
             #endregion
 
             Debug.WriteLine("App.OnStart");
-
-            if (DesignMode.IsDesignModeEnabled)
-                return;
         }
 
         protected override void OnSleep()

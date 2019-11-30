@@ -26,5 +26,8 @@
         </ResourceDictionary>
     </Shell.Resources>
 
-    <ShellContent ContentTemplate="{DataTemplate local:MapPage}" />
+    <ShellContent ContentTemplate="{DataTemplate local:MapPage}"/>
+    <!--<ShellContent ContentTemplate="{DataTemplate local:MapPage}" Route="mappage"/>
+    <ShellContent ContentTemplate="{DataTemplate local:ChatPage}" Route="chatpage"/>
+    <ShellContent ContentTemplate="{DataTemplate local:VidyoPage}" Route="vidyopage"/>-->
 </Shell>

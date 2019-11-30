@@ -8,7 +8,7 @@ namespace Ringer.Helpers
         public static readonly string AppCenterAndroid = "android=776e5a61-2f89-48c3-95b6-5fa3dde1c708;";
         public static readonly string AppCenteriOS = "ios=b1b4c859-3d1a-4f7c-bf34-b4e45a2aad65";
         public static readonly string HubUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/hubs/chat" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/hubs/chat" : "http://10.0.2.2:5000/hubs/chat";
-        public static readonly string TokenUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/auth/login" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/auth/login" : "http://10.0.2.2:5000/auth/login";
+        public static readonly string LoginUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/auth/login" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/auth/login" : "http://10.0.2.2:5000/auth/login";
         public static readonly string System = "system";
         public static readonly string ChattingRoom = "Xamarin";
 

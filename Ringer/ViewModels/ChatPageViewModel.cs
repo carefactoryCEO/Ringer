@@ -31,8 +31,6 @@ namespace Ringer.ViewModels
         GenderType genderType;
         #endregion
 
-        public bool IsLoggedIn => App.Token != null;
-
         #region Constructor
         public ChatPageViewModel()
         {
@@ -41,7 +39,7 @@ namespace Ringer.ViewModels
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
-            ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage"));
+            ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage?vidyoRoom=fd17626e-29c8-4e2f-a5bb-3215ffe8e61a"));
             CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
 
             // Initialize the properties for binding
@@ -63,18 +61,17 @@ namespace Ringer.ViewModels
 
                 // Go Back
                 await Shell.Current.Navigation.PopAsync();
+                //await Shell.Current.GoToAsync("mappage");
             });
 
         }
 
         public async Task CheckLogInAsync()
         {
-            App.Trace(App.Token);
-            App.Trace(App.UserName);
-
-            if (!IsLoggedIn)
+            if (!App.IsLoggedIn)
             {
                 // await Task.Delay(1000);
+                Debug.WriteLine(_messageRepository.Messages.Count);
 
                 _messageRepository.AddLocalMessage(new Message { Content = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System });
                 // await Task.Delay(1500);
@@ -91,13 +88,8 @@ namespace Ringer.ViewModels
             else
             {
                 // TODO: Token이 valid한지 체크한다.
-
-
-
-                await _messagingService.Init(Constants.HubUrl, App.Token);
+                _messagingService.Init(Constants.HubUrl, App.Token);
                 await _messagingService.ConnectAsync(App.RoomName, App.UserName);
-
-                App.Trace(_messagingService.ConnectionId);
             }
         }
         #endregion
@@ -105,13 +97,10 @@ namespace Ringer.ViewModels
         #region Private Methods
         private async Task SendMessageAsync()
         {
-            App.Trace(App.Token);
-            App.Trace(App.UserName);
-
             if (string.IsNullOrEmpty(TextToSend))
                 return;
 
-            if (!IsLoggedIn)
+            if (!App.IsLoggedIn)
             {
                 switch (userInfoToQuery)
                 {
@@ -159,25 +148,8 @@ namespace Ringer.ViewModels
 
                         // await Task.Delay(500);
 
-                        // TODO: Get Token!
+                        // Get Token
                         HttpClient client = new HttpClient();
-
-                        /*
-                         *  public class LoginInfo
-                            {
-                                public string LoginType { get; set; }
-
-                                public string Email { get; set; }
-                                public string Password { get; set; }
-
-                                public string Name { get; set; }
-                                public DateTime BirthDate { get; set; }
-                                public GenderType Gender { get; set; }
-
-                                public DeviceType DeviceType { get; set; }
-                                public string DeviceId { get; set; }
-                            }
-                         */
 
                         var loginInfo = JsonSerializer.Serialize(new LoginInfo
                         {
@@ -188,35 +160,13 @@ namespace Ringer.ViewModels
                             DeviceType = XFDevice.RuntimePlatform == XFDevice.iOS ? DeviceType.iOS : DeviceType.Android
                         });
 
-                        // get Token
-                        HttpResponseMessage response = await client.PostAsync(Constants.TokenUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+                        HttpResponseMessage response = await client.PostAsync(Constants.LoginUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
 
-                        /**
-                         * 
-                         * 서버에서 일치 정보 찾음
-                         * response.StatusCode : System.Net.HttpStatusCode.OK
-                         * response
-                         * {
-                         *      StatusCode: 200, 
-                         *      ReasonPhrase: 'OK', 
-                         *      Version: 1.1, 
-                         *      Content: System.Net.Http.NSUrlSessionHandler+NSUrlSessionDataTaskStreamContent, 
-                         *      Headers:{Transfer-Encoding: IdentityServer: KestrelDate: Tue, 26 Nov 2019 12:35:50 GMTContent-Type: text/plain; charset=utf-8}
-                         *  }
-                         *  
-                         *  
-                         * 서버에 일치 정보 없음
-                         * response.StatusCode : System.Net.HttpStatusCode.NotFound
-                         * response
-                         * {
-                         *      StatusCode: 404, 
-                         *      ReasonPhrase: 'Not Found', 
-                         *      Version: 1.1, 
-                         *      Content: System.Net.Http.NSUrlSessionHandler+NSUrlSessionDataTaskStreamContent, 
-                         *      Headers:{Transfer-Encoding: IdentityServer: KestrelDate: 2019-11-26 오후 12:25:53 +00:00Content-Type: text/plain; charset=utf-8}
-                         *  }
-                         *  
-                         **/
+                        // 로그인 실ㅅ
+                        if (response.StatusCode != System.Net.HttpStatusCode.OK)
+                        {
+                            Debug.WriteLine(await response.Content.ReadAsStringAsync());
+                        }
 
                         var token = await response.Content.ReadAsStringAsync();
 
@@ -230,7 +180,7 @@ namespace Ringer.ViewModels
 
                         // Messaging Service Initialize
                         // 
-                        await _messagingService.Init(Constants.HubUrl, App.Token);
+                        _messagingService.Init(Constants.HubUrl, App.Token);
                         await _messagingService.ConnectAsync(App.RoomName, App.UserName);
 
                         break;
@@ -239,7 +189,7 @@ namespace Ringer.ViewModels
                         break;
                 }
 
-                if (IsLoggedIn && _messagingService.IsConnected)
+                if (App.IsLoggedIn && _messagingService.IsConnected)
                 {
                     //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
 
@@ -255,7 +205,9 @@ namespace Ringer.ViewModels
 
             try
             {
+                // TODO: activicy indicator on
                 await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, TextToSend);
+                // activity indicator off
 
                 TextToSend = string.Empty;
             }
@@ -264,7 +216,6 @@ namespace Ringer.ViewModels
                 _messageRepository.AddLocalMessage(new Message { Content = $"vs.SendMessage:Send failed: {ex.Message}", Sender = Constants.System });
             }
         }
-
         private async Task ProcessCameraAction(string action)
         {
             if (action == "설정 열기")

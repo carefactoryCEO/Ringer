@@ -1,6 +1,4 @@
-﻿using System;
-using Ringer.Core;
-using Ringer.Helpers;
+﻿using System.Diagnostics;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -9,10 +7,23 @@ using Xamarin.Forms.Xaml;
 namespace Ringer.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
+    [QueryProperty("Room", "room")]
     public partial class ChatPage : ContentPage
     {
         #region Private Members
         bool initial = true;
+
+        private string _room;
+
+        public string Room
+        {
+            get => _room;
+            set
+            {
+                _room = value;
+                Debug.WriteLine(_room);
+            }
+        }
 
         #endregion
 

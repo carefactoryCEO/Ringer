@@ -9,7 +9,7 @@ using Ringer.HubServer.Data;
 namespace Ringer.HubServer.Migrations
 {
     [DbContext(typeof(RingerDbContext))]
-    [Migration("20191129023147_Initial-Migration")]
+    [Migration("20191130061424_Initial-Migration")]
     partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,6 +21,9 @@ namespace Ringer.HubServer.Migrations
             modelBuilder.Entity("Ringer.Core.Models.Device", b =>
                 {
                     b.Property<string>("Id")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ConnectionId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DeviceType")
@@ -70,6 +73,15 @@ namespace Ringer.HubServer.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("DeviceId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Room")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("RoomId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Sender")
                         .HasColumnType("TEXT");
 
@@ -78,31 +90,9 @@ namespace Ringer.HubServer.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DeviceId");
+
                     b.ToTable("Message");
-                });
-
-            modelBuilder.Entity("Ringer.Core.Models.Pending", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("DeviceId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("DeviceId1")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("MessageId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DeviceId1");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("Pending");
                 });
 
             modelBuilder.Entity("Ringer.Core.Models.Room", b =>
@@ -111,12 +101,23 @@ namespace Ringer.HubServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsClosed")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
                     b.ToTable("Room");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsClosed = false,
+                            Name = "김순용"
+                        });
                 });
 
             modelBuilder.Entity("Ringer.Core.Models.User", b =>
@@ -137,6 +138,9 @@ namespace Ringer.HubServer.Migrations
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsOn")
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
@@ -162,8 +166,9 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 433, DateTimeKind.Local).AddTicks(7520),
+                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 297, DateTimeKind.Local).AddTicks(7170),
                             Gender = "Male",
+                            IsOn = false,
                             Name = "Admin",
                             UserType = "Admin"
                         },
@@ -171,8 +176,9 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9280),
+                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 299, DateTimeKind.Local).AddTicks(9970),
                             Gender = "Male",
+                            IsOn = false,
                             Name = "신모범",
                             UserType = "Consumer"
                         },
@@ -180,8 +186,9 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310),
+                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(10),
                             Gender = "Female",
+                            IsOn = false,
                             Name = "김은미",
                             UserType = "Consumer"
                         },
@@ -189,8 +196,9 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310),
+                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(20),
                             Gender = "Male",
+                            IsOn = false,
                             Name = "김순용",
                             UserType = "Consumer"
                         },
@@ -198,8 +206,9 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9320),
+                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(20),
                             Gender = "Female",
+                            IsOn = false,
                             Name = "함주희",
                             UserType = "Consumer"
                         });
@@ -229,17 +238,11 @@ namespace Ringer.HubServer.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Ringer.Core.Models.Pending", b =>
+            modelBuilder.Entity("Ringer.Core.Models.Message", b =>
                 {
-                    b.HasOne("Ringer.Core.Models.Device", "Device")
-                        .WithMany("Pendings")
-                        .HasForeignKey("DeviceId1");
-
-                    b.HasOne("Ringer.Core.Models.Message", "Message")
-                        .WithMany("Pendings")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("Ringer.Core.Models.Device", null)
+                        .WithMany("PendingMessages")
+                        .HasForeignKey("DeviceId");
                 });
 #pragma warning restore 612, 618
         }

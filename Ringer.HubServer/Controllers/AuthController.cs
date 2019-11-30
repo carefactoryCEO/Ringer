@@ -6,7 +6,7 @@ using Ringer.HubServer.Data;
 using Ringer.HubServer.Extensions;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.Extensions.Logging;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -15,10 +15,12 @@ namespace Ringer.HubServer.Controllers
     public class AuthController : ControllerBase
     {
         private readonly RingerDbContext _dbContext;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(RingerDbContext dbContext)
+        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
         }
 
         [HttpPost("login")]
@@ -26,34 +28,35 @@ namespace Ringer.HubServer.Controllers
         {
             User user = await _dbContext.Users
                 .Include(u => u.Devices)
+                .Include(u => u.Enrollments)
                 .FirstOrDefaultAsync(u =>
                     u.Name == loginInfo.Name &&
                     u.BirthDate.Date == loginInfo.BirthDate.Date &&
                     u.Gender == loginInfo.Gender
                 );
 
-            // TODO: DB에서 일치하는 user를 찾지 못했을 때
-            // 새 user로 등록? 에러 throw?
+            _logger.LogInformation($"user {user.Name} logged in.");
 
             // DB에 정보 없음.
             if (user == null)
                 return NotFound("notFound");
 
+            // 컨슈머가 방이 없다면 만들어 주고 입장시킨다.
+            if (!user.Enrollments.Any() && user.UserType == UserType.Consumer)
+                user.Enrollments.Add(new Enrollment { Room = new Room { Name = user.Name } });
+
             // User가 이미 Device를 등록했는지 체크 -> 새 device 등록
             if (!user.Devices.Any(d => d.Id == loginInfo.DeviceId))
-            {
-                Device device = new Device
+                user.Devices.Add(new Device
                 {
                     Id = loginInfo.DeviceId,
                     DeviceType = loginInfo.DeviceType,
+                    IsOn = true
+                });
 
-                    Owner = user
-                };
+            await _dbContext.SaveChangesAsync();
 
-                _dbContext.Devices.Add(device);
-                await _dbContext.SaveChangesAsync();
-            }
-
+            var token = user.JwtToken(loginInfo);
 
             return Ok(user.JwtToken(loginInfo));
         }
