@@ -16,16 +16,4 @@ namespace Ringer.Core.Data
         public DeviceType DeviceType { get; set; }
         public string DeviceId { get; set; }
     }
-
-    public class ResponseJson
-    {
-        public string token { get; set; }
-        public string roomId { get; set; }
-    }
-
-    public class DeviceReport
-    {
-        public string DeviceId { get; set; }
-        public bool Status { get; set; }
-    }
 }

@@ -75,15 +75,18 @@ namespace Ringer.Backend.Hubs
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == roomId);
 
-            var pushDic = new Dictionary<Guid, string>();
+            var pushDic = new Dictionary<string, string>();
 
             foreach (Enrollment enroll in room.Enrollments)
-                foreach (Device device in enroll.User.Devices)
-                {
-                    if (!device.IsOn && (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android))
-                        pushDic.Add(Guid.Parse(device.Id), device.DeviceType == DeviceType.iOS ? "iOS" : "Android");
-                }
-
+            {
+                if (enroll.UserId != _userId)
+                    foreach (Device device in enroll.User.Devices)
+                    {
+                        if (!device.IsOn &&
+                            (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android))
+                            pushDic.Add(device.Id, device.DeviceType == DeviceType.iOS ? "iOS" : "Android");
+                    }
+            }
 
             if (pushDic.Count > 0)
             {

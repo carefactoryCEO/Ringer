@@ -16,9 +16,9 @@ namespace Ringer.ConsoleApp
     {
         #region members
         static bool server = false;
-        static readonly string hubUrl = server ? "https://ringerhub.azurewebsites.net/hubs/chat" : "http://localhost:5000/hubs/chat";
-        static readonly string tokenUrl = server ? "https://ringerhub.azurewebsites.net/auth/login" : "http://localhost:5000/auth/login";
-        static readonly string listUrl = server ? "https://ringerhub.azurewebsites.net/auth/list" : "http://localhost:5000/auth/list";
+        static string hubUrl => server ? "https://ringerhub.azurewebsites.net/hubs/chat" : "http://localhost:5000/hubs/chat";
+        static string tokenUrl => server ? "https://ringerhub.azurewebsites.net/auth/login" : "http://localhost:5000/auth/login";
+        static string listUrl => server ? "https://ringerhub.azurewebsites.net/auth/list" : "http://localhost:5000/auth/list";
         static readonly MessagingService messagingService = new MessagingService();
 
         static HttpResponseMessage response;
@@ -37,6 +37,10 @@ namespace Ringer.ConsoleApp
 
         public static async Task Main(string[] args)
         {
+            for (var i = 0; i < args.Length; i++)
+                if (args[i] == "server" || args[i] == "azure")
+                    server = true;
+
             #region Login
 
             // get json
@@ -48,6 +52,8 @@ namespace Ringer.ConsoleApp
                 DeviceType = DeviceType.Console,
                 DeviceId = "87989c4a-0bf7-42e3-89dd-abc17bacd2bd"
             });
+
+            Console.WriteLine(tokenUrl);
 
             // get Token
             response = await client.PostAsync(

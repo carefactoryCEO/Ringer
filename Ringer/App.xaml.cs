@@ -147,44 +147,42 @@ namespace Ringer
             {
                 Push.PushNotificationReceived += async (sender, e) =>
                 {
-                    // Add the notification message and title to the message
-                    var summary = $"Push notification received:" +
-                                            $"\n\tNotification title: {e.Title}" +
-                                            $"\n\tMessage: {e.Message}";
-
-                    string room = null;
+                    string roomId = null;
+                    string body = null;
+                    string pushSender = null;
                     // If there is custom data associated with the notification,
                     // print the entries
                     if (e.CustomData != null)
                     {
-                        summary += "\n\tCustom data:\n";
                         foreach (var key in e.CustomData.Keys)
                         {
-                            summary += $"\t\t{key} : {e.CustomData[key]}\n";
-                            if (key == "room")
-                                room = e.CustomData[key];
+                            switch (key)
+                            {
+                                case "room":
+                                    CurrentRoomId = e.CustomData[key];
+                                    break;
+
+                                case "body":
+                                    body = e.CustomData[key];
+                                    break;
+
+                                case "sender":
+                                    pushSender = e.CustomData[key];
+                                    break;
+
+                                default:
+                                    break;
+                            }
                         }
                     }
 
-                    // Send the notification summary to debug output
-                    Debug.WriteLine(summary);
-                    _messageRepository.AddLocalMessage(new Message { Content = summary, Sender = "system" });
-                    Debug.WriteLine(_messageRepository.Messages.Count);
+                    _messageRepository.AddLocalMessage(new Message { Content = body, Sender = pushSender });
 
-                    Debug.WriteLine(Shell.Current.CurrentItem.Route);
-                    Debug.WriteLine(Shell.Current.CurrentState.Location);
-
-                    if (room != null)
+                    if (roomId != null && Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
                     {
                         await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"chatpage?room={room}");
+                        await Shell.Current.GoToAsync($"chatpage?room={roomId}");
                     }
-
-                    Debug.WriteLine(Shell.Current.CurrentItem.Route);
-                    Debug.WriteLine(Shell.Current.CurrentState.Location);
-                    //Shell.Current.GoToAsync("chatpage");
-                    //Shell.Current.Navigation.PopAsync();
-
                 };
             }
 
@@ -220,7 +218,7 @@ namespace Ringer
 
         }
 
-        protected override void OnResume()
+        protected override async void OnResume()
         {
             base.OnResume();
 
@@ -228,10 +226,21 @@ namespace Ringer
             Debug.WriteLine(Shell.Current.CurrentState.Location);
 
             if (Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
-                _restService.ReportDeviceStatusAsync(DeviceId, true);
+                await _restService.ReportDeviceStatusAsync(DeviceId, true);
+
+            var pendingMessages = await _restService.PullPendingMessages(App.CurrentRoomId, 0);
+
 
             // TODO: 1. connection을 확인하고
             //       2. pending message를 다운받는다.
+
+            Debug.WriteLine(pendingMessages.Count);
+
+            foreach (var pendingMessage in pendingMessages)
+            {
+                Debug.WriteLine(pendingMessage.Body);
+            }
+
         }
         #endregion
     }

@@ -124,9 +124,6 @@ namespace Ringer.HubServer.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<bool>("IsOn")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Name")
                         .HasColumnType("TEXT");
 
@@ -151,9 +148,8 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 706, DateTimeKind.Local).AddTicks(5950),
+                            CreatedAt = new DateTime(2019, 12, 2, 3, 55, 21, 396, DateTimeKind.Local).AddTicks(9300),
                             Gender = "Male",
-                            IsOn = false,
                             Name = "Admin",
                             UserType = "Admin"
                         },
@@ -161,9 +157,8 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6840),
+                            CreatedAt = new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8900),
                             Gender = "Male",
-                            IsOn = false,
                             Name = "신모범",
                             UserType = "Consumer"
                         },
@@ -171,9 +166,8 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6870),
+                            CreatedAt = new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8930),
                             Gender = "Female",
-                            IsOn = false,
                             Name = "김은미",
                             UserType = "Consumer"
                         },
@@ -181,9 +175,8 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6880),
+                            CreatedAt = new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8940),
                             Gender = "Male",
-                            IsOn = false,
                             Name = "김순용",
                             UserType = "Consumer"
                         },
@@ -191,9 +184,8 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6890),
+                            CreatedAt = new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8940),
                             Gender = "Female",
-                            IsOn = false,
                             Name = "함주희",
                             UserType = "Consumer"
                         });

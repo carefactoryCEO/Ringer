@@ -33,8 +33,6 @@ namespace Ringer.Core.Models
         [Display(Name = "비밀번호")]
         public string Password { get; set; }
 
-        public bool IsOn { get; set; }
-
         public DateTime CreatedAt { get; set; }
 
         [InverseProperty("Owner")]

@@ -19,39 +19,22 @@ namespace Ringer.HubServer.Services
 
     public class PushService : IPushService
     {
-        /*
-        var receiptInstallID = new Dictionary<string, string>
-            {
-                { "XXX-XXX-XXX-XXX", "Android" },
-                { "YYY-YYY-YYY-YYY", "iOS" }
-            };
-
-        AppCenterPush appCenterPush = new AppCenterPush(receiptInstallID);
-
-        await appCenterPush.Notify("보낸자", "보낸 내용", custumdata);
-        */
-
         Receiver receiver = new Receiver();
 
-        public PushService()
-        {
-
-        }
-
-        public PushService(Dictionary<Guid, string> dicInstallIdPlatform)
+        public PushService(Dictionary<string, string> dicInstallIdPlatform)
         {
             //Simply get all the Install IDs for the receipient with the platform name as the value
-            foreach (Guid key in dicInstallIdPlatform.Keys)
+            foreach (string key in dicInstallIdPlatform.Keys)
             {
                 switch (dicInstallIdPlatform[key])
                 {
                     case "Android":
-                        receiver.AndroidDevices.Add(key.ToString());
+                        receiver.AndroidDevices.Add(key);
 
                         break;
 
                     case "iOS":
-                        receiver.IOSDevices.Add(key.ToString());
+                        receiver.IOSDevices.Add(key);
 
                         break;
                 }

@@ -31,7 +31,7 @@ namespace Ringer.HubServer
                         options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
             else
                 services.AddDbContext<RingerDbContext>(options =>
-                        options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
+                    options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
 
             services.BuildServiceProvider().GetService<RingerDbContext>().Database.Migrate();
 

@@ -33,7 +33,6 @@ namespace Ringer.HubServer.Migrations
                     PhoneNumber = table.Column<string>(nullable: true),
                     Email = table.Column<string>(nullable: true),
                     Password = table.Column<string>(nullable: true),
-                    IsOn = table.Column<bool>(nullable: false),
                     CreatedAt = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -118,28 +117,28 @@ namespace Ringer.HubServer.Migrations
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "IsOn", "Name", "Password", "PhoneNumber", "UserType" },
-                values: new object[] { 1, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 1, 23, 47, 46, 706, DateTimeKind.Local).AddTicks(5950), null, "Male", false, "Admin", null, null, "Admin" });
+                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber", "UserType" },
+                values: new object[] { 1, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 3, 55, 21, 396, DateTimeKind.Local).AddTicks(9300), null, "Male", "Admin", null, null, "Admin" });
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "IsOn", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 2, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6840), null, "Male", false, "신모범", null, null });
+                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
+                values: new object[] { 2, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8900), null, "Male", "신모범", null, null });
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "IsOn", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 3, new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6870), null, "Female", false, "김은미", null, null });
+                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
+                values: new object[] { 3, new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8930), null, "Female", "김은미", null, null });
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "IsOn", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 4, new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6880), null, "Male", false, "김순용", null, null });
+                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
+                values: new object[] { 4, new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8940), null, "Male", "김순용", null, null });
 
             migrationBuilder.InsertData(
                 table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "IsOn", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 5, new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6890), null, "Female", false, "함주희", null, null });
+                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
+                values: new object[] { 5, new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 3, 55, 21, 398, DateTimeKind.Local).AddTicks(8940), null, "Female", "함주희", null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Device_OwnerId",
