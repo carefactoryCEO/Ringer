@@ -1,4 +1,10 @@
 ﻿using System.Diagnostics;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using Ringer.Core.Data;
+using Ringer.Helpers;
+using Ringer.Services;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -14,6 +20,7 @@ namespace Ringer.Views
         bool initial = true;
 
         private string _room;
+        private IRESTService _restService;
 
         public string Room
         {
@@ -31,6 +38,7 @@ namespace Ringer.Views
         public ChatPage()
         {
             InitializeComponent();
+            _restService = DependencyService.Resolve<IRESTService>();
         }
         #endregion
 
@@ -52,9 +60,21 @@ namespace Ringer.Views
 
         protected override async void OnAppearing()
         {
-            base.OnAppearing();
-
             await ChatPageVM.CheckLogInAsync();
+
+            // report device status "on"
+            _ = await _restService.ReportDeviceStatusAsync(App.DeviceId, true);
+
+            base.OnAppearing();
+        }
+
+        protected override async void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // report device status "off"
+            _ = await _restService.ReportDeviceStatusAsync(App.DeviceId, false);
+
         }
     }
 }

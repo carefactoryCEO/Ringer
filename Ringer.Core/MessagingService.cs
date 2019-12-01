@@ -2,6 +2,8 @@
 using Ringer.Core.EventArgs;
 using System;
 using System.Diagnostics;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ringer.Core
@@ -107,14 +109,7 @@ namespace Ringer.Core
             }
         }
 
-        public async Task ConnectAsync(string room, string user)
-        {
-
-            await ConnectAsync();
-
-            if (IsConnected)
-                await JoinRoomAsync(room, user);
-        }
+        public async Task ConnectAsync(string room, string user) => await ConnectAsync();
 
         public async Task DisconnectAsync()
         {
@@ -164,12 +159,12 @@ namespace Ringer.Core
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
 
-        public async Task SendMessageToRoomAsync(string room, string sender, string message)
+        public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
-                await ConnectAsync(room, sender);
+                await ConnectAsync(roomId, sender);
 
-            await _hubConnection.InvokeAsync("SendMessageGroup", room, sender, message);
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId);
         }
         #endregion
 

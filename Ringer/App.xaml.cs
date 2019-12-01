@@ -8,9 +8,10 @@ using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
 using Ringer.Helpers;
 using Xamarin.Essentials;
-using Ringer.Core.Models;
 using Ringer.Models;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
+using Ringer.Services;
 
 namespace Ringer
 {
@@ -23,40 +24,42 @@ namespace Ringer
     public partial class App : Application
     {
         #region public static properties
-        public static bool IsLoggedIn => Token != null;
 
-        public static string CurrentRoomId
-        {
-            get => Preferences.Get(nameof(CurrentRoomId), null);
-            set => Preferences.Set(nameof(CurrentRoomId), value);
-        }
+        // TODO 로그인 상태라면 토큰, 디바이스아이디, CurrentRoomId 등이 모두 null이 아니어야 한다.
+        public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && CurrentRoomId != null;
 
+        public static List<string> RoomIds = new List<string>();
+
+        // Appcenter에서 받음
         public static string DeviceId
         {
             get => Preferences.Get(nameof(DeviceId), null);
             set => Preferences.Set(nameof(DeviceId), value);
         }
 
+        // 로그인 후에 받음
         public static string Token
         {
             get => Preferences.Get(nameof(Token), null);
             set => Preferences.Set(nameof(Token), value);
         }
 
+        // 로그인 과정 중에 받음
         public static string UserName
         {
-            get => Preferences.Get(nameof(UserName), "링거");
+            get => Preferences.Get(nameof(UserName), null);
             set => Preferences.Set(nameof(UserName), value);
         }
 
-        public static string RoomName
+        public static string CurrentRoomId
         {
-            get => Preferences.Get(nameof(RoomName), Constants.ChattingRoom);
-            set => Preferences.Set(nameof(RoomName), value);
+            get => Preferences.Get(nameof(CurrentRoomId), null);
+            set => Preferences.Set(nameof(CurrentRoomId), value);
         }
         #endregion
 
         IMessageRepository _messageRepository;
+        private IRESTService _restService;
 
         #region Constructor
         public App()
@@ -68,7 +71,9 @@ namespace Ringer
             #region Register messagingService
             DependencyService.Register<MessagingService>();
             DependencyService.Register<IMessageRepository, MessageRepository>();
+            DependencyService.Register<IRESTService, RESTService>();
 
+            _restService = DependencyService.Resolve<IRESTService>();
             var messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
 
@@ -104,24 +109,24 @@ namespace Ringer
         }
         private void SomeoneLeft(object sender, Core.EventArgs.SignalREventArgs e)
         {
-            if (e.User != UserName)
-                _messageRepository.AddLocalMessage(new Message(e.Message));
+            if (e.Sender != UserName)
+                _messageRepository.AddLocalMessage(new Message { Content = e.Message, Sender = "system" });
 
             Trace(e.Message);
         }
 
         private void SomeoneEntered(object sender, Core.EventArgs.SignalREventArgs e)
         {
-            if (e.User != UserName)
-                _messageRepository.AddLocalMessage(new Message(e.Message));
+            if (e.Sender != UserName)
+                _messageRepository.AddLocalMessage(new Message { Content = e.Message, Sender = "system" });
 
             Trace(e.Message);
         }
 
         private void MessageReceived(object sender, Core.EventArgs.SignalREventArgs e)
         {
-            var name = e.User == UserName ? string.Empty : $"{e.User}: ";
-            _messageRepository.AddLocalMessage(new Message($"{name}{e.Message}", e.User));
+            var name = e.Sender == UserName ? string.Empty : $"{e.Sender}: ";
+            _messageRepository.AddLocalMessage(new Message { Content = $"{name}{e.Message}", Sender = e.Sender });
 
             Trace(e.Message);
         }
@@ -140,13 +145,14 @@ namespace Ringer
             // Intercept Push Notification
             if (!AppCenter.Configured)
             {
-                Push.PushNotificationReceived += (sender, e) =>
+                Push.PushNotificationReceived += async (sender, e) =>
                 {
                     // Add the notification message and title to the message
                     var summary = $"Push notification received:" +
-                                        $"\n\tNotification title: {e.Title}" +
-                                        $"\n\tMessage: {e.Message}";
+                                            $"\n\tNotification title: {e.Title}" +
+                                            $"\n\tMessage: {e.Message}";
 
+                    string room = null;
                     // If there is custom data associated with the notification,
                     // print the entries
                     if (e.CustomData != null)
@@ -155,20 +161,32 @@ namespace Ringer
                         foreach (var key in e.CustomData.Keys)
                         {
                             summary += $"\t\t{key} : {e.CustomData[key]}\n";
+                            if (key == "room")
+                                room = e.CustomData[key];
                         }
                     }
 
                     // Send the notification summary to debug output
                     Debug.WriteLine(summary);
-                    _messageRepository.AddLocalMessage(new Message(summary));
+                    _messageRepository.AddLocalMessage(new Message { Content = summary, Sender = "system" });
                     Debug.WriteLine(_messageRepository.Messages.Count);
 
+                    Debug.WriteLine(Shell.Current.CurrentItem.Route);
+                    Debug.WriteLine(Shell.Current.CurrentState.Location);
+
+                    if (room != null)
+                    {
+                        await Shell.Current.Navigation.PopToRootAsync(false);
+                        await Shell.Current.GoToAsync($"chatpage?room={room}");
+                    }
+
+                    Debug.WriteLine(Shell.Current.CurrentItem.Route);
+                    Debug.WriteLine(Shell.Current.CurrentState.Location);
                     //Shell.Current.GoToAsync("chatpage");
                     //Shell.Current.Navigation.PopAsync();
 
                 };
             }
-
 
             AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS, typeof(Analytics), typeof(Crashes), typeof(Push));
 
@@ -187,15 +205,18 @@ namespace Ringer
             #endregion
 
             Debug.WriteLine("App.OnStart");
+
+            _ = await _restService.ReportDeviceStatusAsync(DeviceId, false);
         }
 
         protected override void OnSleep()
         {
-            base.OnSleep();
+            _restService.ReportDeviceStatusAsync(DeviceId, false);
 
             Debug.WriteLine("OnSleep");
 
-            // TODO: 이 디바이스의 IsConnected를 false로 만든다.
+            // 디바이스의 IsConnected를 false로 만든다.
+            base.OnSleep();
 
         }
 
@@ -204,6 +225,10 @@ namespace Ringer
             base.OnResume();
 
             Debug.WriteLine("OnResume");
+            Debug.WriteLine(Shell.Current.CurrentState.Location);
+
+            if (Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
+                _restService.ReportDeviceStatusAsync(DeviceId, true);
 
             // TODO: 1. connection을 확인하고
             //       2. pending message를 다운받는다.

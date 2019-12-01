@@ -5,10 +5,10 @@
         public SignalREventArgs(string message, string user)
         {
             Message = message;
-            User = user;
+            Sender = user;
         }
 
         public string Message { get; }
-        public string User { get; }
+        public string Sender { get; }
     }
 }

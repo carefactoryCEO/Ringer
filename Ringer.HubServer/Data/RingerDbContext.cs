@@ -55,9 +55,10 @@ namespace Ringer.HubServer.Data
 
             modelBuilder.Entity<Device>().ToTable("Device");
 
-            modelBuilder.Entity<Room>()
-                .ToTable("Room")
-                .HasData(new Room { Id = 1, IsClosed = false, Name = "김순용" });
+            // Room
+            modelBuilder
+                .Entity<Room>()
+                .ToTable("Room");
 
         }
     }

@@ -13,7 +13,6 @@ using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Ringer.Core;
 using Ringer.Core.Data;
-using Ringer.Core.Models;
 using Ringer.Helpers;
 using Ringer.Models;
 using Xamarin.Forms;
@@ -54,7 +53,7 @@ namespace Ringer.ViewModels
 
                 // Disconnect Connection
                 if (_messagingService.IsConnected)
-                    await _messagingService.DisconnectAsync(App.RoomName, App.UserName);
+                    await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
 
                 // Clear Messages
                 _messageRepository.Messages.Clear();
@@ -89,7 +88,7 @@ namespace Ringer.ViewModels
             {
                 // TODO: Token이 valid한지 체크한다.
                 _messagingService.Init(Constants.HubUrl, App.Token);
-                await _messagingService.ConnectAsync(App.RoomName, App.UserName);
+                await _messagingService.ConnectAsync(App.CurrentRoomId, App.UserName);
             }
         }
         #endregion
@@ -160,20 +159,28 @@ namespace Ringer.ViewModels
                             DeviceType = XFDevice.RuntimePlatform == XFDevice.iOS ? DeviceType.iOS : DeviceType.Android
                         });
 
+                        Debug.WriteLine(loginInfo);
+
                         HttpResponseMessage response = await client.PostAsync(Constants.LoginUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
 
-                        // 로그인 실ㅅ
+                        // 로그인 실패
                         if (response.StatusCode != System.Net.HttpStatusCode.OK)
                         {
                             Debug.WriteLine(await response.Content.ReadAsStringAsync());
                         }
 
-                        var token = await response.Content.ReadAsStringAsync();
+                        var responseString = await response.Content.ReadAsStringAsync();
+
+                        var responseObject = JsonSerializer.Deserialize<ResponseJson>(responseString);
 
                         // TODO: token 발급되었는지 확인
                         // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
 
-                        App.Token = token;
+                        App.Token = responseObject.token;
+                        App.CurrentRoomId = responseObject.roomId;
+
+                        Debug.WriteLine(App.Token);
+                        Debug.WriteLine(App.CurrentRoomId);
 
                         //messagingService.AddLocalMessage($"로그인토큰: {App.Token}", Constants.System);
 
@@ -181,7 +188,7 @@ namespace Ringer.ViewModels
                         // Messaging Service Initialize
                         // 
                         _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync(App.RoomName, App.UserName);
+                        await _messagingService.ConnectAsync(App.CurrentRoomId, App.UserName);
 
                         break;
 
@@ -206,7 +213,7 @@ namespace Ringer.ViewModels
             try
             {
                 // TODO: activicy indicator on
-                await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, TextToSend);
+                await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, TextToSend);
                 // activity indicator off
 
                 TextToSend = string.Empty;
@@ -250,7 +257,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -286,7 +293,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -319,7 +326,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.UserName, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -350,7 +357,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.RoomName, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -525,7 +532,7 @@ namespace Ringer.ViewModels
         public string TextToSend { get; set; }
         public Keyboard Keyboard { get; set; }
         public double NavBarHeight { get; set; }
-        public string NavBarTitle => "링거 상담실";
+        public string NavBarTitle => App.UserName ?? "링거 상담실";
         public ObservableCollection<Message> Messages => _messageRepository.Messages;
         #endregion
 

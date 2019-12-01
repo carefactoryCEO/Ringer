@@ -47,8 +47,8 @@ namespace Ringer.HubServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("RoomId")
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("RoomId")
+                        .HasColumnType("TEXT");
 
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
@@ -68,19 +68,13 @@ namespace Ringer.HubServer.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Content")
+                    b.Property<string>("Body")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("DeviceId")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Room")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("RoomId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("Sender")
+                    b.Property<string>("RoomId")
                         .HasColumnType("TEXT");
 
                     b.Property<int>("SenderId")
@@ -88,16 +82,17 @@ namespace Ringer.HubServer.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DeviceId");
+                    b.HasIndex("RoomId");
+
+                    b.HasIndex("SenderId");
 
                     b.ToTable("Message");
                 });
 
             modelBuilder.Entity("Ringer.Core.Models.Room", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("IsClosed")
                         .HasColumnType("INTEGER");
@@ -108,14 +103,6 @@ namespace Ringer.HubServer.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Room");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            IsClosed = false,
-                            Name = "김순용"
-                        });
                 });
 
             modelBuilder.Entity("Ringer.Core.Models.User", b =>
@@ -164,7 +151,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 297, DateTimeKind.Local).AddTicks(7170),
+                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 706, DateTimeKind.Local).AddTicks(5950),
                             Gender = "Male",
                             IsOn = false,
                             Name = "Admin",
@@ -174,7 +161,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 299, DateTimeKind.Local).AddTicks(9970),
+                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6840),
                             Gender = "Male",
                             IsOn = false,
                             Name = "신모범",
@@ -184,7 +171,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(10),
+                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6870),
                             Gender = "Female",
                             IsOn = false,
                             Name = "김은미",
@@ -194,7 +181,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(20),
+                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6880),
                             Gender = "Male",
                             IsOn = false,
                             Name = "김순용",
@@ -204,7 +191,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 11, 30, 15, 14, 24, 300, DateTimeKind.Local).AddTicks(20),
+                            CreatedAt = new DateTime(2019, 12, 1, 23, 47, 46, 708, DateTimeKind.Local).AddTicks(6890),
                             Gender = "Female",
                             IsOn = false,
                             Name = "함주희",
@@ -225,9 +212,7 @@ namespace Ringer.HubServer.Migrations
                 {
                     b.HasOne("Ringer.Core.Models.Room", "Room")
                         .WithMany("Enrollments")
-                        .HasForeignKey("RoomId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("RoomId");
 
                     b.HasOne("Ringer.Core.Models.User", "User")
                         .WithMany("Enrollments")
@@ -238,9 +223,15 @@ namespace Ringer.HubServer.Migrations
 
             modelBuilder.Entity("Ringer.Core.Models.Message", b =>
                 {
-                    b.HasOne("Ringer.Core.Models.Device", null)
-                        .WithMany("PendingMessages")
-                        .HasForeignKey("DeviceId");
+                    b.HasOne("Ringer.Core.Models.Room", "Room")
+                        .WithMany()
+                        .HasForeignKey("RoomId");
+
+                    b.HasOne("Ringer.Core.Models.User", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }
