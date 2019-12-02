@@ -11,6 +11,7 @@
     <Folder Include="Hubs\" />
     <Folder Include="Data\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Services\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.0.1">

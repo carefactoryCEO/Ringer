@@ -20,6 +20,7 @@ namespace Ringer.HubServer.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // User
             modelBuilder
                 .Entity<User>()
                 .Property(p => p.Gender)
@@ -43,8 +44,10 @@ namespace Ringer.HubServer.Data
                     new User { Id = 5, Name = "함주희", BirthDate = DateTime.Parse("1981-12-25"), Gender = GenderType.Female, CreatedAt = DateTime.Now }
                 );
 
+            // Message
             modelBuilder.Entity<Message>().ToTable("Message");
 
+            // Device
             modelBuilder
                 .Entity<Device>()
                 .Property(d => d.DeviceType)
@@ -52,7 +55,11 @@ namespace Ringer.HubServer.Data
 
             modelBuilder.Entity<Device>().ToTable("Device");
 
-            modelBuilder.Entity<Room>().ToTable("Room");
+            // Room
+            modelBuilder
+                .Entity<Room>()
+                .ToTable("Room");
+
         }
     }
 }

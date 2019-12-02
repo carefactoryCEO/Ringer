@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using Ringer.Core.Models;
 
 namespace Ringer.Models
 {

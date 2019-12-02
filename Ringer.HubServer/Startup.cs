@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Ringer.HubServer.Data;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Ringer.HubServer
 {
@@ -27,6 +28,8 @@ namespace Ringer.HubServer
         {
             services.AddDbContext<RingerDbContext>(options =>
                     options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
+
+            services.BuildServiceProvider().GetService<RingerDbContext>().Database.Migrate();
 
             // security key
             string securityKey = "this_is_super_long_security_key_for_ringer_service";

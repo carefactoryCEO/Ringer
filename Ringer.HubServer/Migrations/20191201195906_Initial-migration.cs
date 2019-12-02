@@ -3,32 +3,17 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Ringer.HubServer.Migrations
 {
-    public partial class InitialMigration : Migration
+    public partial class Initialmigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Message",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Content = table.Column<string>(nullable: true),
-                    Sender = table.Column<string>(nullable: true),
-                    SenderId = table.Column<int>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Message", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Room",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(nullable: true)
+                    Id = table.Column<string>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    IsClosed = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -40,7 +25,7 @@ namespace Ringer.HubServer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(nullable: true),
                     UserType = table.Column<string>(nullable: false, defaultValue: "Consumer"),
                     BirthDate = table.Column<DateTime>(nullable: false),
@@ -62,6 +47,7 @@ namespace Ringer.HubServer.Migrations
                     Id = table.Column<string>(nullable: false),
                     DeviceType = table.Column<string>(nullable: false),
                     IsOn = table.Column<bool>(nullable: false),
+                    ConnectionId = table.Column<string>(nullable: true),
                     OwnerId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
@@ -80,9 +66,9 @@ namespace Ringer.HubServer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<int>(nullable: false),
-                    RoomId = table.Column<int>(nullable: false)
+                    RoomId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -92,7 +78,7 @@ namespace Ringer.HubServer.Migrations
                         column: x => x.RoomId,
                         principalTable: "Room",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Enrollment_User_UserId",
                         column: x => x.UserId,
@@ -102,28 +88,29 @@ namespace Ringer.HubServer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Pending",
+                name: "Message",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    DeviceId = table.Column<int>(nullable: false),
-                    DeviceId1 = table.Column<string>(nullable: true),
-                    MessageId = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Body = table.Column<string>(nullable: true),
+                    CreatedAt = table.Column<DateTime>(nullable: false),
+                    SenderId = table.Column<int>(nullable: false),
+                    RoomId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Pending", x => x.Id);
+                    table.PrimaryKey("PK_Message", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Pending_Device_DeviceId1",
-                        column: x => x.DeviceId1,
-                        principalTable: "Device",
+                        name: "FK_Message_Room_RoomId",
+                        column: x => x.RoomId,
+                        principalTable: "Room",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Pending_Message_MessageId",
-                        column: x => x.MessageId,
-                        principalTable: "Message",
+                        name: "FK_Message_User_SenderId",
+                        column: x => x.SenderId,
+                        principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -131,27 +118,14 @@ namespace Ringer.HubServer.Migrations
             migrationBuilder.InsertData(
                 table: "User",
                 columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber", "UserType" },
-                values: new object[] { 1, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 11, 29, 11, 31, 47, 433, DateTimeKind.Local).AddTicks(7520), null, "Male", "Admin", null, null, "Admin" });
-
-            migrationBuilder.InsertData(
-                table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 2, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9280), null, "Male", "신모범", null, null });
-
-            migrationBuilder.InsertData(
-                table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 3, new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310), null, "Female", "김은미", null, null });
-
-            migrationBuilder.InsertData(
-                table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 4, new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9310), null, "Male", "김순용", null, null });
-
-            migrationBuilder.InsertData(
-                table: "User",
-                columns: new[] { "Id", "BirthDate", "CreatedAt", "Email", "Gender", "Name", "Password", "PhoneNumber" },
-                values: new object[] { 5, new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 11, 29, 11, 31, 47, 435, DateTimeKind.Local).AddTicks(9320), null, "Female", "함주희", null, null });
+                values: new object[,]
+                {
+                    { 1, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 4, 59, 5, 883, DateTimeKind.Local).AddTicks(9520), null, "Male", "Admin", null, null, "Admin" },
+                    { 2, new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 4, 59, 5, 885, DateTimeKind.Local).AddTicks(7960), null, "Male", "신모범", null, null, "Consumer" },
+                    { 3, new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 4, 59, 5, 885, DateTimeKind.Local).AddTicks(7980), null, "Female", "김은미", null, null, "Consumer" },
+                    { 4, new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 4, 59, 5, 885, DateTimeKind.Local).AddTicks(8040), null, "Male", "김순용", null, null, "Consumer" },
+                    { 5, new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified), new DateTime(2019, 12, 2, 4, 59, 5, 885, DateTimeKind.Local).AddTicks(8040), null, "Female", "함주희", null, null, "Consumer" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Device_OwnerId",
@@ -169,32 +143,29 @@ namespace Ringer.HubServer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pending_DeviceId1",
-                table: "Pending",
-                column: "DeviceId1");
+                name: "IX_Message_RoomId",
+                table: "Message",
+                column: "RoomId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Pending_MessageId",
-                table: "Pending",
-                column: "MessageId");
+                name: "IX_Message_SenderId",
+                table: "Message",
+                column: "SenderId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Enrollment");
-
-            migrationBuilder.DropTable(
-                name: "Pending");
-
-            migrationBuilder.DropTable(
-                name: "Room");
-
-            migrationBuilder.DropTable(
                 name: "Device");
 
             migrationBuilder.DropTable(
+                name: "Enrollment");
+
+            migrationBuilder.DropTable(
                 name: "Message");
+
+            migrationBuilder.DropTable(
+                name: "Room");
 
             migrationBuilder.DropTable(
                 name: "User");

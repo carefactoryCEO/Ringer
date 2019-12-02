@@ -81,11 +81,6 @@ namespace Ringer.Views
             await GetGeolocationAsync();
         }
 
-        private async void Button_Clicked_1Async(object sender, EventArgs e)
-        {
-            await Shell.Current.GoToAsync("chatpage");
-        }
-
         private async void ItemsListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             try
