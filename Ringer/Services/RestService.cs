@@ -44,7 +44,7 @@ namespace Ringer.Services
 
         public async Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex)
         {
-            HttpResponseMessage response = await _client.GetAsync($"http://localhost:5000/Message/pending?roomId={roomId}&lastnumber={lastIndex}");
+            HttpResponseMessage response = await _client.GetAsync($"https://ringerhub.azurewebsites.net/Message/pending?roomId={roomId}&lastnumber={lastIndex}");
 
             var responseString = await response.Content.ReadAsStringAsync();
 

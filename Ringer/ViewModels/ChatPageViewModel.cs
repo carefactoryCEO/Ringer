@@ -532,7 +532,7 @@ namespace Ringer.ViewModels
         public string TextToSend { get; set; }
         public Keyboard Keyboard { get; set; }
         public double NavBarHeight { get; set; }
-        public string NavBarTitle => App.UserName ?? "링거 상담실";
+        public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
         public ObservableCollection<Message> Messages => _messageRepository.Messages;
         #endregion
 

@@ -147,7 +147,6 @@ namespace Ringer
             {
                 Push.PushNotificationReceived += async (sender, e) =>
                 {
-                    string roomId = null;
                     string body = null;
                     string pushSender = null;
                     // If there is custom data associated with the notification,
@@ -176,12 +175,12 @@ namespace Ringer
                         }
                     }
 
-                    _messageRepository.AddLocalMessage(new Message { Content = body, Sender = pushSender });
+                    _messageRepository.AddLocalMessage(new Message { Content = pushSender + ": fdhdhdhf" + body, Sender = pushSender });
 
-                    if (roomId != null && Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
+                    if (CurrentRoomId != null && !Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
                     {
                         await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"chatpage?room={roomId}");
+                        await Shell.Current.GoToAsync($"chatpage?room={CurrentRoomId}");
                     }
                 };
             }

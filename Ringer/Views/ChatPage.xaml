@@ -84,7 +84,7 @@
                    VerticalOptions="EndAndExpand"/>
 
             <Button Text="초기화" Command="{Binding ResetConnectionCommand}" TextColor="White"
-                    HorizontalOptions="End" VerticalOptions="End" HeightRequest="28"/>
+                    HorizontalOptions="End" VerticalOptions="End" BackgroundColor="Transparent" Padding="0,0,0,5" HeightRequest="28" WidthRequest="50"/>
 
             <ImageButton BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
                          Command="{Binding ShowVidyoCommand}"

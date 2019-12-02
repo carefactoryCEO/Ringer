@@ -26,11 +26,7 @@ namespace Ringer.HubServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
-                services.AddDbContext<RingerDbContext>(options =>
-                        options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
-            else
-                services.AddDbContext<RingerDbContext>(options =>
+            services.AddDbContext<RingerDbContext>(options =>
                     options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
 
             services.BuildServiceProvider().GetService<RingerDbContext>().Database.Migrate();
