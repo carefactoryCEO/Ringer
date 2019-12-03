@@ -8,7 +8,10 @@ using UIKit;
 
 namespace Ringer.iOS
 {
-    // The UIApplicationDelegate for the application. This class is responsible for launching the 
+    // TODO: [production][ios] info.plist 에서 NSAppTransportSecurity 제거
+    // https://docs.microsoft.com/en-us/xamarin/ios/app-fundamentals/ats#opting-out-of-atsThe
+
+    // UIApplicationDelegate for the application. This class is responsible for launching the 
     // User Interface of the application, as well as listening (and optionally responding) to 
     // application events from iOS.
     [Register("AppDelegate")]

@@ -58,6 +58,9 @@ namespace Ringer.ViewModels
                 // Clear Messages
                 _messageRepository.Messages.Clear();
 
+                // reset local db's Message table
+                await App.Database.ResetDbAsync();
+
                 // Go Back
                 await Shell.Current.Navigation.PopAsync();
                 //await Shell.Current.GoToAsync("mappage");
@@ -72,15 +75,15 @@ namespace Ringer.ViewModels
                 // await Task.Delay(1000);
                 Debug.WriteLine(_messageRepository.Messages.Count);
 
-                _messageRepository.AddLocalMessage(new Message { Content = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System });
                 // await Task.Delay(1500);
-                _messageRepository.AddLocalMessage(new Message { Content = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System });
                 // await Task.Delay(1500);
-                _messageRepository.AddLocalMessage(new Message { Content = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System });
                 // await Task.Delay(2000);
-                _messageRepository.AddLocalMessage(new Message { Content = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System });
                 // await Task.Delay(2500);
-                _messageRepository.AddLocalMessage(new Message { Content = "이름을 입력하세요.", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = "이름을 입력하세요.", Sender = Constants.System });
 
                 userInfoToQuery = UserInfoType.Name;
             }
@@ -106,18 +109,18 @@ namespace Ringer.ViewModels
                     case UserInfoType.Name:
 
                         App.UserName = TextToSend;
-                        _messageRepository.AddLocalMessage(new Message { Content = TextToSend, Sender = App.UserName });
+                        _messageRepository.AddLocalMessage(new Message { Body = TextToSend, Sender = App.UserName });
                         // TODO: name validation here
 
                         // name validation pass
                         TextToSend = string.Empty;
                         // await Task.Delay(1000);
 
-                        _messageRepository.AddLocalMessage(new Message { Content = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System });
+                        _messageRepository.AddLocalMessage(new Message { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System });
                         // await Task.Delay(600);
 
                         Keyboard = Keyboard.Numeric;
-                        _messageRepository.AddLocalMessage(new Message { Content = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System });
+                        _messageRepository.AddLocalMessage(new Message { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System });
 
                         userInfoToQuery = UserInfoType.BirthDate;
                         break;
@@ -137,13 +140,13 @@ namespace Ringer.ViewModels
                         birthDate = DateTime.Parse($"{year}-{month}-{day}");
                         genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
 
-                        _messageRepository.AddLocalMessage(new Message { Content = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
+                        _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
 
                         // await Task.Delay(500);
 
                         Keyboard = Keyboard.Chat;
 
-                        _messageRepository.AddLocalMessage(new Message { Content = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
+                        _messageRepository.AddLocalMessage(new Message { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
 
                         // await Task.Delay(500);
 
@@ -200,7 +203,7 @@ namespace Ringer.ViewModels
                 {
                     //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
 
-                    _messageRepository.AddLocalMessage(new Message { Content = $"{App.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Sender = Constants.System });
+                    _messageRepository.AddLocalMessage(new Message { Body = $"{App.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Sender = Constants.System });
                     //// await Task.Delay(2000);
 
                     //messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
@@ -220,7 +223,7 @@ namespace Ringer.ViewModels
             }
             catch (Exception ex)
             {
-                _messageRepository.AddLocalMessage(new Message { Content = $"vs.SendMessage:Send failed: {ex.Message}", Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new Message { Body = $"vs.SendMessage:Send failed: {ex.Message}", Sender = Constants.System });
             }
         }
         private async Task ProcessCameraAction(string action)

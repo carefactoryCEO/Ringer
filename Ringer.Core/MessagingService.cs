@@ -56,10 +56,7 @@ namespace Ringer.Core
             };
 
             // Handle Hub messages
-            _hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-            {
-                MessageReceived?.Invoke(this, new SignalREventArgs(message, user));
-            });
+            _hubConnection.On<string, string, int, int, DateTime>("ReceiveMessage", ReceiveMessage);
 
             _hubConnection.On<string>("Entered", user =>
             {
@@ -86,6 +83,11 @@ namespace Ringer.Core
         #endregion
 
         #region Public Methods
+        public void ReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
+        {
+            MessageReceived?.Invoke(this, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt));
+        }
+
         public async Task ConnectAsync()
         {
             if (IsConnected)
@@ -183,7 +185,7 @@ namespace Ringer.Core
 
         public event EventHandler<SignalREventArgs> SomeoneEntered;
         public event EventHandler<SignalREventArgs> SomeoneLeft;
-        public event EventHandler<SignalREventArgs> MessageReceived;
+        public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         #endregion
     }
 

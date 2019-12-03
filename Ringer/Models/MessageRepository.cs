@@ -1,4 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace Ringer.Models
 {
@@ -6,9 +10,11 @@ namespace Ringer.Models
     {
         ObservableCollection<Message> Messages { get; }
 
-        void AddMessage(Message message);
+        Task AddMessageAsync(Message message);
 
         void AddLocalMessage(Message message);
+
+        Task LoadMessagesAsync();
     }
 
     public class MessageRepository : IMessageRepository
@@ -22,12 +28,27 @@ namespace Ringer.Models
 
         public void AddLocalMessage(Message message)
         {
-            AddMessage(message);
+            Messages.Insert(0, message);
         }
 
-        public void AddMessage(Message message)
+        public Task AddMessageAsync(Message message)
         {
-            Messages.Insert(0, message);
+            AddLocalMessage(message);
+
+            message.RoomId = App.CurrentRoomId;
+            message.ReceivedAt = DateTime.UtcNow;
+
+            Preferences.Set(message.RoomId, message.Id);
+
+            return App.Database.SaveMessageAsync(message);
+        }
+
+        public async Task LoadMessagesAsync()
+        {
+            var messages = await App.Database.GetMessagesAsync();
+
+            foreach (var message in messages)
+                AddLocalMessage(message);
         }
     }
 }

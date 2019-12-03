@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ringer.Models
+﻿namespace Ringer.Models
 {
     public class Infomation
     {

@@ -172,8 +172,8 @@ namespace Ringer.ConsoleApp
         {
             await RefreshUserListAsync();
 
-            Console.WriteLine("대화할 유저를 선택하세요.");
-            Console.WriteLine("----------- user list -----------");
+            Console.WriteLine("대화방을 선택하세요.");
+            Console.WriteLine("----------- room list -----------");
             foreach (var room in roomList)
             {
                 Console.WriteLine($"{room.Key}");
@@ -181,13 +181,13 @@ namespace Ringer.ConsoleApp
             Console.WriteLine("---------------------------------");
         }
 
-        private static void Service_OnMessageReceived(object sender, SignalREventArgs e)
+        private static void Service_OnMessageReceived(object sender, MessageReceivedEventArgs e)
         {
 
-            if (e.Sender == name)
+            if (e.SenderName == name)
                 return;
 
-            Console.WriteLine($"{e.Sender}: {e.Message}");
+            Console.WriteLine($"{e.SenderName}: {e.Body}");
 
         }
 

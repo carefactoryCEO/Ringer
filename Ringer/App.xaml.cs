@@ -10,56 +10,49 @@ using Ringer.Helpers;
 using Xamarin.Essentials;
 using Ringer.Models;
 using System.Runtime.CompilerServices;
-using System.Collections.Generic;
 using Ringer.Services;
+using Ringer.Data;
+using System.Threading.Tasks;
+using Ringer.Views;
+using System.Collections.Generic;
+using Ringer.Core.EventArgs;
 
 namespace Ringer
 {
-    /*
-     *
-     * TODO: [production][ios] info.plist 에서 NSAppTransportSecurity 제거
-     * https://docs.microsoft.com/en-us/xamarin/ios/app-fundamentals/ats#opting-out-of-ats
-     * 
-     */
     public partial class App : Application
     {
-        #region public static properties
+        #region private members
+        private IMessageRepository _messageRepository;
+        private IRESTService _restService;
+        private static RingerDatabase _database;
+        #endregion
 
-        // TODO 로그인 상태라면 토큰, 디바이스아이디, CurrentRoomId 등이 모두 null이 아니어야 한다.
+        #region public static propertie
+        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().Contains("chatpage");
+        public static RingerDatabase Database => _database ?? new RingerDatabase(Constants.DbPath);
         public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && CurrentRoomId != null;
-
-        public static List<string> RoomIds = new List<string>();
-
-        // Appcenter에서 받음
-        public static string DeviceId
+        public static string DeviceId // Appcenter에서 받음
         {
             get => Preferences.Get(nameof(DeviceId), null);
             set => Preferences.Set(nameof(DeviceId), value);
         }
-
-        // 로그인 후에 받음
-        public static string Token
+        public static string Token // 로그인 후에 받음
         {
             get => Preferences.Get(nameof(Token), null);
             set => Preferences.Set(nameof(Token), value);
         }
-
-        // 로그인 과정 중에 받음
-        public static string UserName
+        public static string UserName // 로그인 과정 중에 받음
         {
             get => Preferences.Get(nameof(UserName), null);
             set => Preferences.Set(nameof(UserName), value);
         }
-
         public static string CurrentRoomId
         {
             get => Preferences.Get(nameof(CurrentRoomId), null);
             set => Preferences.Set(nameof(CurrentRoomId), value);
         }
-        #endregion
 
-        IMessageRepository _messageRepository;
-        private IRESTService _restService;
+        #endregion
 
         #region Constructor
         public App()
@@ -94,6 +87,24 @@ namespace Ringer
             messagingService.SomeoneLeft += SomeoneLeft;
 
             #endregion
+
+            PageDisappearing += async (s, page) =>
+            {
+                if (page is ChatPage)
+                {
+                    await _restService.ReportDeviceStatusAsync(false);
+                }
+            };
+
+            PageAppearing += App_PageAppearing;
+        }
+
+        private async void App_PageAppearing(object sender, Page page)
+        {
+            if (!(page is ChatPage))
+                return;
+
+            await _restService.ReportDeviceStatusAsync(true);
         }
         #endregion
 
@@ -110,32 +121,43 @@ namespace Ringer
         private void SomeoneLeft(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Content = e.Message, Sender = "system" });
+                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = "system" });
 
             Trace(e.Message);
         }
-
         private void SomeoneEntered(object sender, Core.EventArgs.SignalREventArgs e)
         {
             if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Content = e.Message, Sender = "system" });
+                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = "system" });
 
             Trace(e.Message);
         }
-
-        private void MessageReceived(object sender, Core.EventArgs.SignalREventArgs e)
+        private async void MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            var name = e.Sender == UserName ? string.Empty : $"{e.Sender}: ";
-            _messageRepository.AddLocalMessage(new Message { Content = $"{name}{e.Message}", Sender = e.Sender });
+            var name = e.SenderName == UserName ? string.Empty : $"{e.SenderName}: ";
 
-            Trace(e.Message);
+            await _messageRepository.AddMessageAsync(new Message
+            {
+                Id = e.MessageId,
+                SenderId = e.SenderId,
+                CreatedAt = e.CreatedAt,
+                Body = $"{name}{e.Body}",
+                Sender = e.SenderName
+            });
+
+            // 
+            //Preferences.Set(CurrentRoomId, e.MessageId);
+
+            Debug.WriteLine(Preferences.Get(CurrentRoomId, 0));
+
+            Trace(e.Body);
         }
-
         #endregion
 
         #region Life Cycle Methods
         protected override async void OnStart()
         {
+            Debug.WriteLine("App.OnStart");
             base.OnStart();
 
             if (DesignMode.IsDesignModeEnabled)
@@ -175,7 +197,7 @@ namespace Ringer
                         }
                     }
 
-                    _messageRepository.AddLocalMessage(new Message { Content = pushSender + ": fdhdhdhf" + body, Sender = pushSender });
+                    _messageRepository.AddLocalMessage(new Message { Body = pushSender + ": fdhdhdhf" + body, Sender = pushSender });
 
                     if (CurrentRoomId != null && !Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
                     {
@@ -201,44 +223,78 @@ namespace Ringer
             }
             #endregion
 
-            Debug.WriteLine("App.OnStart");
+            #region Message
 
-            _ = await _restService.ReportDeviceStatusAsync(DeviceId, false);
+            // DB에 있는 건 messages에 추가하고
+            await _messageRepository.LoadMessagesAsync();
+
+            // 서버에 있는 건 가져온다.
+            if (CurrentRoomId == null)
+                return;
+
+            var lastMessage = await Database.GetLastMessage(CurrentRoomId);
+            int lastIndex = lastMessage?.Id ?? 0;
+
+
+            var pendingMessages = await _restService.PullPendingMessages(CurrentRoomId, lastIndex);
+            foreach (var pm in pendingMessages)
+                await _messageRepository.AddMessageAsync(new Message
+                {
+                    Id = pm.Id,
+                    Body = pm.Body,
+                    Sender = pm.SenderName,
+                    SenderId = pm.SenderId,
+                    CreatedAt = pm.CreatedAt
+                });
+
+            await _restService.ReportDeviceStatusAsync();
+
+            #endregion
+
         }
 
-        protected override void OnSleep()
+        protected override async void OnSleep()
         {
-            _restService.ReportDeviceStatusAsync(DeviceId, false);
-
             Debug.WriteLine("OnSleep");
 
-            // 디바이스의 IsConnected를 false로 만든다.
-            base.OnSleep();
+            // TODO Study why Task.Run(async () => await SomethingAsync()); fix the "A Tast was canceled" exception.
+            await Task.Run(async () => await _restService.ReportDeviceStatusAsync());
 
+            //try
+            //{
+            //    await _restService.ReportDeviceStatusAsync();
+            //}
+            //catch (Exception ex)
+            //{
+            //    Debug.WriteLine(ex.Message);
+            //}
         }
 
         protected override async void OnResume()
         {
+            Debug.WriteLine("OnResume");
             base.OnResume();
 
-            Debug.WriteLine("OnResume");
-            Debug.WriteLine(Shell.Current.CurrentState.Location);
+            if (IsChatPage)
+                await _restService.ReportDeviceStatusAsync(true);
 
-            if (Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
-                await _restService.ReportDeviceStatusAsync(DeviceId, true);
+            if (CurrentRoomId == null)
+                return;
 
-            var pendingMessages = await _restService.PullPendingMessages(App.CurrentRoomId, 0);
+            var lastMessage = await Database.GetLastMessage(CurrentRoomId);
+            int lastIndex = lastMessage?.Id ?? 0;
 
+            var pendingMessages = await _restService.PullPendingMessages(CurrentRoomId, lastIndex);
+            foreach (var pm in pendingMessages)
+                await _messageRepository.AddMessageAsync(new Message
+                {
+                    Id = pm.Id,
+                    Body = pm.Body,
+                    Sender = pm.SenderName,
+                    SenderId = pm.SenderId,
+                    CreatedAt = pm.CreatedAt
+                });
 
-            // TODO: 1. connection을 확인하고
-            //       2. pending message를 다운받는다.
-
-            Debug.WriteLine(pendingMessages.Count);
-
-            foreach (var pendingMessage in pendingMessages)
-            {
-                Debug.WriteLine(pendingMessage.Body);
-            }
 
         }
         #endregion

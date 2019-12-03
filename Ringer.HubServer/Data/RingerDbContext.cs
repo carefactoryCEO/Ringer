@@ -37,11 +37,11 @@ namespace Ringer.HubServer.Data
                 .ToTable("User")
                 .HasData
                 (
-                    new User { Id = 1, Name = "Admin", BirthDate = DateTime.Parse("1976-07-21"), Gender = GenderType.Male, CreatedAt = DateTime.Now, UserType = UserType.Admin },
-                    new User { Id = 2, Name = "신모범", BirthDate = DateTime.Parse("1976-07-21"), Gender = GenderType.Male, CreatedAt = DateTime.Now },
-                    new User { Id = 3, Name = "김은미", BirthDate = DateTime.Parse("1981-06-25"), Gender = GenderType.Female, CreatedAt = DateTime.Now },
-                    new User { Id = 4, Name = "김순용", BirthDate = DateTime.Parse("1980-07-04"), Gender = GenderType.Male, CreatedAt = DateTime.Now },
-                    new User { Id = 5, Name = "함주희", BirthDate = DateTime.Parse("1981-12-25"), Gender = GenderType.Female, CreatedAt = DateTime.Now }
+                    new User { Id = 1, Name = "Admin", BirthDate = DateTime.Parse("1976-07-21"), Gender = GenderType.Male, CreatedAt = DateTime.UtcNow, UserType = UserType.Admin },
+                    new User { Id = 2, Name = "신모범", BirthDate = DateTime.Parse("1976-07-21"), Gender = GenderType.Male, CreatedAt = DateTime.UtcNow },
+                    new User { Id = 3, Name = "김은미", BirthDate = DateTime.Parse("1981-06-25"), Gender = GenderType.Female, CreatedAt = DateTime.UtcNow },
+                    new User { Id = 4, Name = "김순용", BirthDate = DateTime.Parse("1980-07-04"), Gender = GenderType.Male, CreatedAt = DateTime.UtcNow },
+                    new User { Id = 5, Name = "함주희", BirthDate = DateTime.Parse("1981-12-25"), Gender = GenderType.Female, CreatedAt = DateTime.UtcNow }
                 );
 
             // Message

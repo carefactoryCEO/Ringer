@@ -103,7 +103,6 @@
         <!-- input module -->
         <partials:ChatInputBarView Grid.Row="2" x:Name="chatInput" BindingContext="{x:Reference ChatPageVM}"/>
 
-
     </Grid>
 
 </ContentPage>

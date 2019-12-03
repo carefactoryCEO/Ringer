@@ -51,21 +51,23 @@ namespace Ringer.Backend.Hubs
 
         public async Task SendMessageToRoomAsyc(string body, string roomId)
         {
-            _logger.LogInformation($"message send to {roomId}");
             User user = await _dbContext.Users.FindAsync(_userId);
 
-            // 접속중인 디바이스는 일단 다 보낸다.
-            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body);
-
-            // 디비에 메시지 저장
-            _dbContext.Messages.Add(new Message
+            Message message = new Message
             {
                 Body = body,
                 CreatedAt = DateTime.UtcNow,
                 RoomId = roomId,
                 SenderId = _userId
-            });
+            };
+
+            // 디비에 메시지 저장
+            _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
+
+            // 접속중인 디바이스는 일단 다 보낸다.
+            //await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, _userId, message.CreatedAt);
+            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
 
             // 룸에 속한 유저의 디바이스들 중 !IsOn인 디바이스는 푸시
             var room = await _dbContext.Rooms
@@ -90,18 +92,15 @@ namespace Ringer.Backend.Hubs
 
             if (pushDic.Count > 0)
             {
-                var contentDic = new Dictionary<string, string>();
-                contentDic.Add("sound", "default");
-                contentDic.Add("room", roomId);
-                contentDic.Add("body", body);
-                contentDic.Add("sender", user.Name);
+                var customDataDic = new Dictionary<string, string>();
+                customDataDic.Add("sound", "default");
+                customDataDic.Add("room", roomId);
+                customDataDic.Add("body", body);
+                customDataDic.Add("sender", user.Name);
 
                 var pushService = new PushService(pushDic);
-                await pushService.Push(user.Name, body, contentDic);
+                await pushService.Push(user.Name, body, customDataDic);
             }
-
-            foreach (var dic in pushDic)
-                _logger.LogWarning($"Push to device id {dic.Key}({dic.Value})");
         }
 
         public override async Task OnConnectedAsync()

@@ -6,15 +6,17 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ringer.Core.Data;
 using Ringer.Helpers;
+using Xamarin.Essentials;
+using Xamarin.Forms;
+using EssentialDeviceType = Xamarin.Essentials.DeviceType;
 
 namespace Ringer.Services
 {
     public interface IRESTService
     {
-        Task<string> ReportDeviceStatusAsync(string deviceId, bool isOn);
+        Task ReportDeviceStatusAsync(bool isOn = false);
         Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex);
     }
-
 
     public class RESTService : IRESTService
     {
@@ -25,29 +27,27 @@ namespace Ringer.Services
             _client = new HttpClient();
         }
 
-        public async Task<string> ReportDeviceStatusAsync(string deviceId, bool isOn)
+        public async Task ReportDeviceStatusAsync(bool isOn = false)
         {
+            if (App.DeviceId == null)
+                return;
+
             _client = new HttpClient();
 
             var report = JsonSerializer.Serialize(new DeviceReport
             {
-                DeviceId = deviceId,
+                DeviceId = App.DeviceId,
                 Status = isOn
             });
 
-            HttpResponseMessage response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json"));
-
-            Debug.WriteLine(response.ReasonPhrase);
-
-            return response.ReasonPhrase;
+            var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json"));
+            Debug.WriteLine($"{response.IsSuccessStatusCode}:{response.ReasonPhrase}");
         }
 
-        public async Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex)
+        public async Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex = 0)
         {
-            HttpResponseMessage response = await _client.GetAsync($"https://ringerhub.azurewebsites.net/Message/pending?roomId={roomId}&lastnumber={lastIndex}");
-
+            var response = await _client.GetAsync($"{Constants.PendingUrl}?roomId={roomId}&lastnumber={lastIndex}");
             var responseString = await response.Content.ReadAsStringAsync();
-
             var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
 
             return pendingMessages;

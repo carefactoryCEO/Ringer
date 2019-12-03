@@ -1,4 +1,6 @@
-﻿using Xamarin.Essentials;
+﻿using System;
+using System.IO;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Ringer.Helpers
@@ -7,9 +9,12 @@ namespace Ringer.Helpers
     {
         public static readonly string AppCenterAndroid = "android=776e5a61-2f89-48c3-95b6-5fa3dde1c708;";
         public static readonly string AppCenteriOS = "ios=b1b4c859-3d1a-4f7c-bf34-b4e45a2aad65";
-        public static readonly string HubUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/hubs/chat" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/hubs/chat" : "http://10.0.2.2:5000/hubs/chat";
-        public static readonly string LoginUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/auth/login" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/auth/login" : "http://10.0.2.2:5000/auth/login";
-        public static readonly string ReportUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net/auth/report" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000/auth/report" : "http://10.0.2.2:5000/auth/report";
+        public static readonly string BaseUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net" : Device.RuntimePlatform == Device.iOS ? "http://localhost:5000" : "http://10.0.2.2:5000";
+        public static readonly string PendingUrl = BaseUrl + "/message/pending";
+        public static readonly string HubUrl = BaseUrl + "/hubs/chat";
+        public static readonly string LoginUrl = BaseUrl + "/auth/login";
+        public static readonly string ReportUrl = BaseUrl + "/auth/report";
+        public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");
         public static readonly string System = "system";
 
         // Camera action
@@ -20,7 +25,6 @@ namespace Ringer.Helpers
         public static readonly string AttachingPhoto = "사진 불러오기";
         public static readonly string TakingVideo = "동영상 촬영";
         public static readonly string AttachingVideo = "동영상 불러오기";
-
 
     }
 }

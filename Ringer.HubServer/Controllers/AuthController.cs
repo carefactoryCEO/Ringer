@@ -32,10 +32,14 @@ namespace Ringer.HubServer.Controllers
             _logger.LogInformation($"hit report");
 
             var device = await _dbContext.Devices.FindAsync(report.DeviceId);
+
+            if (device == null)
+                return NotFound();
+
             device.IsOn = report.Status;
             await _dbContext.SaveChangesAsync();
 
-            _logger.LogInformation($"{device.Id}'s IsOn status:{device.IsOn}");
+            _logger.LogWarning($"{device.Id}'s IsOn status:{device.IsOn}");
 
             return Ok();
         }

@@ -16,7 +16,7 @@
               VerticalOptions="Start"
               Rotation="180"
               FlowDirection="LeftToRight">
-            <Label Text="{Binding Content}"
+            <Label Text="{Binding Body}"
                   d:Text="Hello world and this is the new world How do you feel? Im very excied!"
                   TextColor="#291900"
                   FontSize="{OnPlatform iOS=15, Android=14}"/>

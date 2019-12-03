@@ -62,19 +62,12 @@ namespace Ringer.Views
         {
             await ChatPageVM.CheckLogInAsync();
 
-            // report device status "on"
-            _ = await _restService.ReportDeviceStatusAsync(App.DeviceId, true);
-
             base.OnAppearing();
         }
 
         protected override async void OnDisappearing()
         {
             base.OnDisappearing();
-
-            // report device status "off"
-            _ = await _restService.ReportDeviceStatusAsync(App.DeviceId, false);
-
         }
     }
 }
