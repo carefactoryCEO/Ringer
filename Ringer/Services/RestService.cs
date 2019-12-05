@@ -6,15 +6,12 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Ringer.Core.Data;
 using Ringer.Helpers;
-using Xamarin.Essentials;
-using Xamarin.Forms;
-using EssentialDeviceType = Xamarin.Essentials.DeviceType;
 
 namespace Ringer.Services
 {
     public interface IRESTService
     {
-        Task ReportDeviceStatusAsync(bool isOn = false);
+        void ReportDeviceStatus(bool isOn = false);
         Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex);
     }
 
@@ -27,12 +24,10 @@ namespace Ringer.Services
             _client = new HttpClient();
         }
 
-        public async Task ReportDeviceStatusAsync(bool isOn = false)
+        public void ReportDeviceStatus(bool isOn = false)
         {
             if (App.DeviceId == null)
                 return;
-
-            _client = new HttpClient();
 
             var report = JsonSerializer.Serialize(new DeviceReport
             {
@@ -40,8 +35,12 @@ namespace Ringer.Services
                 Status = isOn
             });
 
-            var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json"));
-            Debug.WriteLine($"{response.IsSuccessStatusCode}:{response.ReasonPhrase}");
+            Task.Run(async () =>
+            {
+                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json"));
+
+                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
+            }).ConfigureAwait(false);
         }
 
         public async Task<List<PendingMessage>> PullPendingMessages(string roomId, int lastIndex = 0)

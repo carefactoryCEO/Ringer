@@ -11,7 +11,6 @@ using Xamarin.Essentials;
 using Ringer.Models;
 using System.Runtime.CompilerServices;
 using Ringer.Services;
-using Ringer.Data;
 using System.Threading.Tasks;
 using Ringer.Views;
 using System.Collections.Generic;
@@ -22,14 +21,14 @@ namespace Ringer
     public partial class App : Application
     {
         #region private members
+        private LocalDbService _localDbService;
         private IMessageRepository _messageRepository;
         private IRESTService _restService;
-        private static RingerDatabase _database;
+        private MessagingService _messagingService;
         #endregion
 
         #region public static propertie
-        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().Contains("chatpage");
-        public static RingerDatabase Database => _database ?? new RingerDatabase(Constants.DbPath);
+        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().EndsWith("chatpage", StringComparison.CurrentCultureIgnoreCase);
         public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && CurrentRoomId != null;
         public static string DeviceId // Appcenter에서 받음
         {
@@ -51,7 +50,6 @@ namespace Ringer
             get => Preferences.Get(nameof(CurrentRoomId), null);
             set => Preferences.Set(nameof(CurrentRoomId), value);
         }
-
         #endregion
 
         #region Constructor
@@ -63,48 +61,63 @@ namespace Ringer
 
             #region Register messagingService
             DependencyService.Register<MessagingService>();
+            DependencyService.Register<LocalDbService>();
             DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
 
+            _localDbService = DependencyService.Resolve<LocalDbService>();
             _restService = DependencyService.Resolve<IRESTService>();
-            var messagingService = DependencyService.Resolve<MessagingService>();
+            _messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
 
-            messagingService.Connecting += (s, e) => Trace(e.Message);
-            messagingService.Connected += (s, e) => Trace(e.Message);
-            messagingService.ConnectionFailed += (s, e) => Trace(e.Message, true);
+            _messagingService.Connecting += (s, e) => Trace(e.Message);
+            _messagingService.Connected += (s, e) => Trace(e.Message);
+            _messagingService.ConnectionFailed += (s, e) => Trace(e.Message, true);
 
-            messagingService.Disconnecting += (s, e) => Trace(e.Message);
-            messagingService.Disconnected += (s, e) => Trace(e.Message);
-            messagingService.DisconnectionFailed += (s, e) => Trace(e.Message, true);
+            _messagingService.Disconnecting += (s, e) => Trace(e.Message);
+            _messagingService.Disconnected += _messagingService_Disconnected;
+            _messagingService.DisconnectionFailed += (s, e) => Trace(e.Message, true);
 
-            messagingService.Closed += (s, e) => Trace(e.Message);
-            messagingService.Reconnecting += (s, e) => Trace(e.Message);
-            messagingService.Reconnected += (s, e) => Trace(e.Message, true);
+            _messagingService.Closed += (s, e) => Trace(e.Message);
+            _messagingService.Reconnecting += (s, e) => Trace(e.Message);
+            _messagingService.Reconnected += _messagingService_Reconnected;
 
-            messagingService.MessageReceived += MessageReceived;
-            messagingService.SomeoneEntered += SomeoneEntered;
-            messagingService.SomeoneLeft += SomeoneLeft;
+            _messagingService.MessageReceived += MessageReceived;
+            _messagingService.SomeoneEntered += SomeoneEntered;
+            _messagingService.SomeoneLeft += SomeoneLeft;
 
             #endregion
 
-            PageDisappearing += async (s, page) =>
+            PageDisappearing += (s, page) =>
             {
                 if (page is ChatPage)
                 {
-                    await _restService.ReportDeviceStatusAsync(false);
+                    _restService.ReportDeviceStatus(false);
                 }
             };
 
             PageAppearing += App_PageAppearing;
         }
+        #endregion
 
-        private async void App_PageAppearing(object sender, Page page)
+        #region private methods
+        private void _messagingService_Reconnected(object sender, ConnectionEventArgs e)
         {
-            if (!(page is ChatPage))
-                return;
+            if (IsChatPage)
+                _restService.ReportDeviceStatus(true);
 
-            await _restService.ReportDeviceStatusAsync(true);
+            Trace(e.Message, true);
+        }
+        private void _messagingService_Disconnected(object sender, ConnectionEventArgs e)
+        {
+            _restService.ReportDeviceStatus();
+
+            Trace(e.Message);
+        }
+        private void App_PageAppearing(object sender, Page page)
+        {
+            if (page is ChatPage)
+                _restService.ReportDeviceStatus(true);
         }
         #endregion
 
@@ -197,12 +210,10 @@ namespace Ringer
                         }
                     }
 
-                    _messageRepository.AddLocalMessage(new Message { Body = pushSender + ": fdhdhdhf" + body, Sender = pushSender });
-
-                    if (CurrentRoomId != null && !Shell.Current.CurrentState.Location.ToString().Contains("chatpage"))
+                    if (CurrentRoomId != null && !IsChatPage)
                     {
                         await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"chatpage?room={CurrentRoomId}");
+                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
                     }
                 };
             }
@@ -220,81 +231,64 @@ namespace Ringer
 
                 // Set Device Id
                 DeviceId = id?.ToString();
+
+                Debug.WriteLine($"device id: {DeviceId}");
             }
             #endregion
 
             #region Message
+            _restService.ReportDeviceStatus();
 
             // DB에 있는 건 messages에 추가하고
             await _messageRepository.LoadMessagesAsync();
 
             // 서버에 있는 건 가져온다.
-            if (CurrentRoomId == null)
-                return;
-
-            var lastMessage = await Database.GetLastMessage(CurrentRoomId);
-            int lastIndex = lastMessage?.Id ?? 0;
-
-
+            Debug.WriteLine("[App.OnStart()]Start Pulling Messages");
+            int lastIndex = await _localDbService.GetLastMessageIndexAsync(CurrentRoomId);
             var pendingMessages = await _restService.PullPendingMessages(CurrentRoomId, lastIndex);
             foreach (var pm in pendingMessages)
                 await _messageRepository.AddMessageAsync(new Message
                 {
                     Id = pm.Id,
-                    Body = pm.Body,
+                    Body = pm.SenderName == UserName ? pm.Body : pm.SenderName + ": " + pm.Body,
                     Sender = pm.SenderName,
                     SenderId = pm.SenderId,
                     CreatedAt = pm.CreatedAt
                 });
-
-            await _restService.ReportDeviceStatusAsync();
-
             #endregion
 
         }
-
-        protected override async void OnSleep()
+        protected override void OnSleep()
         {
             Debug.WriteLine("OnSleep");
 
-            // TODO Study why Task.Run(async () => await SomethingAsync()); fix the "A Tast was canceled" exception.
-            await Task.Run(async () => await _restService.ReportDeviceStatusAsync());
-
-            //try
-            //{
-            //    await _restService.ReportDeviceStatusAsync();
-            //}
-            //catch (Exception ex)
-            //{
-            //    Debug.WriteLine(ex.Message);
-            //}
+            _restService.ReportDeviceStatus();
         }
-
         protected override async void OnResume()
         {
             Debug.WriteLine("OnResume");
-            base.OnResume();
 
             if (IsChatPage)
-                await _restService.ReportDeviceStatusAsync(true);
+                _restService.ReportDeviceStatus(true);
 
             if (CurrentRoomId == null)
                 return;
 
-            var lastMessage = await Database.GetLastMessage(CurrentRoomId);
-            int lastIndex = lastMessage?.Id ?? 0;
+            Debug.WriteLine("[App.OnResuce()]Start Pulling Messages");
 
+            int lastIndex = await _localDbService.GetLastMessageIndexAsync(CurrentRoomId);
             var pendingMessages = await _restService.PullPendingMessages(CurrentRoomId, lastIndex);
             foreach (var pm in pendingMessages)
                 await _messageRepository.AddMessageAsync(new Message
                 {
                     Id = pm.Id,
-                    Body = pm.Body,
+                    Body = pm.SenderName == UserName ? pm.Body : pm.SenderName + ": " + pm.Body,
                     Sender = pm.SenderName,
                     SenderId = pm.SenderId,
                     CreatedAt = pm.CreatedAt
                 });
 
+            Debug.WriteLine("[App.OnResuce()]Pulling Messages finished");
 
         }
         #endregion

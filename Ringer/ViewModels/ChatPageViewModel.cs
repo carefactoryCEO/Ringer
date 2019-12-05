@@ -15,6 +15,7 @@ using Ringer.Core;
 using Ringer.Core.Data;
 using Ringer.Helpers;
 using Ringer.Models;
+using Ringer.Services;
 using Xamarin.Forms;
 using XFDevice = Xamarin.Forms.Device;
 
@@ -25,6 +26,7 @@ namespace Ringer.ViewModels
         #region private members
         MessagingService _messagingService;
         IMessageRepository _messageRepository;
+        private LocalDbService _localDbService;
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
         GenderType genderType;
@@ -35,6 +37,7 @@ namespace Ringer.ViewModels
         {
             _messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
+            _localDbService = DependencyService.Resolve<LocalDbService>();
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
@@ -59,7 +62,7 @@ namespace Ringer.ViewModels
                 _messageRepository.Messages.Clear();
 
                 // reset local db's Message table
-                await App.Database.ResetDbAsync();
+                await _localDbService.ResetMessagesAsync();
 
                 // Go Back
                 await Shell.Current.Navigation.PopAsync();

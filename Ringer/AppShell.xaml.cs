@@ -9,8 +9,8 @@ namespace Ringer
         {
             InitializeComponent();
 
+            //Routing.RegisterRoute("mappage", typeof(MapPage));
             Routing.RegisterRoute("chatpage", typeof(ChatPage));
-            Routing.RegisterRoute("mappage", typeof(MapPage));
             Routing.RegisterRoute("vidyopage", typeof(VidyoPage));
         }
     }
