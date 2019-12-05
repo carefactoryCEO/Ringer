@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace Ringer.HubServer
 {
@@ -8,7 +9,7 @@ namespace Ringer.HubServer
         public static void Main(string[] args)
         {
             var host = CreateHostBuilder(args).Build();
-            
+
             host.Run();
         }
 
@@ -17,6 +18,16 @@ namespace Ringer.HubServer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureLogging(logging =>
+                {
+                    // clear default logging providers
+                    logging.ClearProviders();
+
+                    // add built-in providers manually, as needed 
+                    logging.AddConsole();
+                    logging.AddDebug();
+                    logging.AddAzureWebAppDiagnostics();
                 });
     }
 }

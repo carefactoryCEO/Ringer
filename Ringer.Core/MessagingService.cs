@@ -8,7 +8,37 @@ using System.Threading.Tasks;
 
 namespace Ringer.Core
 {
-    public class MessagingService
+    public interface IMessagingService
+    {
+        bool IsConnected { get; }
+        bool IsConnecting { get; }
+        bool IsDisconnected { get; }
+        bool IsReconnecting { get; }
+
+        void Init(string url, string token);
+
+        Task ConnectAsync();
+        Task DisconnectAsync();
+        Task JoinRoomAsync(string room, string user);
+        Task LeaveRoomAsync(string room, string user);
+        Task SendMessageToRoomAsync(string roomId, string sender, string body);
+
+        event EventHandler<ConnectionEventArgs> Connecting;
+        event EventHandler<ConnectionEventArgs> Connected;
+        event EventHandler<ConnectionEventArgs> ConnectionFailed;
+        event EventHandler<ConnectionEventArgs> Disconnecting;
+        event EventHandler<ConnectionEventArgs> Disconnected;
+        event EventHandler<ConnectionEventArgs> DisconnectionFailed;
+        event EventHandler<ConnectionEventArgs> Closed;
+        event EventHandler<ConnectionEventArgs> Reconnecting;
+        event EventHandler<ConnectionEventArgs> Reconnected;
+        event EventHandler<SignalREventArgs> SomeoneEntered;
+        event EventHandler<SignalREventArgs> SomeoneLeft;
+        event EventHandler<MessageReceivedEventArgs> MessageReceived;
+
+    }
+
+    public class MessagingService : IMessagingService
     {
         #region private members
         public HubConnection _hubConnection;
@@ -187,15 +217,5 @@ namespace Ringer.Core
         public event EventHandler<SignalREventArgs> SomeoneLeft;
         public event EventHandler<MessageReceivedEventArgs> MessageReceived;
         #endregion
-    }
-
-    public class ConnectionEventArgs : IChatEventArgs
-    {
-        public string Message { get; private set; }
-
-        public ConnectionEventArgs(string message)
-        {
-            Message = message;
-        }
     }
 }

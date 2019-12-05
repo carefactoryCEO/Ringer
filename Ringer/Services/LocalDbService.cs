@@ -2,20 +2,30 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Ringer.Helpers;
 using Ringer.Models;
 using SQLite;
 
-namespace Ringer.Data
+namespace Ringer.Services
 {
-    public class RingerDatabase
+    public interface ILocalDbService
+    {
+        Task<List<Message>> GetMessagesAsync();
+        Task<Message> GetMessageAsync(int id);
+        Task<int> SaveMessageAsync(Message message, bool update = false);
+        Task ResetMessagesAsync();
+        Task<Message> GetLastMessage(string currentRoomId);
+        Task<int> GetLastMessageIndexAsync(string currentRoomId);
+    }
+
+    public class LocalDbService : ILocalDbService
     {
         private SQLiteAsyncConnection _database;
 
-        public RingerDatabase(string dbPath)
+        public LocalDbService()
         {
-            _database = new SQLiteAsyncConnection(dbPath);
+            _database = new SQLiteAsyncConnection(Constants.DbPath);
             _database.CreateTableAsync<Message>().Wait();
-
         }
 
         public Task<List<Message>> GetMessagesAsync()
@@ -38,16 +48,16 @@ namespace Ringer.Data
             return _database.InsertAsync(message);
         }
 
-        public Task<int> DeleteMessageAsync(Message message)
+        public Task ResetMessagesAsync()
         {
-            return _database.DeleteAsync(message);
+            return _database.DeleteAllAsync<Message>();
         }
 
-        public Task ResetDbAsync()
+        public async Task<int> GetLastMessageIndexAsync(string currentRoomId)
         {
-            return _database.DropTableAsync<Message>();
+            var message = await GetLastMessage(currentRoomId);
+            return message?.Id ?? 0;
         }
-
         public Task<Message> GetLastMessage(string currentRoomId)
         {
             return _database.Table<Message>()

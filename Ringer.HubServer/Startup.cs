@@ -11,6 +11,7 @@ using System.Text;
 using Ringer.HubServer.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace Ringer.HubServer
 {
@@ -28,14 +29,18 @@ namespace Ringer.HubServer
         {
             if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
             {
+                // context
                 services.AddDbContext<RingerDbContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
 
-                services.BuildServiceProvider().GetService<RingerDbContext>().Database.Migrate();
+                // db migration
+                using (var context = services.BuildServiceProvider().GetService<RingerDbContext>())
+                    context.Database.Migrate();
             }
             else
                 services.AddDbContext<RingerDbContext>(options =>
                         options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
+
 
             // security key
             string securityKey = "this_is_super_long_security_key_for_ringer_service";

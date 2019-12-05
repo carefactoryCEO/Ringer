@@ -22,11 +22,11 @@
                 <Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF"/>
                 <Setter Property="Shell.TabBarTitleColor" Value="White"/>
             </Style>
-            <Style TargetType="ShellItem" BasedOn="{StaticResource BaseStyle}" />
+            <Style TargetType="ShellItem" BasedOn="{StaticResource BaseStyle}"  />
         </ResourceDictionary>
     </Shell.Resources>
 
-    <ShellContent ContentTemplate="{DataTemplate local:MapPage}"/>
+    <ShellContent ContentTemplate="{DataTemplate local:MapPage}" Route="mappage"/>
     <!--<ShellContent ContentTemplate="{DataTemplate local:MapPage}" Route="mappage"/>
     <ShellContent ContentTemplate="{DataTemplate local:ChatPage}" Route="chatpage"/>
     <ShellContent ContentTemplate="{DataTemplate local:VidyoPage}" Route="vidyopage"/>-->

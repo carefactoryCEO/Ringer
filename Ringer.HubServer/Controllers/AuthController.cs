@@ -29,17 +29,18 @@ namespace Ringer.HubServer.Controllers
         [HttpPost("report")]
         public async Task<ActionResult> ReportStatusAsync(DeviceReport report)
         {
-            _logger.LogInformation($"hit report");
-
             var device = await _dbContext.Devices.FindAsync(report.DeviceId);
 
             if (device == null)
                 return NotFound();
 
-            device.IsOn = report.Status;
-            await _dbContext.SaveChangesAsync();
+            if (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android)
+            {
+                device.IsOn = report.Status;
+                await _dbContext.SaveChangesAsync();
 
-            _logger.LogWarning($"{device.Id}'s IsOn status:{device.IsOn}");
+                _logger.LogWarning($"Device [{device.Id}]({device.DeviceType}) is On:{device.IsOn}");
+            }
 
             return Ok();
         }
