@@ -93,7 +93,7 @@ namespace Ringer.ConsoleApp
             messagingService.Init(hubUrl, token);
 
             // Connect to hub
-            await messagingService.ConnectAsync(currentRoomId, name);
+            await messagingService.ConnectAsync();
 
             Console.WriteLine("-----------------------------------");
             Console.WriteLine($"OK, {hubUrl} 접속({messagingService.ConnectionId})");

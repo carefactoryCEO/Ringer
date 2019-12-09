@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core.EventArgs;
 using System;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Ringer.Core
@@ -61,10 +60,10 @@ namespace Ringer.Core
                     // default: wait 0,2,10,30 seconds and try to reconnect
                     TimeSpan.FromSeconds(0),
                     TimeSpan.FromSeconds(1),
-                    TimeSpan.FromSeconds(2),
-                    TimeSpan.FromSeconds(3),
-                    TimeSpan.FromSeconds(4),
-                    TimeSpan.FromSeconds(5),
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(1)
                 })
                 .Build();
 
@@ -141,23 +140,21 @@ namespace Ringer.Core
             }
         }
 
-        public async Task ConnectAsync(string room, string user) => await ConnectAsync();
-
         public async Task DisconnectAsync()
         {
             if (!IsConnected)
                 return;
             try
             {
-                Disconnecting?.Invoke(this, new ConnectionEventArgs($"Try to Disconnect\n{DateTime.Now}\n{_hubConnection.ConnectionId}"));
+                Disconnecting?.Invoke(this, new ConnectionEventArgs($"Try to Disconnect\n{DateTime.UtcNow}\n{_hubConnection.ConnectionId}"));
 
                 await _hubConnection.StopAsync();
 
                 if (IsConnected)
                     throw new InvalidOperationException("Disconnection faild");
 
-                Disconnected?.Invoke(this, new ConnectionEventArgs($"Disconnected\n{DateTime.Now}"));
-                Debug.WriteLine($"Disconnection completed\n{DateTime.Now}");
+                Disconnected?.Invoke(this, new ConnectionEventArgs($"Disconnected\n{DateTime.UtcNow}"));
+                Debug.WriteLine($"Disconnection completed\n{DateTime.UtcNow}");
 
             }
             catch (Exception ex)
@@ -178,7 +175,7 @@ namespace Ringer.Core
         public async Task JoinRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync(room, user);
+                await ConnectAsync();
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
@@ -186,7 +183,7 @@ namespace Ringer.Core
         public async Task LeaveRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync(room, user);
+                await ConnectAsync();
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
@@ -194,7 +191,7 @@ namespace Ringer.Core
         public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
-                await ConnectAsync(roomId, sender);
+                await ConnectAsync();
 
             await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId);
         }

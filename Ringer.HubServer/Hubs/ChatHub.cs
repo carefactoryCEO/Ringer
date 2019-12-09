@@ -30,7 +30,6 @@ namespace Ringer.Backend.Hubs
             _logger = logger;
         }
 
-        #region present methods
         public async Task AddToGroup(string group, string user)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, group);
@@ -41,7 +40,6 @@ namespace Ringer.Backend.Hubs
 
             await Clients.Group(group).SendAsync("Entered", user);
         }
-
         public async Task RemoveFromGroup(string group, string user)
         {
             // TODO: user가 원래 방에 있었는지 확인
@@ -52,8 +50,6 @@ namespace Ringer.Backend.Hubs
 
             await Clients.Group(group).SendAsync("Left", user);
         }
-        #endregion
-
         public async Task SendMessageToRoomAsyc(string body, string roomId)
         {
             User user = await _dbContext.Users.FindAsync(_userId);
@@ -129,7 +125,6 @@ namespace Ringer.Backend.Hubs
                 foreach (Enrollment enrollment in user.Enrollments)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.Room.Id);
-
                     _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
                 }
             }

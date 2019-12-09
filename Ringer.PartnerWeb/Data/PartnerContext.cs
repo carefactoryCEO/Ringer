@@ -13,7 +13,6 @@ namespace Ringer.PartnerWeb.Data
         }
 
         public DbSet<User> Users { get; set; }
-        public DbSet<Ticket> Tickets { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,8 +21,13 @@ namespace Ringer.PartnerWeb.Data
                 .Property(p => p.Gender)
                 .HasConversion(new EnumToStringConverter<GenderType>());
 
+            modelBuilder
+                .Entity<User>()
+                .Property(p => p.UserType)
+                .HasDefaultValue(UserType.Consumer)
+                .HasConversion(new EnumToStringConverter<UserType>());
+
             modelBuilder.Entity<User>().ToTable("User");
-            modelBuilder.Entity<Ticket>().ToTable("Ticket");
         }
     }
 }

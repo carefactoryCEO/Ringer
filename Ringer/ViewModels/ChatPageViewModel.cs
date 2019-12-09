@@ -2,9 +2,6 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Plugin.Media;
@@ -16,8 +13,8 @@ using Ringer.Core.Data;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
+using Xamarin.Essentials;
 using Xamarin.Forms;
-using XFDevice = Xamarin.Forms.Device;
 
 namespace Ringer.ViewModels
 {
@@ -26,7 +23,7 @@ namespace Ringer.ViewModels
         #region private members
         MessagingService _messagingService;
         IMessageRepository _messageRepository;
-        private LocalDbService _localDbService;
+        private IRESTService _restService;
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
         GenderType genderType;
@@ -35,13 +32,18 @@ namespace Ringer.ViewModels
         #region Constructor
         public ChatPageViewModel()
         {
+            Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
+
             _messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
-            _localDbService = DependencyService.Resolve<LocalDbService>();
+            _restService = DependencyService.Resolve<IRESTService>();
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
-            ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage?vidyoRoom=fd17626e-29c8-4e2f-a5bb-3215ffe8e61a"));
+            //ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage?vidyoRoom=fd17626e-29c8-4e2f-a5bb-3215ffe8e61a"));
+            ShowVidyoCommand = new Command(async () => await Browser.OpenAsync("https://appr.tc/r/5433210"));
+
+
             CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
 
             // Initialize the properties for binding
@@ -53,6 +55,10 @@ namespace Ringer.ViewModels
             {
                 // Reset Token
                 App.Token = null;
+                App.CurrentRoomId = null;
+                App.UserName = null;
+                App.LastMessageId = 0;
+                userInfoToQuery = UserInfoType.None;
 
                 // Disconnect Connection
                 if (_messagingService.IsConnected)
@@ -62,39 +68,92 @@ namespace Ringer.ViewModels
                 _messageRepository.Messages.Clear();
 
                 // reset local db's Message table
-                await _localDbService.ResetMessagesAsync();
+                _messageRepository.ClearLocalDb();
 
                 // Go Back
                 await Shell.Current.Navigation.PopAsync();
-                //await Shell.Current.GoToAsync("mappage");
             });
-
         }
 
-        public async Task CheckLogInAsync()
+        public async Task ExcuteLogInProcessAsync()
         {
-            if (!App.IsLoggedIn)
-            {
-                // await Task.Delay(1000);
-                Debug.WriteLine(_messageRepository.Messages.Count);
+            if (App.IsLoggedIn)
+                return;
 
-                _messageRepository.AddLocalMessage(new Message { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System });
-                // await Task.Delay(1500);
-                _messageRepository.AddLocalMessage(new Message { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System });
-                // await Task.Delay(1500);
-                _messageRepository.AddLocalMessage(new Message { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System });
-                // await Task.Delay(2000);
-                _messageRepository.AddLocalMessage(new Message { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System });
-                // await Task.Delay(2500);
-                _messageRepository.AddLocalMessage(new Message { Body = "이름을 입력하세요.", Sender = Constants.System });
-
-                userInfoToQuery = UserInfoType.Name;
-            }
-            else
+            switch (userInfoToQuery)
             {
-                // TODO: Token이 valid한지 체크한다.
-                _messagingService.Init(Constants.HubUrl, App.Token);
-                await _messagingService.ConnectAsync(App.CurrentRoomId, App.UserName);
+                case UserInfoType.None:
+
+                    // await Task.Delay(1000);
+                    _messageRepository.AddLocalMessage(new Message { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System });
+                    // await Task.Delay(1500);
+                    _messageRepository.AddLocalMessage(new Message { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System });
+                    // await Task.Delay(1500);
+                    _messageRepository.AddLocalMessage(new Message { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System });
+                    // await Task.Delay(2000);
+                    _messageRepository.AddLocalMessage(new Message { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System });
+                    // await Task.Delay(2500);
+                    _messageRepository.AddLocalMessage(new Message { Body = "이름을 입력하세요.", Sender = Constants.System });
+
+                    userInfoToQuery = UserInfoType.Name;
+
+                    break;
+
+                case UserInfoType.Name:
+
+                    App.UserName = TextToSend;
+                    _messageRepository.AddLocalMessage(new Message { Body = TextToSend, Sender = App.UserName });
+                    TextToSend = string.Empty;
+                    // TODO: name validation here
+
+                    // await Task.Delay(1000);
+
+                    // name validation pass
+                    _messageRepository.AddLocalMessage(new Message { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System });
+                    // await Task.Delay(600);
+
+                    Keyboard = Keyboard.Numeric;
+                    _messageRepository.AddLocalMessage(new Message { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System });
+
+                    userInfoToQuery = UserInfoType.BirthDate;
+                    break;
+
+                case UserInfoType.BirthDate:
+
+                    var numeric = TextToSend;
+                    TextToSend = string.Empty;
+
+                    string year = numeric.Substring(0, 2);
+                    string month = numeric.Substring(2, 2);
+                    string day = numeric.Substring(4, 2);
+                    string gender = numeric.Substring(6, 1);
+
+                    year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
+
+                    birthDate = DateTime.Parse($"{year}-{month}-{day}");
+                    genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
+
+                    // await Task.Delay(500);
+
+                    Keyboard = Keyboard.Chat;
+
+                    _messageRepository.AddLocalMessage(new Message { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
+
+                    // Log in and get Token
+                    await _restService.LogInAsync(App.UserName, birthDate, genderType);
+
+                    if (App.IsLoggedIn)
+                    {
+                        _messageRepository.Messages.Clear();
+                        await _messageRepository.LoadMessagesAsync(true);
+
+                        _messagingService.Init(Constants.HubUrl, App.Token);
+                        await _messagingService.ConnectAsync(); // 2초 정도 시간이 걸린다...
+                    }
+
+                    break;
             }
         }
         #endregion
@@ -107,114 +166,9 @@ namespace Ringer.ViewModels
 
             if (!App.IsLoggedIn)
             {
-                switch (userInfoToQuery)
-                {
-                    case UserInfoType.Name:
-
-                        App.UserName = TextToSend;
-                        _messageRepository.AddLocalMessage(new Message { Body = TextToSend, Sender = App.UserName });
-                        // TODO: name validation here
-
-                        // name validation pass
-                        TextToSend = string.Empty;
-                        // await Task.Delay(1000);
-
-                        _messageRepository.AddLocalMessage(new Message { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System });
-                        // await Task.Delay(600);
-
-                        Keyboard = Keyboard.Numeric;
-                        _messageRepository.AddLocalMessage(new Message { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System });
-
-                        userInfoToQuery = UserInfoType.BirthDate;
-                        break;
-
-                    case UserInfoType.BirthDate:
-
-                        var numeric = TextToSend;
-                        TextToSend = string.Empty;
-
-                        string year = numeric.Substring(0, 2);
-                        string month = numeric.Substring(2, 2);
-                        string day = numeric.Substring(4, 2);
-                        string gender = numeric.Substring(6, 1);
-
-                        year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
-
-                        birthDate = DateTime.Parse($"{year}-{month}-{day}");
-                        genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
-
-                        _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
-
-                        // await Task.Delay(500);
-
-                        Keyboard = Keyboard.Chat;
-
-                        _messageRepository.AddLocalMessage(new Message { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
-
-                        // await Task.Delay(500);
-
-                        // Get Token
-                        HttpClient client = new HttpClient();
-
-                        var loginInfo = JsonSerializer.Serialize(new LoginInfo
-                        {
-                            Name = App.UserName,
-                            BirthDate = birthDate,
-                            Gender = genderType,
-                            DeviceId = App.DeviceId,
-                            DeviceType = XFDevice.RuntimePlatform == XFDevice.iOS ? DeviceType.iOS : DeviceType.Android
-                        });
-
-                        Debug.WriteLine(loginInfo);
-
-                        HttpResponseMessage response = await client.PostAsync(Constants.LoginUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
-
-                        // 로그인 실패
-                        if (response.StatusCode != System.Net.HttpStatusCode.OK)
-                        {
-                            Debug.WriteLine(await response.Content.ReadAsStringAsync());
-                        }
-
-                        var responseString = await response.Content.ReadAsStringAsync();
-
-                        var responseObject = JsonSerializer.Deserialize<ResponseJson>(responseString);
-
-                        // TODO: token 발급되었는지 확인
-                        // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
-
-                        App.Token = responseObject.token;
-                        App.CurrentRoomId = responseObject.roomId;
-
-                        Debug.WriteLine(App.Token);
-                        Debug.WriteLine(App.CurrentRoomId);
-
-                        //messagingService.AddLocalMessage($"로그인토큰: {App.Token}", Constants.System);
-
-
-                        // Messaging Service Initialize
-                        // 
-                        _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync(App.CurrentRoomId, App.UserName);
-
-                        break;
-
-                    default:
-                        break;
-                }
-
-                if (App.IsLoggedIn && _messagingService.IsConnected)
-                {
-                    //messagingService.AddLocalMessage($"커넥션 id: {messagingService?.HubConnection?.ConnectionId}", Constants.System);
-
-                    _messageRepository.AddLocalMessage(new Message { Body = $"{App.UserName}님 확인되었습니다. 이제 링거 상담팀과 대화하실 수 있습니다.", Sender = Constants.System });
-                    //// await Task.Delay(2000);
-
-                    //messagingService.AddLocalMessage($"AA가 궁금하면 aa를 BB가 궁금하면 bb를 채팅창에 입력하세요. 링거 데이터베이스에 저장된 정보를 바로 알려드리고, 상담팀이 확인한 후 더 자세히 알려드리겠습니다.", Constants.System);
-                }
-
+                await ExcuteLogInProcessAsync();
                 return;
             }
-
 
             try
             {
@@ -229,6 +183,7 @@ namespace Ringer.ViewModels
                 _messageRepository.AddLocalMessage(new Message { Body = $"vs.SendMessage:Send failed: {ex.Message}", Sender = Constants.System });
             }
         }
+
         private async Task ProcessCameraAction(string action)
         {
             if (action == "설정 열기")
@@ -375,7 +330,6 @@ namespace Ringer.ViewModels
             }
             #endregion
         }
-
         private async Task<bool> CheckPhotosPermissionsAsync()
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
@@ -512,14 +466,13 @@ namespace Ringer.ViewModels
         private bool AttachingVideoPermitted() => true;
         private async Task<bool> TakingPhotoPermittedAsync()
         {
-            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+            if (Device.RuntimePlatform == Device.iOS)
                 return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync();
 
-            else if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
+            if (Device.RuntimePlatform == Device.Android)
                 return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
 
-            else
-                return false;
+            return false;
         }
         private async Task<bool> TakingVideoPermittedAsync()
         {

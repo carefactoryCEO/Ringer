@@ -27,7 +27,15 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
-            await GetGeolocationAsync();
+            await Task.WhenAll
+            (
+                PushAlert.TranslateTo(0, 0, 200, Easing.SinIn),
+                GetGeolocationAsync()
+            );
+
+            await Task.Delay(5000);
+
+            await PushAlert.TranslateTo(0, -80, 200, Easing.SinInOut);
         }
         #endregion
 

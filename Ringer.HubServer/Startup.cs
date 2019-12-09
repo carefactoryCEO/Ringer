@@ -36,6 +36,7 @@ namespace Ringer.HubServer
                 // db migration
                 using (var context = services.BuildServiceProvider().GetService<RingerDbContext>())
                     context.Database.Migrate();
+
             }
             else
                 services.AddDbContext<RingerDbContext>(options =>

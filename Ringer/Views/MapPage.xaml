@@ -12,7 +12,7 @@
              Shell.NavBarIsVisible="False"             
              Shell.TabBarIsVisible="False"
              Title="지도">
-    
+
     <ContentPage.BindingContext>
         <viewmodels:MapPageViewModel/>
     </ContentPage.BindingContext>
@@ -63,6 +63,18 @@
                     WidthRequest="60" HeightRequest="60"
                     BackgroundColor="Transparent"
                     />
+
+            <Label Text="Hello"
+                   x:Name="PushAlert"
+                   TextColor="White"
+                   Padding="0,30,0,0"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   BackgroundColor="Brown"
+                   AbsoluteLayout.LayoutFlags="WidthProportional"
+                   AbsoluteLayout.LayoutBounds="0, 0, 1, 80"
+                   TranslationY="-80"/>
+
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

@@ -8,6 +8,7 @@ namespace Ringer.Models
         [PrimaryKey]
         public int Id { get; set; }
 
+        [Indexed]
         public string RoomId { get; set; }
 
         public string Body { get; set; }

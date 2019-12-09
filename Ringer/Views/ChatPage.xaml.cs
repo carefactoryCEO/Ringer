@@ -60,12 +60,12 @@ namespace Ringer.Views
 
         protected override async void OnAppearing()
         {
-            await ChatPageVM.CheckLogInAsync();
+            await ChatPageVM.ExcuteLogInProcessAsync();
 
             base.OnAppearing();
         }
 
-        protected override async void OnDisappearing()
+        protected override void OnDisappearing()
         {
             base.OnDisappearing();
         }
