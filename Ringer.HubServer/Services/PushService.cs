@@ -177,7 +177,6 @@ namespace Ringer.HubServer.Services
                     string URL = $"{Constants.Url}/{Constants.Organization}/{Constants.AppNameiOS}/{Constants.Apis.Notification}";
 
                     var result = await httpClient.PostAsync(URL, httpContent);
-                    // "https://api.appcenter.ms/v0.1/apps/mbshin-carefactory.co.kr/Constants.AppNameiOS/push/notifications"
                 }
 
                 if (receiver.AndroidDevices.Any())

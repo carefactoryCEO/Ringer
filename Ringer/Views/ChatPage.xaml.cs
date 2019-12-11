@@ -1,9 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net.Http;
-using System.Text;
-using System.Text.Json;
-using Ringer.Core.Data;
-using Ringer.Helpers;
 using Ringer.Services;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
