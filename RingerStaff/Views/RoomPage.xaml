@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RingerStaff.Views.RoomPage"
+             Title="{Binding Title}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Command="{Binding RefreshCommand}"
+                     Order="Primary">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                 Glyph="{StaticResource IconSearch}"
+                                 Size="18"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem Command="{Binding RefreshCommand}"
+                     Order="Primary">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                 Glyph="{StaticResource IconNewChat}"
+                                 Size="18"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+        <ToolbarItem Command="{Binding RefreshCommand}"
+                     Order="Primary">
+            <ToolbarItem.IconImageSource>
+                <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                 Glyph="{StaticResource IconSetting}"
+                                 Size="18"/>
+            </ToolbarItem.IconImageSource>
+        </ToolbarItem>
+
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <ListView ItemsSource="{Binding Rooms}"
+                  Margin="0,0,0,0"
+                  SeparatorVisibility="None"
+                  VerticalOptions="FillAndExpand"
+                  HasUnevenRows="true"
+                  ItemSelected="OnItemSelected">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <StackLayout Padding="15">
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding Description}"
+                                       LineBreakMode="NoWrap"
+                                       Style="{DynamicResource ListItemTextStyle}"
+                                       FontSize="16"
+                                       FontAttributes="Bold" />
+                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tth:mm}'}"
+                                       TextColor="Gray"
+                                       FontSize="12"
+                                       HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+                            <StackLayout Orientation="Horizontal">
+                                <Label Text="{Binding LastMessage}"
+                                       LineBreakMode="NoWrap"
+                                       Style="{DynamicResource ListItemDetailTextStyle}"
+                                       TextColor="Gray"
+                                       FontSize="13" />
+                                <Frame CornerRadius="11" Padding="0"
+                                       BackgroundColor="#E95E3D"
+                                       TranslationY="-5"
+                                       HasShadow="False"
+                                       HorizontalOptions="EndAndExpand">
+                                    <Label Text="{Binding UnreadMessagesCount}"
+                                           Margin="8,4"
+                                           FontSize="12"
+                                           BackgroundColor="Transparent"
+                                           TextColor="White" />
+                                </Frame>
+                            </StackLayout>
+                        </StackLayout>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+
+
+</ContentPage>

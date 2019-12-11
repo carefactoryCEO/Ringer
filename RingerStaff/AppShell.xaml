@@ -7,55 +7,54 @@
         <ResourceDictionary>
             <Color x:Key="NavigationPrimary">#2196F3</Color>
             <Style x:Key="BaseStyle" TargetType="Element">
-                <Setter Property="Shell.BackgroundColor" Value="{StaticResource NavigationPrimary}" />
-                <Setter Property="Shell.ForegroundColor" Value="White" />
-                <Setter Property="Shell.TitleColor" Value="White" />
-                <Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />
-                <Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />
-                <Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource NavigationPrimary}" />
-                <Setter Property="Shell.TabBarForegroundColor" Value="White" />
-                <Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF" />
-                <Setter Property="Shell.TabBarTitleColor" Value="White" />
+                <!--<Setter Property="Shell.BackgroundColor" Value="{StaticResource NavigationPrimary}" />-->
+                <!--<Setter Property="Shell.ForegroundColor" Value="White" />-->
+                <!--<Setter Property="Shell.TitleColor" Value="White" />-->
+                <!--<Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />-->
+                <!--<Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />-->
+                <!--<Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource NavigationPrimary}" />-->
+                <!--<Setter Property="Shell.TabBarForegroundColor" Value="White" />-->
+                <!--<Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF" />-->
+                <!--<Setter Property="Shell.TabBarTitleColor" Value="White" />-->
+                <Setter Property="Shell.BackgroundColor" Value="White" />
+                <Setter Property="Shell.ForegroundColor" Value="Black" />
+                <Setter Property="Shell.TitleColor" Value="Black" />
+                <Setter Property="Shell.DisabledColor" Value="Gray" />
+                <Setter Property="Shell.UnselectedColor" Value="Gray" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="#FAF9FA" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="Black" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="LightSlateGray" />
+                <Setter Property="Shell.TabBarTitleColor" Value="Black" />
             </Style>
             <Style TargetType="TabBar" BasedOn="{StaticResource BaseStyle}" />
         </ResourceDictionary>
     </Shell.Resources>
-    <!-- Your Pages -->
+
     <TabBar>
-        <Tab Title="Browse" Icon="tab_feed.png">
+        <Tab Title="채팅">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="{DynamicResource MaterialFontFamily}"
+                    Glyph="{StaticResource IconChat}"/>
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate local:RoomPage}" />
+        </Tab>
+        <Tab Title="스태프">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="{DynamicResource MaterialFontFamily}"
+                    Glyph="{StaticResource IconStaff}"/>
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />
+        </Tab>
+        <Tab Title="스케쥴">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="{DynamicResource MaterialFontFamily}"
+                    Glyph="{StaticResource IconSchedule}"/>
+            </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />
         </Tab>
-        <Tab Title="About" Icon="tab_about.png">
-            <ShellContent ContentTemplate="{DataTemplate local:AboutPage}" />
-        </Tab>
     </TabBar>
-    <!-- Optional Templates 
-    // These may be provided inline as below or as separate classes.
 
-    // This header appears at the top of the Flyout.
-    <Shell.FlyoutHeaderTemplate>
-        <DataTemplate>
-            <Grid>ContentHere</Grid>
-        </DataTemplate>
-    </Shell.FlyoutHeaderTemplate>
-
-    // ItemTemplate is for ShellItems as displayed in a Flyout
-    <Shell.ItemTemplate>
-        <DataTemplate>
-            <ContentView>
-                Bindable Properties: Title, Icon
-            </ContentView>
-        </DataTemplate>
-    </Shell.ItemTemplate>
-
-    // MenuItemTemplate is for MenuItems as displayed in a Flyout
-    <Shell.MenuItemTemplate>
-        <DataTemplate>
-            <ContentView>
-                Bindable Properties: Text, Icon
-            </ContentView>
-        </DataTemplate>
-    </Shell.MenuItemTemplate>
-
-    -->
 </Shell>

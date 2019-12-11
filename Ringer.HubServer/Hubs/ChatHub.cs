@@ -52,6 +52,7 @@ namespace Ringer.Backend.Hubs
         }
         public async Task SendMessageToRoomAsyc(string body, string roomId)
         {
+
             User user = await _dbContext.Users.FindAsync(_userId);
 
             Message message = new Message
@@ -62,13 +63,24 @@ namespace Ringer.Backend.Hubs
                 SenderId = _userId
             };
 
+            var sw = new Stopwatch();
+            sw.Start();
+
             // 디비에 메시지 저장
             _dbContext.Messages.Add(message);
             await _dbContext.SaveChangesAsync();
 
+            _logger.LogWarning($"Save To DB: {sw.ElapsedMilliseconds}");
+
+            sw.Restart();
+
             // 접속중인 디바이스는 일단 다 보낸다.
             //await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, _userId, message.CreatedAt);
             await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
+
+            _logger.LogWarning($"Send to Connected Devices: {sw.ElapsedMilliseconds}");
+
+            sw.Restart();
 
             // 룸에 속한 유저의 디바이스들 중 !IsOn인 디바이스는 푸시
             var room = await _dbContext.Rooms
@@ -77,6 +89,10 @@ namespace Ringer.Backend.Hubs
                         .ThenInclude(user => user.Devices)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(r => r.Id == roomId);
+
+            _logger.LogWarning($"Select un-connected devices: {sw.ElapsedMilliseconds}");
+
+            sw.Restart();
 
             var pushDic = new Dictionary<string, string>();
 
@@ -100,14 +116,15 @@ namespace Ringer.Backend.Hubs
                 customDataDic.Add("sender", user.Name);
 
                 var pushService = new PushService(pushDic);
+
                 await pushService.Push(user.Name, body, customDataDic);
 
                 foreach (var push in pushDic)
-                {
                     _logger.LogWarning($"Push message to [{push.Key}]({push.Value}) from {user.Name}");
-
-                }
             }
+
+            sw.Stop();
+            _logger.LogWarning($"Push to unconnected Devices: {sw.ElapsedMilliseconds}");
         }
 
         public override async Task OnConnectedAsync()
