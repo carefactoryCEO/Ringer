@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          x:Class="RingerStaff.Views.Cells.EntranceViewCell">
+    <ContentView>
+        <Frame BackgroundColor="Gray"
+               HorizontalOptions="Center"
+                Padding="10,4"
+                BorderColor="Gray"
+                Grid.Row="1"
+                Grid.Column="1"
+                VerticalOptions="Start"
+                CornerRadius="9"
+                HasShadow="False">
+            <Label Text="{Binding Body}" d:Text="김샘이 들어왔습니다.✊" FontSize="11" TextColor="White"/>
+        </Frame>
+    </ContentView>
+</ViewCell>

@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using RingerStaff.Models;
+using RingerStaff.Views;
 using Xamarin.Forms;
 
 namespace RingerStaff.ViewModels
@@ -57,6 +58,7 @@ namespace RingerStaff.ViewModels
                 Rooms[2].Description += "!!!";
             });
 
+            LoginCommand = new Command(async () => await Shell.Current.Navigation.PushModalAsync(new LoginPage()));
 
         }
 
@@ -68,5 +70,6 @@ namespace RingerStaff.ViewModels
         }
 
         public ICommand RefreshCommand { get; set; }
+        public ICommand LoginCommand { get; set; }
     }
 }

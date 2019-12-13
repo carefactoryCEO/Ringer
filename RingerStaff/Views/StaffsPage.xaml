@@ -1,7 +1,26 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="RingerStaff.Views.StaffsPage"
              Title="스태프">
-    <Grid>
-        <Label Text="Staff Page. Comming Soon..." VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
-    </Grid>
+    <StackLayout>
+        <StackLayout Orientation="Horizontal" VerticalOptions="Start" Spacing="5" HorizontalOptions="Center">
+
+            <Entry x:Name="BirthDate" Keyboard="Numeric" HorizontalTextAlignment="Center" MaxLength="6" Placeholder="생년월일"
+               FontSize="Large"/>
+
+            <Label Text="-" VerticalOptions="CenterAndExpand"/>
+
+            <Entry x:Name="Gender" Keyboard="Numeric" HorizontalTextAlignment="Center" MaxLength="1" Placeholder="성별"
+               FontSize="Large"/>
+
+            <Label Text="⚫️⚫️⚫️⚫️⚫️⚫️" VerticalOptions="CenterAndExpand" FontSize="Small"/>
+
+        </StackLayout>
+
+        <Label x:Name="BirthDateLabel" Text="⎕ ⎕ ⎕ ⎕ ⎕ ⎕ - ⎕ ●●●●●●"
+               TextColor="CornflowerBlue"
+               FontSize="Title" VerticalOptions="Start" HorizontalOptions="Center"/>
+        <Entry x:Name="NumericEntry" Keyboard="Numeric"
+               HorizontalTextAlignment="Center"
+               VerticalOptions="StartAndExpand" TextChanged="Entry_TextChanged" MaxLength="7"/>
+    </StackLayout>
 </ContentPage>

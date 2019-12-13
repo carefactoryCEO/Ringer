@@ -1,6 +1,7 @@
 ﻿using Ringer.Helpers;
 using Ringer.ViewModels;
 using System;
+using System.Diagnostics;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -65,12 +66,18 @@ namespace Ringer.Views.Partials
             return base.OnMeasure(widthConstraint, heightConstraint);
         }
 
+        double _keyboardHeight;
+
         void ChatTextInput_Focused(object sender, EventArgs e)
         {
             if (Device.RuntimePlatform != Device.iOS || _insets.Bottom == 0)
                 return;
 
             _page.Padding = new Thickness(0);
+
+            _keyboardHeight = Margin.Bottom;
+
+            Padding = new Thickness(0);
         }
 
         void ChatTextInput_Unfocused(object sender, EventArgs e)
@@ -78,7 +85,8 @@ namespace Ringer.Views.Partials
             if (Device.RuntimePlatform != Device.iOS || _insets.Bottom == 0)
                 return;
 
-            _page.Padding = new Thickness(0, 0, 0, _insets.Bottom);
+            //_page.Padding = new Thickness(0, 0, 0, _insets.Bottom);
+            Padding = new Thickness(0, 0, 0, _keyboardHeight);
         }
 
         public EventHandler EditorFocused;

@@ -20,11 +20,11 @@
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
-        <ToolbarItem Command="{Binding RefreshCommand}"
+        <ToolbarItem Command="{Binding LoginCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
-                                 Glyph="{StaticResource IconSetting}"
+                                 Glyph="{StaticResource IconLogin}"
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>

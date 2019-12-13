@@ -57,7 +57,6 @@ namespace Ringer.iOS.Renderers
             {
                 Element.Margin = new Thickness(0); //set the margins to zero when keyboard is dismissed
             }
-
         }
 
 

@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="RingerStaff.Views.LoginPage"
+             Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False">
+    <StackLayout Padding="40">
+
+        <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="0,30"/>
+
+        <Label Text="Ringer Staffs" FontSize="Title" HorizontalOptions="Center"/>
+        <Entry Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
+        <Entry Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
+
+        <StackLayout Orientation="Horizontal">
+            <Button Text="취소" TextColor="White" BackgroundColor="Gray" HorizontalOptions="FillAndExpand"
+                    Command="{Binding CancelCommand}"/>
+            <Button Text="로그인" TextColor="White" BackgroundColor="Accent" HorizontalOptions="FillAndExpand"
+                    Command="{Binding LoginCommand}"/>
+        </StackLayout>
+
+    </StackLayout>
+</ContentPage>

@@ -35,7 +35,8 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconChat}"/>
+                    Glyph="{StaticResource IconChat}"
+                    Size="20"/>
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:RoomPage}" />
         </Tab>
@@ -43,7 +44,8 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconStaff}"/>
+                    Glyph="{StaticResource IconStaff}"
+                    Size="23"/>
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />
         </Tab>
@@ -51,7 +53,17 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconSchedule}"/>
+                    Glyph="{StaticResource IconSchedule}"
+                    Size="20"/>
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />
+        </Tab>
+        <Tab Title="설정">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="{DynamicResource MaterialFontFamily}"
+                    Glyph="{StaticResource IconSetting}"
+                    Size="22"/>
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />
         </Tab>

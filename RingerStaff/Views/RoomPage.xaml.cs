@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using RingerStaff.ViewModels;
+﻿using RingerStaff.ViewModels;
 using Xamarin.Forms;
 
 namespace RingerStaff.Views
@@ -19,6 +17,8 @@ namespace RingerStaff.Views
         void OnItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             var list = sender as ListView;
+
+            Shell.Current.GoToAsync("chatpage");
 
             list.SelectedItem = null;
         }

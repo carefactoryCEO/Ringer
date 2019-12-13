@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="RingerStaff.Views.ChatPage"
+             xmlns:helpers="clr-namespace:RingerStaff.Helpers"
+             xmlns:controls="clr-namespace:RingerStaff.Views.Controls"
+             Title="{Binding Title}"
+             x:Name="ChatContentPage"
+             Shell.TabBarIsVisible="False">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="stop" Command="{Binding StopCommand}"/>
+    </ContentPage.ToolbarItems>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <helpers:MessageTemplateSelector x:Key="MessageTemplateSelector"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <controls:RingerListView ItemsSource="{Binding Messages}" Grid.Row="0"
+                  ItemTemplate="{StaticResource MessageTemplateSelector}"
+                  ItemAppearing="ListView_ItemAppearing"
+                  ItemDisappearing="ListView_ItemDisappearing"
+                  SeparatorVisibility="None"
+                  VerticalOptions="FillAndExpand"
+                  SelectionMode="None"
+                  HasUnevenRows="true"
+                  x:Name="MessageFeed">
+        </controls:RingerListView>
+
+        <Entry Grid.Row="1" Text="{Binding TextToSend}"/>
+
+    </Grid>
+</ContentPage>

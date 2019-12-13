@@ -3,6 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:converters="clr-namespace:RingerStaff.Converters"
+
              mc:Ignorable="d"
              x:Class="RingerStaff.App">
     <Application.Resources>
@@ -29,14 +31,27 @@
             <x:String x:Key="IconSetting">&#xf493;</x:String>
             <x:String x:Key="IconSearch">&#xf349;</x:String>
             <x:String x:Key="IconNewChat">&#xf527;</x:String>
-
-
+            <x:String x:Key="IconAccount">&#xf004;</x:String>
+            <x:String x:Key="IconLogin">&#xf342;</x:String>
+            <x:String x:Key="IconLogout">&#xf343;</x:String>
+            <x:String x:Key="IconArrowLeft">&#xf04d;</x:String>
+            <x:String x:Key="IconArrowLeftThick">&#xf04e;</x:String>
+            <x:String x:Key="IconClose">&#xf156;</x:String>
 
             <OnPlatform x:Key="MaterialFontFamily" x:TypeArguments="x:String">
                 <On Platform="iOS" Value="Material Design Icons" />
                 <On Platform="Android" Value="materialdesignicons-webfont.ttf#Material Design Icons" />
                 <On Platform="UWP" Value="Assets/Fonts/materialdesignicons-webfont.ttf#Material Design Icons" />
             </OnPlatform>
+
+            <!-- View Cell binding coverters -->
+            <!-- TODO: move these converters to ChatPage: 챗페이지에서만 쓰잖아.. -->
+            <converters:MessageTypesToBooleanConverter x:Key="MessageTypesToBooleanConverter"/>
+            <converters:MessageTypesToThicknessConverter x:Key="MessageTypesToThicknessConverter"/>
+            <converters:MessageTypesToGridLengthConverter x:Key="MessageTypesToGridLengthConverter"/>
+            <converters:MessageTypesToIntegerConverter x:Key="MessageTypesToIntegerConverter"/>
+            <converters:MessageTypesToLayoutOptionConverter x:Key="MessageTypesToLayoutOptionConverter"/>
+            <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
