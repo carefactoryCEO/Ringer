@@ -32,6 +32,8 @@ namespace RingerStaff.ViewModels
                 }
             };
 
+            VideoCommand = new Command(async () => await Shell.Current.GoToAsync("videopage"));
+
             RefreshCommand = new Command(() =>
             {
                 Rooms.Add(new RoomModel
@@ -71,5 +73,6 @@ namespace RingerStaff.ViewModels
 
         public ICommand RefreshCommand { get; set; }
         public ICommand LoginCommand { get; set; }
+        public ICommand VideoCommand { get; set; }
     }
 }

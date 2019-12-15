@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mm="clr-namespace:MediaManager.Forms;assembly=MediaManager.Forms"
+             x:Class="RingerStaff.Views.VideoPage">
+    <StackLayout>
+        <!-- https://archive.org/download/BigBuckBunny_328/BigBuckBunny_512kb.mp4 -->
+        <!-- 10분 -->
+
+        <!-- https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4 -->
+        <!-- 1분 -->
+
+        <mm:VideoView VerticalOptions="FillAndExpand"
+                      HorizontalOptions="FillAndExpand"
+                      AutoPlay="True"
+                      ShowControls="True"
+                      VideoAspect="AspectFit"
+                      x:Name="VideoView"/>
+
+        <Button Text="Play/Pause" Clicked="PlayStop_Clicked"/>
+        <Button Text="Close" Clicked="Close_Clicked"/>
+    </StackLayout>
+</ContentPage>

@@ -37,6 +37,13 @@
             <x:String x:Key="IconArrowLeft">&#xf04d;</x:String>
             <x:String x:Key="IconArrowLeftThick">&#xf04e;</x:String>
             <x:String x:Key="IconClose">&#xf156;</x:String>
+            <x:String x:Key="VideoPlay">&#xf40a;</x:String>
+
+            <Color x:Key="NavigationPrimary">#2196F3</Color>
+            <Color x:Key="White">#FFFFFF</Color>
+            <Color x:Key="Black">#000000</Color>
+
+
 
             <OnPlatform x:Key="MaterialFontFamily" x:TypeArguments="x:String">
                 <On Platform="iOS" Value="Material Design Icons" />

@@ -50,36 +50,62 @@ namespace RingerStaff.ViewModels
                     Sender = "iz*one",
                     MessageTypes = MessageTypes.Incomming | MessageTypes.Trailing | MessageTypes.Image
                 },
+
+                new MessageModel
+                {
+                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                    Body = "https://sec.ch9.ms/ch9/ca82/cc647aff-ec2f-46d9-9cac-e1be20c0ca82/CSharpHLPatternMatchingBasics.mp4",
+                    Sender = "video",
+                    MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                    UnreadCount = 1
+                },
+
+                new MessageModel
+                {
+                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
+                    Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                    Sender = "video",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                    UnreadCount = 1
+                },
+
+                new MessageModel
+                {
+                    Body = "https://i.pinimg.com/474x/03/bb/53/03bb53ce02e277befc8fa0353da31748.jpg",
+                    Sender = "wizone",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Trailing | MessageTypes.Image,
+                    UnreadCount = 1
+                },
             };
 
-            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
-            {
-                var message = new MessageModel { Body = (count++).ToString(), Sender = "Timer", MessageTypes = MessageTypes.Outgoing | MessageTypes.Text, UnreadCount = 2 };
+            //Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+            //{
+            //    var message = new MessageModel { Body = (count++).ToString(), Sender = "Timer", MessageTypes = MessageTypes.Outgoing | MessageTypes.Text, UnreadCount = 2 };
 
-                if (count == 2)
-                {
-                    message.MessageTypes |= MessageTypes.Leading;
-                    message.UnreadCount -= 1;
-                }
+            //    if (count == 2)
+            //    {
+            //        message.MessageTypes |= MessageTypes.Leading;
+            //    }
 
-                message.MessageTypes |= MessageTypes.Trailing;
+            //    message.MessageTypes |= MessageTypes.Trailing;
 
-                if (lastMessage != null)
-                {
-                    lastMessage.MessageTypes &= ~MessageTypes.Trailing;
-                    lastMessage.UnreadCount -= 1;
+            //    if (lastMessage != null)
+            //    {
+            //        lastMessage.MessageTypes &= ~MessageTypes.Trailing;
+            //        lastMessage.UnreadCount -= 1;
 
-                }
+            //    }
 
-                lastMessage = message;
+            //    lastMessage = message;
 
-                Messages.Add(message);
+            //    Messages.Add(message);
 
-                MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+            //    MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
 
-                addMore = (count >= 6) ? false : true;
-                return addMore;
-            });
+            //    addMore = (count >= 6) ? false : true;
+            //    return addMore;
+            //});
 
             StopCommand = new Command(() => addMore = !addMore);
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));

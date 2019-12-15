@@ -7,15 +7,17 @@ namespace RingerStaff.Helpers
 {
     class MessageTemplateSelector : DataTemplateSelector
     {
-        DataTemplate entranceDataTemplage;
+        private DataTemplate entranceDataTemplage;
         private DataTemplate imageDataTemplate;
         private DataTemplate textDataTemplate;
+        private DataTemplate videoDataTemplate;
 
         public MessageTemplateSelector()
         {
             entranceDataTemplage = new DataTemplate(typeof(EntranceViewCell));
-            imageDataTemplate = new DataTemplate(typeof(IncomingImageViewCell));
+            imageDataTemplate = new DataTemplate(typeof(ImageViewCell));
             textDataTemplate = new DataTemplate(typeof(TextViewCell));
+            videoDataTemplate = new DataTemplate(typeof(VideoViewCell));
         }
 
         protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
@@ -27,6 +29,9 @@ namespace RingerStaff.Helpers
 
             if (message.MessageTypes.HasFlag(MessageTypes.Image))
                 return imageDataTemplate;
+
+            if (message.MessageTypes.HasFlag(MessageTypes.Video))
+                return videoDataTemplate;
 
             if (message.MessageTypes.HasFlag(MessageTypes.Text))
                 return textDataTemplate;

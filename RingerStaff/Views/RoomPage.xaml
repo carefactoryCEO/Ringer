@@ -4,7 +4,8 @@
              x:Class="RingerStaff.Views.RoomPage"
              Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding RefreshCommand}"
+
+        <ToolbarItem Command="{Binding VideoCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
@@ -12,6 +13,7 @@
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
+
         <ToolbarItem Command="{Binding RefreshCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
@@ -20,6 +22,7 @@
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
+
         <ToolbarItem Command="{Binding LoginCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>

@@ -10,9 +10,9 @@ using Xamarin.Forms.Xaml;
 namespace RingerStaff.Views.Cells
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    public partial class IncomingImageViewCell : ViewCell
+    public partial class ImageViewCell : ViewCell
     {
-        public IncomingImageViewCell()
+        public ImageViewCell()
         {
             InitializeComponent();
         }

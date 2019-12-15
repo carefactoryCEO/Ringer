@@ -11,6 +11,7 @@ namespace RingerStaff
 
             Routing.RegisterRoute("loginpage", typeof(LoginPage));
             Routing.RegisterRoute("chatpage", typeof(ChatPage));
+            Routing.RegisterRoute("videopage", typeof(VideoPage));
         }
     }
 }
