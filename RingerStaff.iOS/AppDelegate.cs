@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Foundation;
-using MediaManager;
 using UIKit;
 
 namespace RingerStaff.iOS
@@ -24,10 +23,6 @@ namespace RingerStaff.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
-
-            // for Video player
-            CrossMediaManager.Current.Init();
-
             global::Xamarin.Forms.Forms.Init();
             LoadApplication(new App());
 

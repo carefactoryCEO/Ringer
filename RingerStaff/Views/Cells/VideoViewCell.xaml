@@ -78,7 +78,7 @@
                    HasShadow="False">
 
                 <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="VideoButton_Clicked"/>
+                    <TapGestureRecognizer Tapped="Video_Clicked"/>
                 </Frame.GestureRecognizers>
 
                 <Image Source="{FontImage

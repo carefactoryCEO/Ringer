@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+
 using Xamarin.Forms;
 
-namespace RingerStaff.Views
+namespace Ringer.Views
 {
-    public partial class SchedulePage : ContentPage
+    public partial class BusyPage : ContentPage
     {
-        public SchedulePage()
+        public BusyPage()
         {
             InitializeComponent();
         }

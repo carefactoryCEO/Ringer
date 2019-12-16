@@ -73,6 +73,9 @@
                     CornerRadius="15"
                     HasShadow="False"
                     IsClippedToBounds="True">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Image_Tapped"/>
+                </Frame.GestureRecognizers>
                 <Image Source="{Binding Body}"
                         d:Source="https://pbs.twimg.com/media/Dni8buZVAAAZwwG.jpg:large"
                         HorizontalOptions="Center"

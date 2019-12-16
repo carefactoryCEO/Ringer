@@ -54,9 +54,30 @@ namespace RingerStaff.ViewModels
                 new MessageModel
                 {
                     //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-                    Body = "https://sec.ch9.ms/ch9/ca82/cc647aff-ec2f-46d9-9cac-e1be20c0ca82/CSharpHLPatternMatchingBasics.mp4",
+                    // https://ringerstoragekr.blob.core.windows.net/ringer/test.mp4
+                    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/test.mp4",
                     Sender = "video",
                     MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                    UnreadCount = 1
+                },
+
+                //new MessageModel
+                //{
+                //    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                //    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
+                //    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV",
+                //    Sender = "video",
+                //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                //    UnreadCount = 1
+                //},
+
+                new MessageModel
+                {
+                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
+                    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/android.mp4",
+                    Sender = "video",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
                     UnreadCount = 1
                 },
 
@@ -77,6 +98,7 @@ namespace RingerStaff.ViewModels
                     MessageTypes = MessageTypes.Outgoing | MessageTypes.Trailing | MessageTypes.Image,
                     UnreadCount = 1
                 },
+
             };
 
             //Device.StartTimer(TimeSpan.FromSeconds(1), () =>

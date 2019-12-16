@@ -126,7 +126,7 @@ namespace Ringer.Core
             {
                 Connecting?.Invoke(this, new ConnectionEventArgs($"Try to Connect to SignalR Hub"));
 
-                await _hubConnection.StartAsync();
+                await _hubConnection.StartAsync().ConfigureAwait(false);
 
                 if (!IsConnected)
                     throw new InvalidOperationException($"Connecting to SignalR Hub failed.");
@@ -175,7 +175,7 @@ namespace Ringer.Core
         public async Task JoinRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
@@ -183,7 +183,7 @@ namespace Ringer.Core
         public async Task LeaveRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
@@ -191,9 +191,9 @@ namespace Ringer.Core
         public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
-            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId);
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
         }
         #endregion
 

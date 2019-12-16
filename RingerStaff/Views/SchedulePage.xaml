@@ -2,14 +2,8 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RingerStaff.Views.SchedulePage"
-             xmlns:mm="clr-namespace:MediaManager.Forms;assembly=MediaManager.Forms"
              Title="일정">
-    <StackLayout>
-        <Button Clicked="PlayStop_Clicked" Text="Play"/>
-        <mm:VideoView VerticalOptions="FillAndExpand"
-                      Source="https://sec.ch9.ms/ch9/ca82/cc647aff-ec2f-46d9-9cac-e1be20c0ca82/CSharpHLPatternMatchingBasics_high.mp4"
-                      ShowControls="True"
-                      BackgroundColor="Red"
-                      VideoAspect="AspectFit"/>
+    <StackLayout VerticalOptions="Center">
+        <Label Text="Schedule. Comming Soon.." HorizontalOptions="Center"/>
     </StackLayout>
 </ContentPage>

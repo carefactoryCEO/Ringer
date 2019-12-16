@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+using RingerStaff.Models;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -15,6 +12,13 @@ namespace RingerStaff.Views.Cells
         public ImageViewCell()
         {
             InitializeComponent();
+        }
+
+        async void Image_Tapped(object sender, EventArgs e)
+        {
+            var image = (BindingContext as MessageModel).Body;
+
+            await Browser.OpenAsync(image, BrowserLaunchMode.SystemPreferred);
         }
     }
 }

@@ -13,6 +13,7 @@ using Ringer.Core.Data;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
+using Ringer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -37,6 +38,8 @@ namespace Ringer.ViewModels
             _messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
+
+            Messages = _messageRepository.Messages;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
@@ -146,11 +149,22 @@ namespace Ringer.ViewModels
 
                     if (App.IsLoggedIn)
                     {
+                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
+
                         _messageRepository.Messages.Clear();
-                        await _messageRepository.LoadMessagesAsync(true);
+                        await _messageRepository.LoadMessagesAsync(true).ConfigureAwait(false);
+
+                        Messages = _messageRepository.Messages;
+
+                        Debug.WriteLine("--------------------------LoadMessage Finished------------------------------");
+                        Debug.WriteLine("--------------------------Connect------------------------------");
+
 
                         _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync(); // 2초 정도 시간이 걸린다...
+                        await _messagingService.ConnectAsync().ConfigureAwait(false); // 2초 정도 시간이 걸린다...
+
+                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
+
                     }
 
                     break;
@@ -492,7 +506,7 @@ namespace Ringer.ViewModels
         public Keyboard Keyboard { get; set; }
         public double NavBarHeight { get; set; }
         public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
-        public ObservableCollection<Message> Messages => _messageRepository.Messages;
+        public ObservableCollection<Message> Messages { get; set; }
         #endregion
 
         #region public Commands

@@ -15,6 +15,7 @@ namespace Ringer.Services
     public interface IRESTService
     {
         void ReportDeviceStatus(bool isOn);
+        Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds = 50);
         Task<List<PendingMessage>> PullPendingMessagesAsync();
         Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
     }
@@ -22,10 +23,39 @@ namespace Ringer.Services
     public class RESTService : IRESTService
     {
         private HttpClient _client;
+        private CancellationTokenSource _cts;
 
         public RESTService()
         {
             _client = new HttpClient();
+            _cts = new CancellationTokenSource();
+        }
+
+        public async Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds)
+        {
+            _cts?.Cancel();
+            _cts = new CancellationTokenSource();
+            var thisToken = _cts.Token;
+
+            await Task.Delay(debounceMilliSeconds);
+
+            if (!thisToken.IsCancellationRequested)
+            {
+                if (App.DeviceId == null || App.DeviceIsOn == isOn)
+                    return;
+
+                App.DeviceIsOn = isOn;
+
+                var report = JsonSerializer.Serialize(new DeviceReport
+                {
+                    DeviceId = App.DeviceId,
+                    Status = isOn
+                });
+
+                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+
+                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
+            }
         }
 
         public void ReportDeviceStatus(bool isOn)

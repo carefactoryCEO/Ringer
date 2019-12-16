@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -63,7 +64,7 @@ namespace Ringer.Models
                 App.LastMessageId = message.Id;
 
             sw.Stop();
-            Debug.WriteLine($"Save message {message.Id} takes {sw.Elapsed.TotalMilliseconds}.");
+            Debug.WriteLine($"Save {message.Id} local db(ms): {sw.Elapsed.TotalMilliseconds}");
             _totalMilliSeconds += sw.Elapsed.TotalMilliseconds;
 
         }
@@ -92,11 +93,11 @@ namespace Ringer.Models
 
             // 서버에서 긁어와 로컬 디비에 저장
             stopwatch.Start();
-            var pendingMessages = await _restService.PullPendingMessagesAsync(); // App.LastMessageId보다 큰 것만 긁어옴.
+            var pendingMessages = await _restService.PullPendingMessagesAsync().ConfigureAwait(false); // App.LastMessageId보다 큰 것만 긁어옴.
             stopwatch.Stop();
-            Debug.WriteLine($"Pull pending Messages from server time : {stopwatch.Elapsed.TotalSeconds}");
+            Debug.WriteLine($"Pull pending Messages from server time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
 
-            var dblastid = await _localDbService.GetLastMessageIndexAsync(App.CurrentRoomId);
+            var dblastid = await _localDbService.GetLastMessageIndexAsync(App.CurrentRoomId).ConfigureAwait(false);
 
             _totalMilliSeconds = 0;
 
@@ -106,8 +107,6 @@ namespace Ringer.Models
                 if (pendingMessage.Id <= dblastid)
                     continue;
 
-                Debug.WriteLine($"Save to local DB. message id: {pendingMessage.Id}");
-
                 await SaveToLocalDbAsync(new Message // App.LastMessageId보다 큰 것만 저 
                 {
                     Id = pendingMessage.Id,
@@ -115,18 +114,18 @@ namespace Ringer.Models
                     Sender = pendingMessage.SenderName,
                     SenderId = pendingMessage.SenderId,
                     CreatedAt = pendingMessage.CreatedAt
-                });
+                }).ConfigureAwait(false);
             }
             stopwatch.Stop();
-            Debug.WriteLine($"Save to local DB time : {stopwatch.Elapsed.TotalSeconds}");
-            Debug.WriteLine($"total milliseconds : {_totalMilliSeconds}");
+            Debug.WriteLine($"Save to local DB time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
+            Debug.WriteLine($"Sum db insert time(ms) : {_totalMilliSeconds}");
 
             //var tempMessages = new ObservableCollection<Message>();
 
 
             // 메모리 로드
             stopwatch.Restart();
-            var localDbMessages = await _localDbService.GetMessagesAsync(true); // 로컬 디비 전부 불러옴.
+            var localDbMessages = await _localDbService.GetMessagesAsync(true).ConfigureAwait(false); // 로컬 디비 전부 불러옴.
             foreach (var message in localDbMessages)
             {
                 if (Messages.Count > 0 && Messages[0].Id == message.Id) // 메모리 로드된 메시지 중 Id 최대값이 추가하려는 메시지와 같으면 중단. 즉 추가하려는 메시지가 이미 로드된 메시지들보다 Id값보다 더 커야 추가. 즉 메모리에 있는 메시지보다 최신인 것만 추가한다는 얘기.
@@ -136,7 +135,7 @@ namespace Ringer.Models
                 Messages.Add(message);
             }
             stopwatch.Stop();
-            Debug.WriteLine($"Add to Messages collection time : {stopwatch.Elapsed.TotalSeconds}");
+            Debug.WriteLine($"Add to Messages collection time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
 
             if (reset)
                 await Shell.Current.GoToAsync($"//mappage/chatpage?room={App.CurrentRoomId}");

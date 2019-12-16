@@ -110,21 +110,24 @@ namespace Ringer
             Trace(e.Message);
         }
 
-        private void MessagingService_Disconnected(object sender, ConnectionEventArgs e)
+        private async void MessagingService_Disconnected(object sender, ConnectionEventArgs e)
         {
             Trace_ConnectionStatus(sender, e);
-            _restService.ReportDeviceStatus(false);
-        }
-        private void App_PageAppearing(object sender, Page page)
-        {
-            if (page is ChatPage)
-                _restService.ReportDeviceStatus(true);
+            await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //_restService.ReportDeviceStatus(false);
 
         }
-        private void App_PageDisappearing(object sender, Page page)
+        private async void App_PageAppearing(object sender, Page page)
         {
             if (page is ChatPage)
-                _restService.ReportDeviceStatus(false);
+                await _restService.ReportDeviceStatusDebouncedAsync(true);
+            //_restService.ReportDeviceStatus(true);
+        }
+        private async void App_PageDisappearing(object sender, Page page)
+        {
+            if (page is ChatPage)
+                await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //_restService.ReportDeviceStatus(false);
 
         }
         #endregion
@@ -239,39 +242,43 @@ namespace Ringer
             }
             #endregion
 
-            _restService.ReportDeviceStatus(false);
+            await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //_restService.ReportDeviceStatus(false);
 
             #region Connect and load messages
             if (IsLoggedIn)
             {
-                await _messageRepository.LoadMessagesAsync();
+                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 _messagingService.Init(Constants.HubUrl, Token);
-                await _messagingService.ConnectAsync();
+                await _messagingService.ConnectAsync().ConfigureAwait(false);
             }
             #endregion
             base.OnStart();
         }
-        protected override void OnSleep()
+        protected override async void OnSleep()
         {
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnSleep");
-            _restService.ReportDeviceStatus(false);
+            await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //await _restService.ReportDeviceStatusDebouncedAsync(false, 1000);
+            //_restService.ReportDeviceStatus(false);
             base.OnSleep();
         }
-        protected override void OnResume()
+        protected override async void OnResume()
         {
             //try
             //{
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnResume");
 
-            _restService.ReportDeviceStatus(IsChatPage);
+            //_restService.ReportDeviceStatus(IsChatPage);
+            await _restService.ReportDeviceStatusDebouncedAsync(IsChatPage);
 
             if (IsLoggedIn)
             {
-                _messageRepository.LoadMessagesAsync();
+                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 if (!_messagingService.IsReconnecting)
-                    _messagingService.ConnectAsync();
+                    await _messagingService.ConnectAsync().ConfigureAwait(false);
 
             }
             //}

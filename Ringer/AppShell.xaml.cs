@@ -12,6 +12,7 @@ namespace Ringer
             //Routing.RegisterRoute("mappage", typeof(MapPage));
             Routing.RegisterRoute("chatpage", typeof(ChatPage));
             Routing.RegisterRoute("vidyopage", typeof(VidyoPage));
+            Routing.RegisterRoute("busypage", typeof(BusyPage));
         }
     }
 }

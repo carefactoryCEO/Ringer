@@ -6,7 +6,6 @@ using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using Android.OS;
-using MediaManager;
 
 namespace RingerStaff.Droid
 {
@@ -22,10 +21,6 @@ namespace RingerStaff.Droid
 
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-
-            // for Video player
-            CrossMediaManager.Current.Init(this);
-
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
             LoadApplication(new App());
 
