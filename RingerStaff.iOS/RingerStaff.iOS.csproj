@@ -128,6 +128,9 @@
     <BundleResource Include="Resources\xamarin_logo%403x.png" />
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
     <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
+    <BundleResource Include="Resources\good_things_happen.aiff" />
+    <BundleResource Include="Resources\good_things_happen.mp3" />
+    <BundleResource Include="Resources\filling_your_inbox.m4r" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -140,6 +143,12 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.4.0.991265" />
     <PackageReference Include="Xamarin.Essentials" Version="1.3.1" />
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>4.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xam.Plugin.SimpleAudioPlayer">
+      <Version>1.3.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RingerStaff\RingerStaff.csproj">

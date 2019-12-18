@@ -13,8 +13,6 @@ namespace RingerStaff.ViewModels
         private ObservableCollection<MessageModel> messages;
         private string textToSend;
         private bool addMore = true;
-        private int count = 1;
-        private MessageModel lastMessage;
 
         public ChatPageViewModel()
         {

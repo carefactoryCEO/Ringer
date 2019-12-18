@@ -28,5 +28,10 @@ namespace RingerStaff.iOS
 
             return base.FinishedLaunching(app, options);
         }
+
+        public override void WillEnterForeground(UIApplication uiApplication)
+        {
+            Plugin.LocalNotification.NotificationCenter.ResetApplicationIconBadgeNumber(uiApplication);
+        }
     }
 }

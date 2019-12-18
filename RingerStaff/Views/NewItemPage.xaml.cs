@@ -30,8 +30,8 @@ namespace RingerStaff.Views
 
         async void Save_Clicked(object sender, EventArgs e)
         {
-            MessagingCenter.Send(this, "AddItem", Item);
             await Navigation.PopModalAsync();
+            MessagingCenter.Send(this, "AddItem", Item);
         }
 
         async void Cancel_Clicked(object sender, EventArgs e)

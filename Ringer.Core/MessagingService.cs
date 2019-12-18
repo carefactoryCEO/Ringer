@@ -166,9 +166,10 @@ namespace Ringer.Core
 
         public async Task DisconnectAsync(string room, string user)
         {
-            if (IsConnected)
-                await LeaveRoomAsync(room, user);
+            if (!IsConnected)
+                return;
 
+            await LeaveRoomAsync(room, user);
             await DisconnectAsync();
         }
 

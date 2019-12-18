@@ -64,8 +64,7 @@ namespace Ringer.ViewModels
                 userInfoToQuery = UserInfoType.None;
 
                 // Disconnect Connection
-                if (_messagingService.IsConnected)
-                    await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
+                await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
 
                 // Clear Messages
                 _messageRepository.Messages.Clear();

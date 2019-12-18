@@ -25,6 +25,11 @@ namespace RingerStaff.Views
             InitializeComponent();
 
             BindingContext = viewModel = new ItemsViewModel();
+
+            MessagingCenter.Subscribe<ItemsViewModel, Item>(this, "ScrollToItem", (obj, item) =>
+            {
+                ItemsListView.ScrollTo(item, ScrollToPosition.End, true);
+            });
         }
 
         async void OnItemSelected(object sender, SelectedItemChangedEventArgs args)

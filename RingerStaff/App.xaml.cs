@@ -3,6 +3,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using RingerStaff.Services;
 using RingerStaff.Views;
+using Plugin.LocalNotification;
+using System.Diagnostics;
 
 namespace RingerStaff
 {
@@ -13,8 +15,15 @@ namespace RingerStaff
         {
             InitializeComponent();
 
+            NotificationCenter.Current.NotificationTapped += OnLocalNotificationTapped;
+
             DependencyService.Register<MockDataStore>();
             MainPage = new AppShell();
+        }
+
+        private void OnLocalNotificationTapped(NotificationTappedEventArgs e)
+        {
+            Debug.WriteLine($"noti data: {e.Data}");
         }
 
         protected override void OnStart()
