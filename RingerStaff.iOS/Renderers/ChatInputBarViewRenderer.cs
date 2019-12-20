@@ -1,22 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
-using Ringer.iOS.Renderers;
-using Ringer.Views.Partials;
+using RingerStaff.iOS.Renderers;
+using RingerStaff.Views.Partials;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(ChatInputBarView), typeof(ChatInputBarViewRenderer))]
-namespace Ringer.iOS.Renderers
+namespace RingerStaff.iOS.Renderers
 {
-    class ChatInputBarViewRenderer : ViewRenderer //Depending on your situation, you will need to inherit from a different renderer
+    public class ChatInputBarViewRenderer : ViewRenderer
     {
         NSObject _keyboardShowObserver;
         NSObject _keyboardHideObserver;
+        private Thickness _originalMargin;
+
         protected override void OnElementChanged(ElementChangedEventArgs<View> e)
         {
             base.OnElementChanged(e);
@@ -32,34 +32,39 @@ namespace Ringer.iOS.Renderers
             }
         }
 
-        void RegisterForKeyboardNotifications()
+        private void RegisterForKeyboardNotifications()
         {
             if (_keyboardShowObserver == null)
                 _keyboardShowObserver = UIKeyboard.Notifications.ObserveWillShow(OnKeyboardShow);
+
             if (_keyboardHideObserver == null)
                 _keyboardHideObserver = UIKeyboard.Notifications.ObserveWillHide(OnKeyboardHide);
         }
 
-        void OnKeyboardShow(object sender, UIKeyboardEventArgs args)
+        private void OnKeyboardShow(object sender, UIKeyboardEventArgs e)
         {
-            NSValue result = (NSValue)args.Notification.UserInfo.ObjectForKey(new NSString(UIKeyboard.FrameEndUserInfoKey));
+            NSValue result = (NSValue)e.Notification.UserInfo.ObjectForKey(new NSString(UIKeyboard.FrameEndUserInfoKey));
             CGSize keyboardSize = result.RectangleFValue.Size;
             if (Element != null)
             {
-                Element.Margin = new Thickness(0, 0, 0, keyboardSize.Height); //push the entry up to keyboard height when keyboard is activated
+                var chatInputbarView = (ChatInputBarView)Element;
 
+                _originalMargin = chatInputbarView.Margin;
+
+                Element.Margin = new Thickness(_originalMargin.Left, _originalMargin.Top, _originalMargin.Right, _originalMargin.Bottom + keyboardSize.Height - chatInputbarView.PagePadding.Bottom); //push the entry up to keyboard height when keyboard is activated
+                chatInputbarView.OnKeyboardActivated();
             }
         }
 
-        void OnKeyboardHide(object sender, UIKeyboardEventArgs args)
+        private void OnKeyboardHide(object sender, UIKeyboardEventArgs e)
         {
             if (Element != null)
             {
-                Element.Margin = new Thickness(0); //set the margins to zero when keyboard is dismissed
+                Element.Margin = _originalMargin; //set the margins to zero when keyboard is dismissed
             }
         }
 
-        void UnregisterForKeyboardNotifications()
+        private void UnregisterForKeyboardNotifications()
         {
             if (_keyboardShowObserver != null)
             {
@@ -72,6 +77,11 @@ namespace Ringer.iOS.Renderers
                 _keyboardHideObserver.Dispose();
                 _keyboardHideObserver = null;
             }
+        }
+
+        protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            base.OnElementPropertyChanged(sender, e);
         }
     }
 }

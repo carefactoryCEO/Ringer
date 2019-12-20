@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Input;
 using RingerStaff.Models;
 using RingerStaff.Types;
@@ -13,12 +16,23 @@ namespace RingerStaff.ViewModels
         private ObservableCollection<MessageModel> messages;
         private string textToSend;
         private bool addMore = true;
+        private int count;
+        private MessageModel lastMessage;
 
         public ChatPageViewModel()
         {
+            messages = new ObservableCollection<MessageModel>();
+
             Title = "신모범 44M 미국";
 
-            messages = new ObservableCollection<MessageModel>
+            StopCommand = new Command(() => addMore = !addMore);
+            MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
+            LoadMessagesCommand = new Command(() => LoadMessages());
+        }
+
+        private void LoadMessages()
+        {
+            var initialMessages = new List<MessageModel>
             {
                 new MessageModel { Body = "안녕하세요 링거입니다.✊ 무엇을 도와드릴까요?", Sender = "Ringer", MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Text },
                 new MessageModel { Body = "편안하게 말씀하세요. 듣고 있습니다.", Sender = "Ringer",  MessageTypes = MessageTypes.Incomming | MessageTypes.Trailing | MessageTypes.Text },
@@ -34,6 +48,7 @@ namespace RingerStaff.ViewModels
                 new MessageModel { Body = "이새기가", Sender = "p", MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Text, UnreadCount = 0 },
 
                 new MessageModel { Body = "iz*one이 들어왔습니다.👋", Sender = "system", MessageTypes = MessageTypes.EntranceNotice },
+
 
                 new MessageModel
                 {
@@ -99,41 +114,61 @@ namespace RingerStaff.ViewModels
 
             };
 
-            //Device.StartTimer(TimeSpan.FromSeconds(1), () =>
-            //{
-            //    var message = new MessageModel { Body = (count++).ToString(), Sender = "Timer", MessageTypes = MessageTypes.Outgoing | MessageTypes.Text, UnreadCount = 2 };
+            foreach (var message in initialMessages)
+            {
+                Messages.Add(message);
+            }
+            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", initialMessages.Last());
 
-            //    if (count == 2)
-            //    {
-            //        message.MessageTypes |= MessageTypes.Leading;
-            //    }
 
-            //    message.MessageTypes |= MessageTypes.Trailing;
 
-            //    if (lastMessage != null)
-            //    {
-            //        lastMessage.MessageTypes &= ~MessageTypes.Trailing;
-            //        lastMessage.UnreadCount -= 1;
+            //AddMoreMessages();
+        }
 
-            //    }
+        private void AddMoreMessages()
+        {
+            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+            {
+                count++;
 
-            //    lastMessage = message;
+                var message = new MessageModel
+                {
+                    Body = "https://i.pinimg.com/474x/03/bb/53/03bb53ce02e277befc8fa0353da31748.jpg",
+                    Sender = "Timer",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Image,
+                    UnreadCount = 2
+                };
 
-            //    Messages.Add(message);
+                if (count == 2)
+                {
+                    message.MessageTypes |= MessageTypes.Leading;
+                }
 
-            //    MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+                message.MessageTypes |= MessageTypes.Trailing;
 
-            //    addMore = (count >= 6) ? false : true;
-            //    return addMore;
-            //});
+                if (lastMessage != null)
+                {
+                    lastMessage.MessageTypes &= ~MessageTypes.Trailing;
+                    lastMessage.UnreadCount -= 1;
 
-            StopCommand = new Command(() => addMore = !addMore);
-            MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
+                }
+
+                lastMessage = message;
+
+                Messages.Add(message);
+
+                MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+
+                addMore = (count >= 6) ? false : true;
+                return addMore;
+            });
         }
 
         public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
         public ObservableCollection<MessageModel> Messages { get => messages; set => SetProperty(ref messages, value); }
 
+
+        public ICommand LoadMessagesCommand { get; set; }
         public ICommand SendCommand { get; set; }
         public ICommand StopCommand { get; set; }
         public ICommand MessageTappedCommand { get; set; }

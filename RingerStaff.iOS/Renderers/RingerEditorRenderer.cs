@@ -1,70 +1,62 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using CoreGraphics;
 using Foundation;
-using Ringer.iOS.Renderers;
-using Ringer.Views.Controls;
+using RingerStaff.iOS.Renderers;
+using RingerStaff.Views.Controls;
 using UIKit;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
-[assembly: ExportRenderer(typeof(ExtendedEditorControl), typeof(CustomEditorRenderer))]
-namespace Ringer.iOS.Renderers
+[assembly: ExportRenderer(typeof(RingerEditor), typeof(RingerEditorRenderer))]
+namespace RingerStaff.iOS.Renderers
 {
-    public class CustomEditorRenderer : EditorRenderer
+    public class RingerEditorRenderer : EditorRenderer
     {
         UILabel _placeholderLabel;
-        double previousHeight = -1;
-        double previousWidth = -1;
-        int prevLines = 2;
-        nfloat _cornerRadius = 16;
+        double _previousHeight = -1;
+        int _previousLines;
 
         protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
         {
             base.OnElementChanged(e);
 
-            // Control == UITextView
             if (Control != null)
             {
-                Control.TextContainer.LineBreakMode = UILineBreakMode.CharacterWrap;
+                //Control.TextContainer.LineBreakMode = UILineBreakMode.CharacterWrap;
 
                 if (_placeholderLabel == null)
-                {
                     CreatePlaceholder();
-                }
             }
 
             if (e.NewElement != null)
             {
-                var customControl = (ExtendedEditorControl)e.NewElement;
+                var ringerEditor = (RingerEditor)e.NewElement;
+                ringerEditor.HeightRequest = -1;
 
-                if (customControl.IsExpandable)
-                    Control.ScrollEnabled = false;
-                else
-                    Control.ScrollEnabled = true;
+                Control.ScrollEnabled = !ringerEditor.IsExpandable;
+                //Control.TextContainer.LineBreakMode = UILineBreakMode.CharacterWrap;
 
-                if (customControl.HasRoundedCorner)
+
+                if (ringerEditor.HasRoundedCorner)
                 {
-                    Control.Layer.CornerRadius = _cornerRadius;
+                    Control.Layer.CornerRadius = ringerEditor.CornerRadius;
                     Control.Layer.BorderColor = Color.LightGray.ToCGColor();
                     Control.Layer.BorderWidth = 1;
 
                     Control.TextContainerInset = new UIEdgeInsets(
-                        Control.TextContainerInset.Top,
-                        Control.TextContainerInset.Left + 6,
-                        Control.TextContainerInset.Bottom,
-                        Control.TextContainerInset.Right + 33);
+                        (nfloat)(Control.TextContainerInset.Top + 0.5),
+                        Control.TextContainerInset.Left + 8,
+                        (nfloat)(Control.TextContainerInset.Bottom - 0.5),
+                        Control.TextContainerInset.Right + 35);
                 }
                 else
                     Control.Layer.CornerRadius = 0;
 
                 Control.InputAccessoryView = new UIView(CGRect.Empty);
-
-            }
-
-            if (e.OldElement != null)
-            {
-
+                Control.ReloadInputViews();
             }
         }
 
@@ -72,35 +64,32 @@ namespace Ringer.iOS.Renderers
         {
             base.OnElementPropertyChanged(sender, e);
 
-            var customControl = (ExtendedEditorControl)Element;
+            var ringerEditor = (RingerEditor)Element;
 
             if (e.PropertyName == Editor.TextProperty.PropertyName)
             {
-                if (customControl.IsExpandable)
+                if (ringerEditor.IsExpandable)
                 {
                     CGSize size = Control.Text.StringSize(Control.Font, Control.TextContainer.Size, UILineBreakMode.CharacterWrap);
 
                     int numLines = (int)(size.Height / Control.Font.LineHeight);
 
-                    if (prevLines > numLines)
-                    {
-                        customControl.HeightRequest = -1;
+                    Debug.WriteLine($"{Control.TextContainer.Size.Width}, {Control.TextContainer.Size.Height}, {size.Width}, {size.Height}, {numLines}");
 
-                    }
+                    if (_previousLines > numLines)
+                        ringerEditor.HeightRequest = -1;
+
                     else if (string.IsNullOrEmpty(Control.Text))
-                    {
-                        customControl.HeightRequest = -1;
-                    }
+                        ringerEditor.HeightRequest = -1;
 
-                    prevLines = numLines;
+                    _previousLines = numLines;
                 }
 
                 _placeholderLabel.Hidden = !string.IsNullOrEmpty(Control.Text);
-
             }
             else if (e.PropertyName == VisualElement.HeightProperty.PropertyName)
             {
-                if (customControl.IsExpandable)
+                if (ringerEditor.IsExpandable)
                 {
                     CGSize size = Control.Text.StringSize(Control.Font, Control.TextContainer.Size, UILineBreakMode.CharacterWrap);
 
@@ -108,30 +97,32 @@ namespace Ringer.iOS.Renderers
 
                     if (numLines > 4)
                     {
+                        ringerEditor.HeightRequest = _previousHeight;
                         Control.ScrollEnabled = true;
-                        customControl.HeightRequest = previousHeight;
                     }
                     else
                     {
+                        _previousHeight = ringerEditor.Height;
                         Control.ScrollEnabled = false;
-                        previousHeight = customControl.Height;
-
                     }
+
                 }
             }
-            else if (ExtendedEditorControl.PlaceholderProperty.PropertyName == e.PropertyName)
+            else if (e.PropertyName == RingerEditor.PlaceholderProperty.PropertyName)
             {
-                _placeholderLabel.Text = customControl.Placeholder;
+                _placeholderLabel.Text = ringerEditor.Placeholder;
+
             }
-            else if (ExtendedEditorControl.PlaceholderColorProperty.PropertyName == e.PropertyName)
+            else if (e.PropertyName == RingerEditor.PlaceholderColorProperty.PropertyName)
             {
-                _placeholderLabel.TextColor = customControl.PlaceholderColor.ToUIColor();
+
+                _placeholderLabel.TextColor = ringerEditor.PlaceholderColor.ToUIColor();
             }
-            else if (ExtendedEditorControl.HasRoundedCornerProperty.PropertyName == e.PropertyName)
+            else if (e.PropertyName == RingerEditor.HasRoundedCornerProperty.PropertyName)
             {
-                if (customControl.HasRoundedCorner)
+                if (ringerEditor.HasRoundedCorner)
                 {
-                    Control.Layer.CornerRadius = _cornerRadius;
+                    Control.Layer.CornerRadius = ringerEditor.CornerRadius;
                     Control.Layer.BorderColor = Color.Gray.ToCGColor();
                     Control.Layer.BorderWidth = 1;
 
@@ -144,20 +135,19 @@ namespace Ringer.iOS.Renderers
                 else
                     Control.Layer.CornerRadius = 0;
             }
-            else if (ExtendedEditorControl.IsExpandableProperty.PropertyName == e.PropertyName)
+            else if (e.PropertyName == RingerEditor.IsExpandableProperty.PropertyName)
             {
-                if (customControl.IsExpandable)
-                    Control.ScrollEnabled = false;
-                else
-                    Control.ScrollEnabled = true;
-
+                Control.ScrollEnabled = !ringerEditor.IsExpandable;
             }
-
+            else if (e.PropertyName == RingerEditor.CornerRadiusProperty.PropertyName)
+            {
+                Control.Layer.CornerRadius = ringerEditor.CornerRadius;
+            }
         }
 
-        public void CreatePlaceholder()
+        private void CreatePlaceholder()
         {
-            var element = Element as ExtendedEditorControl;
+            var element = Element as RingerEditor;
 
             _placeholderLabel = new UILabel
             {
@@ -189,7 +179,5 @@ namespace Ringer.iOS.Renderers
             Control.AddConstraints(hConstraints);
             Control.AddConstraints(vConstraints);
         }
-
-
     }
 }

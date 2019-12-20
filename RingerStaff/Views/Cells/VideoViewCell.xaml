@@ -49,7 +49,7 @@
                                     ConverterParameter='Avatar'}">
             <Image>
                 <Image.Source>
-                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                    <FontImageSource FontFamily="{StaticResource MaterialFontFamily}"
                                     Glyph="{StaticResource IconAccount}"
                                     Size="18" Color="Black"/>
                 </Image.Source>

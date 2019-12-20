@@ -16,13 +16,13 @@
                 <!--<Setter Property="Shell.TabBarForegroundColor" Value="White" />-->
                 <!--<Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF" />-->
                 <!--<Setter Property="Shell.TabBarTitleColor" Value="White" />-->
-                <Setter Property="Shell.BackgroundColor" Value="White" />
-                <Setter Property="Shell.ForegroundColor" Value="Black" />
-                <Setter Property="Shell.TitleColor" Value="Black" />
+                <Setter Property="Shell.BackgroundColor" Value="#FAF9FA" />
+                <Setter Property="Shell.ForegroundColor" Value="#666666" />
+                <Setter Property="Shell.TitleColor" Value="#222222" />
                 <Setter Property="Shell.DisabledColor" Value="Gray" />
                 <Setter Property="Shell.UnselectedColor" Value="Gray" />
                 <Setter Property="Shell.TabBarBackgroundColor" Value="#FAF9FA" />
-                <Setter Property="Shell.TabBarForegroundColor" Value="Black" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="#CCCCCC" />
                 <Setter Property="Shell.TabBarUnselectedColor" Value="LightSlateGray" />
                 <Setter Property="Shell.TabBarTitleColor" Value="Black" />
             </Style>

@@ -4,6 +4,7 @@
              x:Class="RingerStaff.Views.ChatPage"
              xmlns:helpers="clr-namespace:RingerStaff.Helpers"
              xmlns:controls="clr-namespace:RingerStaff.Views.Controls"
+             xmlns:partials="clr-namespace:RingerStaff.Views.Partials"
              Title="{Binding Title}"
              x:Name="ChatContentPage"
              Shell.TabBarIsVisible="False">
@@ -17,7 +18,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <Grid>
+    <Grid RowSpacing="0" ColumnSpacing="0">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -34,7 +35,10 @@
                   x:Name="MessageFeed">
         </controls:RingerListView>
 
-        <Entry Grid.Row="1" Text="{Binding TextToSend}"/>
+        <partials:ChatInputBarView x:Name="chatInputBarView"
+                                   Grid.Row="1"
+                                   KeyboardActivated="ChatInputBarView_KeyboardActivated"
+                                   PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
 
     </Grid>
 </ContentPage>

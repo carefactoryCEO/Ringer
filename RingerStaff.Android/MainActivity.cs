@@ -30,6 +30,8 @@ namespace RingerStaff.Droid
                 Sound = Resource.Raw.filling_your_inbox.ToString()
             });
 
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
+
             LoadApplication(new App());
 
             NotificationCenter.NotifyNotificationTapped(Intent);

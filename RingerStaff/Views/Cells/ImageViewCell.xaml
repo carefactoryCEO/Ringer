@@ -3,6 +3,7 @@
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           xmlns:d="http://xamarin.com/schemas/2014/forms/design"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
           mc:Ignorable="d"
           x:Class="RingerStaff.Views.Cells.ImageViewCell">
 
@@ -16,7 +17,7 @@
                         Converter={StaticResource MessageTypesToThicknessConverter}}">
 
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <Grid.ColumnDefinitions>
@@ -76,10 +77,13 @@
                 <Frame.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Image_Tapped"/>
                 </Frame.GestureRecognizers>
-                <Image Source="{Binding Body}"
-                        d:Source="https://pbs.twimg.com/media/Dni8buZVAAAZwwG.jpg:large"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
+
+                <ff:CachedImage Source="{Binding Body}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                CacheDuration="50"
+                                RetryCount="3"
+                                RetryDelay="250"/>
             </Frame>
 
         </StackLayout>

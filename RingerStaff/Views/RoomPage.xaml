@@ -15,7 +15,7 @@
         </ToolbarItem>
 
         <ToolbarItem Command="{Binding RefreshCommand}"
-                     Order="Primary">
+                     Order="Primary" >
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
                                  Glyph="{StaticResource IconNewChat}"
