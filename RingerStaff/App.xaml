@@ -4,9 +4,12 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:converters="clr-namespace:RingerStaff.Converters"
+             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+             android:Application.WindowSoftInputModeAdjust="Resize"
 
              mc:Ignorable="d"
              x:Class="RingerStaff.App">
+
     <Application.Resources>
         <ResourceDictionary>
 
@@ -40,10 +43,51 @@
             <x:String x:Key="IconPlusBox">&#xf703;</x:String>
             <x:String x:Key="VideoPlay">&#xf40a;</x:String>
 
+
+            <!-- Input Accessory Buttons(ChatInputBarView) -->
+            <x:String x:Key="Camera">&#xf100;</x:String>
+
+            <x:String x:Key="Image">&#xf2e9;</x:String>
+            <x:String x:Key="FolderImage">&#xf24F;</x:String>
+            <x:String x:Key="MessageImage">&#xf364;</x:String>
+
+            <x:String x:Key="Video">&#xf567;</x:String>
+            <x:String x:Key="VideoVintage">&#xfA1B;</x:String>
+            <x:String x:Key="VideoOutline">&#xfBB8;</x:String>
+
+            <x:String x:Key="VideoFile">&#xf22B;</x:String>
+            <x:String x:Key="VideoFileOutline">&#xfE10;</x:String>
+            <x:String x:Key="Film">&#xf22F;</x:String>
+            <x:String x:Key="FilmStrip">&#xf230;</x:String>
+            <x:String x:Key="MessageVideo">&#xf36B;</x:String>
+
+            <x:String x:Key="VideoWireless">&#xfEEF;</x:String>
+            <x:String x:Key="VideoWirelessOutline">&#xfEF0;</x:String>
+
+            <x:String x:Key="Phone">&#xf3F2;</x:String>
+            <x:String x:Key="VideoCall">&#xf918;</x:String>
+            <x:String x:Key="VideoCallOutline">&#xfEB7;</x:String>
+
+            <x:String x:Key="Invite">&#xf014;</x:String>
+            <x:String x:Key="InviteOutline">&#xf800;</x:String>
+
             <Color x:Key="NavigationPrimary">#2196F3</Color>
             <Color x:Key="White">#FFFFFF</Color>
             <Color x:Key="Black">#000000</Color>
 
+            <Color x:Key="ActionIconBackground">#B95C5C</Color>
+
+            <!-- Chat Cell -->
+            <Color x:Key="MessageMetadataColor">LightGray</Color>
+            <Color x:Key="MessageOutgoingBackgroundColor">#FFEB03</Color>
+            <Color x:Key="MessageIncommingBackgroundClor">#FFFFFF</Color>
+            <Color x:Key="MessageTextColor">#111111</Color>
+            <Color x:Key="MessageUnreadCountTextColoir">#FFEB03</Color>
+
+            <!-- Messages Feed -->
+            <Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>
+
+            <!-- ChatInputBarView -->
 
 
             <OnPlatform x:Key="MaterialFontFamily" x:TypeArguments="x:String">
@@ -60,6 +104,7 @@
             <converters:MessageTypesToIntegerConverter x:Key="MessageTypesToIntegerConverter"/>
             <converters:MessageTypesToLayoutOptionConverter x:Key="MessageTypesToLayoutOptionConverter"/>
             <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter"/>
+            <converters:MessageTypesToColorConverter x:Key="MessageTypesToColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

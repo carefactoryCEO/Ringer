@@ -15,7 +15,6 @@ namespace RingerStaff.iOS.Renderers
     {
         NSObject _keyboardShowObserver;
         NSObject _keyboardHideObserver;
-        private Thickness _originalMargin;
 
         protected override void OnElementChanged(ElementChangedEventArgs<View> e)
         {
@@ -49,10 +48,8 @@ namespace RingerStaff.iOS.Renderers
             {
                 var chatInputbarView = (ChatInputBarView)Element;
 
-                _originalMargin = chatInputbarView.Margin;
-
-                Element.Margin = new Thickness(_originalMargin.Left, _originalMargin.Top, _originalMargin.Right, _originalMargin.Bottom + keyboardSize.Height - chatInputbarView.PagePadding.Bottom); //push the entry up to keyboard height when keyboard is activated
-                chatInputbarView.OnKeyboardActivated();
+                Element.Margin = new Thickness(0, 0, 0, keyboardSize.Height - chatInputbarView.Padding.Bottom); //push the entry up to keyboard height when keyboard is activated
+                chatInputbarView.NotifyListScroll();
             }
         }
 
@@ -60,7 +57,7 @@ namespace RingerStaff.iOS.Renderers
         {
             if (Element != null)
             {
-                Element.Margin = _originalMargin; //set the margins to zero when keyboard is dismissed
+                Element.Margin = new Thickness(); //set the margins to zero when keyboard is dismissed
             }
         }
 
@@ -77,11 +74,6 @@ namespace RingerStaff.iOS.Renderers
                 _keyboardHideObserver.Dispose();
                 _keyboardHideObserver = null;
             }
-        }
-
-        protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            base.OnElementPropertyChanged(sender, e);
         }
     }
 }

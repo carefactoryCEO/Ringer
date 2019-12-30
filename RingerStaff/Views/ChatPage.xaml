@@ -7,14 +7,26 @@
              xmlns:partials="clr-namespace:RingerStaff.Views.Partials"
              Title="{Binding Title}"
              x:Name="ChatContentPage"
+             Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False">
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="stop" Command="{Binding StopCommand}"/>
     </ContentPage.ToolbarItems>
 
     <ContentPage.Resources>
         <ResourceDictionary>
+
             <helpers:MessageTemplateSelector x:Key="MessageTemplateSelector"/>
+
+            <Style x:Key="NavBarButtonsStyle" TargetType="Button">
+                <Setter Property="Padding" Value="15,0,15,0"/>
+                <Setter Property="VerticalOptions" Value="EndAndExpand"/>
+                <Setter Property="Margin" Value="0,0,0,0"/>
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -24,20 +36,48 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Messages Feed -->
         <controls:RingerListView ItemsSource="{Binding Messages}" Grid.Row="0"
-                  ItemTemplate="{StaticResource MessageTemplateSelector}"
-                  ItemAppearing="ListView_ItemAppearing"
-                  ItemDisappearing="ListView_ItemDisappearing"
-                  SeparatorVisibility="None"
-                  VerticalOptions="FillAndExpand"
-                  SelectionMode="None"
-                  HasUnevenRows="true"
-                  x:Name="MessageFeed">
+                                 ItemTemplate="{StaticResource MessageTemplateSelector}"
+                                 ItemAppearing="ListView_ItemAppearing"
+                                 ItemDisappearing="ListView_ItemDisappearing"
+                                 BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                                 SeparatorVisibility="None"
+                                 SelectionMode="None"
+                                 HasUnevenRows="true"
+                                 x:Name="MessageFeed">
+            <controls:RingerListView.Header>
+                <BoxView HeightRequest="{Binding NavBarHeight}" BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"/>
+            </controls:RingerListView.Header>
         </controls:RingerListView>
 
+        <!-- Navigation Bar -->
+        <StackLayout Grid.Row="0" Orientation="Horizontal"
+                     BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                     HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9"
+                     Padding="{OnPlatform Android='0,0,0,0', iOS='5,0,5,0'}">
+
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="Start"
+                    Command="{Binding GoBackCommand}"
+                    Text="닫기"/>
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="CenterAndExpand"
+                    Command="{Binding OpenProfilePageCommand}"
+                    Text="{Binding Title}"
+                    FontAttributes="Bold"/>
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="End"
+                    Command="{Binding OpenSessionsPageCommand}"
+                    Text="상담관리"/>
+
+        </StackLayout>
+
+        <!-- Chat Input Bar -->
         <partials:ChatInputBarView x:Name="chatInputBarView"
                                    Grid.Row="1"
-                                   KeyboardActivated="ChatInputBarView_KeyboardActivated"
+                                   ListShouldBeScrolled="OnListShouldBeScrolled"
+                                   BindingContext="{Binding .}"
                                    PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
 
     </Grid>

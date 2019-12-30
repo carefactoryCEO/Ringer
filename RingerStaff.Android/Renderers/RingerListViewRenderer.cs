@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿using System.ComponentModel;
+using Android.Content;
 using RingerStaff.Droid.Renderers;
 using RingerStaff.Views.Controls;
 using Xamarin.Forms;
@@ -26,6 +27,18 @@ namespace RingerStaff.Droid.Renderers
                 {
                     // TODO: Disable list view selection highlight
                 }
+            }
+        }
+
+        protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            base.OnElementPropertyChanged(sender, e);
+
+            var ringerListView = (RingerListView)Element;
+
+            if (e.PropertyName == VisualElement.HeightProperty.PropertyName)
+            {
+                Control.ScrollTo(Control.ScrollX, Control.ScrollY);
             }
         }
     }

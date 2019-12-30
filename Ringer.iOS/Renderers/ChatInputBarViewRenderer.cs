@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CoreGraphics;
+﻿using CoreGraphics;
 using Foundation;
 using Ringer.iOS.Renderers;
 using Ringer.Views.Partials;

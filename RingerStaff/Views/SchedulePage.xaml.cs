@@ -23,19 +23,19 @@ namespace RingerStaff.Views
                 Title = "Test",
                 Description = "Test Description",
                 ReturningData = "Dummy data", // Returning data when tapped on notification.
-                NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
-                //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
+                //NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
+                Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
             };
 
             NotificationCenter.Current.Show(notification);
 
             // TODO: iOS이고 CurrentRoom이 아니면 알람 사운드
-            //if (Device.RuntimePlatform == Device.iOS)
-            //{
-            //    var player = CrossSimpleAudioPlayer.Current;
-            //    player.Load("filling_your_inbox.m4r");
-            //    player.Play();
-            //}
+            if (Device.RuntimePlatform == Device.iOS)
+            {
+                var player = CrossSimpleAudioPlayer.Current;
+                player.Load("filling_your_inbox.m4r");
+                player.Play();
+            }
         }
     }
 }

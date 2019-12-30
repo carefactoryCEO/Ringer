@@ -28,6 +28,7 @@ namespace Ringer.Services
         public RESTService()
         {
             _client = new HttpClient();
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", App.Token);
             _cts = new CancellationTokenSource();
         }
 
@@ -82,6 +83,7 @@ namespace Ringer.Services
 
         public async Task<List<PendingMessage>> PullPendingMessagesAsync()
         {
+
             var response = await _client.GetAsync($"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastMessageId}").ConfigureAwait(false);
             var responseString = await response.Content.ReadAsStringAsync();
             var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);

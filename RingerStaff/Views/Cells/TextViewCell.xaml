@@ -7,6 +7,7 @@
           x:Class="RingerStaff.Views.Cells.TextViewCell">
 
     <Grid ColumnSpacing="0" RowSpacing="0"
+          d:BackgroundColor="#6C6768"
           d:HorizontalOptions="EndAndExpand"
           HorizontalOptions="{Binding MessageTypes,
                                 Converter={StaticResource MessageTypesToLayoutOptionConverter},
@@ -56,27 +57,31 @@
         </Frame>
 
         <!-- 2nd Column -->
-        <StackLayout Grid.Column="1" Spacing="0" VerticalOptions="End">
+        <StackLayout Grid.Column="1" Spacing="2" VerticalOptions="End">
 
             <!-- Sender -->
             <Label d:Text="우도윤"
-                       d:IsVisible="False"
-                       Text="{Binding Sender}"
-                       FontSize="12" TextColor="Gray" VerticalOptions="End"
-                       IsVisible="{Binding MessageTypes,
-                                        Converter={StaticResource MessageTypesToBooleanConverter},
-                                        ConverterParameter='Sender'}"/>
+                   Text="{Binding Sender}"
+                   TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="12"
+                   VerticalOptions="End"
+                   d:IsVisible="True"
+                   IsVisible="{Binding MessageTypes,
+                                    Converter={StaticResource MessageTypesToBooleanConverter},
+                                    ConverterParameter='Sender'}"/>
 
             <!-- Body -->
-            <Frame BackgroundColor="White"
-                       Padding="10,5"
-                       BorderColor="Gray"
-                       Grid.Row="1"
-                       Grid.Column="1"
-                       VerticalOptions="Start"
-                       CornerRadius="15"
-                       HasShadow="False">
-                <Label Text="{Binding Body}" d:Text="안녕하세요 링거입니다.✊ 무엇을 도와드릴까요?" FontSize="15"/>
+            <Frame d:BackgroundColor="#FFEB03"
+                   BackgroundColor="{Binding MessageTypes,
+                                Converter={StaticResource MessageTypesToColorConverter}}"
+                   Padding="{OnPlatform iOS='12,6', Android='10,6'}"
+                   VerticalOptions="Start"
+                   CornerRadius="15"
+                   HasShadow="False">
+                <Label Text="{Binding Body}" d:Text="안녕하세요 링거입니다."
+                       d:TextColor="Black"
+                       TextColor="{StaticResource MessageTextColor}"
+                       FontSize="{OnPlatform iOS=16, Android=15}"/>
             </Frame>
 
         </StackLayout>
@@ -85,11 +90,15 @@
         <StackLayout d:Grid.Column="0"
                      Grid.Column="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToIntegerConverter}}"
-                     VerticalOptions="End" Spacing="0"
+                     VerticalOptions="End"
+                     Spacing="0"
+                     Margin="3,0,3,1"
                      d:Margin="3,0,3,1">
 
             <!-- unread count -->
-            <Label TextColor="brown" FontSize="10" FontAttributes="Bold"
+            <Label TextColor="{StaticResource MessageOutgoingBackgroundColor}"
+                   FontSize="10"
+                   FontAttributes="Bold"
                    d:Text="3"
                    Text="{Binding UnreadCount}"
                    d:HorizontalOptions="End"
@@ -101,7 +110,9 @@
                                         Converter={StaticResource IntegerToBooleanConverter}}"/>
 
             <!-- timestamp -->
-            <Label TextColor="Gray" FontSize="10" Text="오후 9:21🇻🇳"
+            <Label TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="10"
+                   Text="오후 9:21 🇻🇳"
                    d:HorizontalOptions="End"
                    HorizontalOptions="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToLayoutOptionConverter},

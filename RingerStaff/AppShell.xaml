@@ -38,7 +38,7 @@
                     Glyph="{StaticResource IconChat}"
                     Size="20"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:RoomPage}" />
+            <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />
         </Tab>
         <Tab Title="스태프">
             <Tab.Icon>

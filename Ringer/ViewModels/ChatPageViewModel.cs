@@ -25,6 +25,7 @@ namespace Ringer.ViewModels
         MessagingService _messagingService;
         IMessageRepository _messageRepository;
         private IRESTService _restService;
+
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
         GenderType genderType;
@@ -130,10 +131,24 @@ namespace Ringer.ViewModels
                     string day = numeric.Substring(4, 2);
                     string gender = numeric.Substring(6, 1);
 
-                    year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
 
-                    birthDate = DateTime.Parse($"{year}-{month}-{day}");
-                    genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+                    if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
+                        Debug.WriteLine(parsedBirthdate);
+                    else
+                        Debug.WriteLine("Wrong DateTime format");
+
+                    if (int.TryParse(gender, out var parsedGenderInt))
+                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
+                    else
+                        Debug.WriteLine("Wrong Gender format");
+
+                    //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
+                    //birthDate = DateTime.Parse($"{year}-{month}-{day}");
+                    //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
+                    birthDate = parsedBirthdate;
+                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
 
                     _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
 
@@ -144,10 +159,13 @@ namespace Ringer.ViewModels
                     _messageRepository.AddLocalMessage(new Message { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
 
                     // Log in and get Token
+                    // TODO: Add user's Location data to validate ticket
                     await _restService.LogInAsync(App.UserName, birthDate, genderType);
 
                     if (App.IsLoggedIn)
                     {
+
+                        // TODO: _messageRepository.LoadMessageAsync, _messagingService.ConnectAsync를 await WhenAll()로 처리한다. 
                         Debug.WriteLine("--------------------------LoadMessage------------------------------");
 
                         _messageRepository.Messages.Clear();
@@ -163,7 +181,6 @@ namespace Ringer.ViewModels
                         await _messagingService.ConnectAsync().ConfigureAwait(false); // 2초 정도 시간이 걸린다...
 
                         Debug.WriteLine("--------------------------Connect Finished------------------------------");
-
                     }
 
                     break;

@@ -29,6 +29,7 @@ namespace Ringer.HubServer.Controllers
             _logger = logger;
         }
 
+        [Authorize]
         // GET: api/values
         [HttpGet("pending")]
         public async Task<ActionResult<string>> Get(string roomId, int lastNumber = 0)

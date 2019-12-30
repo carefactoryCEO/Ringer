@@ -11,7 +11,6 @@ using System.Text;
 using Ringer.HubServer.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Microsoft.Extensions.Logging.AzureAppServices;
 
 namespace Ringer.HubServer
 {

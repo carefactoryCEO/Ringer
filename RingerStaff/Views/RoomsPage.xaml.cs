@@ -3,11 +3,11 @@ using Xamarin.Forms;
 
 namespace RingerStaff.Views
 {
-    public partial class RoomPage : ContentPage
+    public partial class RoomsPage : ContentPage
     {
         private RoomPageViewModel vm;
 
-        public RoomPage()
+        public RoomsPage()
         {
             InitializeComponent();
 

@@ -160,4 +160,25 @@ namespace RingerStaff.Converters
             throw new NotImplementedException();
         }
     }
+
+    public class MessageTypesToColorConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var types = (MessageTypes)value;
+
+            if (types.HasFlag(MessageTypes.Incomming))
+                return Color.FromHex("#FFFFFF");
+
+            if (types.HasFlag(MessageTypes.Outgoing))
+                return Color.FromHex("FFEB03");
+
+            return Color.White;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }

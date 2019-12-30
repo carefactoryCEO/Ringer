@@ -61,17 +61,19 @@
 
             <!-- Sender -->
             <Label d:Text="우도윤"
-                       d:IsVisible="False"
-                       Text="{Binding Sender}"
-                       FontSize="12" TextColor="Gray" VerticalOptions="End"
-                       IsVisible="{Binding MessageTypes,
+                   Text="{Binding Sender}"
+                   TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="12"
+                   VerticalOptions="End"
+                   d:IsVisible="False"
+                   IsVisible="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToBooleanConverter},
                                         ConverterParameter='Sender'}"/>
 
             <!-- Body(Image) -->
             <Frame BackgroundColor="White"
                     Padding="0"
-                    CornerRadius="15"
+                    CornerRadius="11"
                     HasShadow="False"
                     IsClippedToBounds="True">
                 <Frame.GestureRecognizers>
@@ -92,11 +94,15 @@
         <StackLayout d:Grid.Column="0"
                      Grid.Column="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToIntegerConverter}}"
-                     VerticalOptions="End" Spacing="0"
+                     VerticalOptions="End"
+                     Spacing="0"
+                     Margin="3,0,3,1"
                      d:Margin="3,0,3,1">
 
             <!-- unread count -->
-            <Label TextColor="brown" FontSize="10" FontAttributes="Bold"
+            <Label TextColor="{StaticResource MessageOutgoingBackgroundColor}"
+                   FontSize="10"
+                   FontAttributes="Bold"
                    d:Text="3"
                    Text="{Binding UnreadCount}"
                    d:HorizontalOptions="End"
@@ -108,7 +114,9 @@
                                         Converter={StaticResource IntegerToBooleanConverter}}"/>
 
             <!-- timestamp -->
-            <Label TextColor="Gray" FontSize="10" Text="오후 9:21🇻🇳"
+            <Label TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="10"
+                   Text="오후 9:21🇻🇳"
                    d:HorizontalOptions="End"
                    HorizontalOptions="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToLayoutOptionConverter},

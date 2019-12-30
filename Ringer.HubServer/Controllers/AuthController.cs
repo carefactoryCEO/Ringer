@@ -54,9 +54,48 @@ namespace Ringer.HubServer.Controllers
             return Ok(response);
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> UserLoginAsync(LoginInfo loginInfo)
+        [HttpPost("register")]
+        public async Task<ActionResult> RegisterAsync([FromBody]RegisterInfo registerInfo)
         {
+            var user = new User
+            {
+                Email = registerInfo.Email,
+                Password = registerInfo.Password,
+                UserType = UserType.Staff,
+                CreatedAt = DateTime.Now
+            };
+
+            _dbContext.Users.Add(user);
+            await _dbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpPost("staff-login")]
+        public async Task<ActionResult> StaffLoginAsync([FromBody]LoginInfo loginInfo)
+        {
+            var user = await _dbContext.Users.SingleOrDefaultAsync(u => 
+                u.Email == loginInfo.Email && 
+                u.Password == loginInfo.Password &&
+                u.UserType == UserType.Staff);
+
+            if (user == null)
+                return NoContent();
+
+            loginInfo.DeviceId ??= "deviceId";
+            user.Name ??= "name here";
+
+            var token = user.JwtToken(loginInfo);
+            var response = new { Token = token, RoomId = "room id here" };
+
+            return Ok(response);
+        }
+
+
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> UserLoginAsync([FromBody]LoginInfo loginInfo)
+        {
+            // TODO: Consumer인 경우 Ticket의 Travel 정보와 LoginInfo의 Location 정보를 대조
             User user = await _dbContext.Users
                 .Include(u => u.Devices)
                 .Include(u => u.Enrollments)

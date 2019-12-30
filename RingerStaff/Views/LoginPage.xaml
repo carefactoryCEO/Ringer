@@ -6,8 +6,8 @@
         <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="0,30"/>
 
         <Label Text="Ringer Staffs" FontSize="Title" HorizontalOptions="Center"/>
-        <Entry Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
-        <Entry Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
+        <Entry Text="{Binding EmailText}" Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
+        <Entry Text="{Binding PasswordText}" Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
 
         <StackLayout Orientation="Horizontal">
             <Button Text="취소" TextColor="White" BackgroundColor="Gray" HorizontalOptions="FillAndExpand"

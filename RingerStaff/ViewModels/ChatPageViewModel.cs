@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using RingerStaff.Models;
 using RingerStaff.Types;
+using RingerStaff.Views;
 using Xamarin.Forms;
 
 namespace RingerStaff.ViewModels
@@ -18,16 +21,45 @@ namespace RingerStaff.ViewModels
         private bool addMore = true;
         private int count;
         private MessageModel lastMessage;
+        private double navBarHeight;
+        private Thickness bottomPadding;
 
         public ChatPageViewModel()
         {
             messages = new ObservableCollection<MessageModel>();
 
-            Title = "신모범 44M 미국";
+            Title = "신모범 44M 워싱턴(미국)";
 
             StopCommand = new Command(() => addMore = !addMore);
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
             LoadMessagesCommand = new Command(() => LoadMessages());
+            SendCommand = new Command(() => ExcuteSendCommand());
+            GoBackCommand = new Command(async () => await ExcuteGoBackCommand());
+            OpenSessionsPageCommand = new Command(async () => await ExcuteOpenSessionsPageCommand());
+            OpenProfilePageCommand = new Command(async () => await ExcuteOpenProfilePageCommand());
+        }
+
+        private Task ExcuteOpenProfilePageCommand()
+        {
+            return Shell.Current.Navigation.PushAsync(new ProfilePage());
+        }
+
+        private Task ExcuteOpenSessionsPageCommand()
+        {
+            return Shell.Current.Navigation.PushModalAsync(new SessionsPage());
+        }
+
+        private Task ExcuteGoBackCommand()
+        {
+            return Shell.Current.Navigation.PopAsync();
+        }
+
+        private void ExcuteSendCommand()
+        {
+            var message = new MessageModel { Body = TextToSend, Sender = "", UnreadCount = 2, MessageTypes = MessageTypes.Text | MessageTypes.Outgoing | MessageTypes.Trailing };
+            Messages.Add(message);
+            TextToSend = string.Empty;
+            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
         }
 
         private void LoadMessages()
@@ -112,12 +144,23 @@ namespace RingerStaff.ViewModels
                     UnreadCount = 1
                 },
 
+                new MessageModel
+                {
+                    Body = "아이즈원 라비앙로즈",
+                    Sender = "p",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing| MessageTypes.Text,
+                    UnreadCount = 2
+
+                },
+
+
             };
 
             foreach (var message in initialMessages)
             {
                 Messages.Add(message);
             }
+
             MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", initialMessages.Last());
 
 
@@ -166,11 +209,17 @@ namespace RingerStaff.ViewModels
 
         public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
         public ObservableCollection<MessageModel> Messages { get => messages; set => SetProperty(ref messages, value); }
+        public double NavBarHeight { get => navBarHeight; set => SetProperty(ref navBarHeight, value); }
+        public Thickness BottomPadding { get => bottomPadding; set => SetProperty(ref bottomPadding, value); }
 
 
         public ICommand LoadMessagesCommand { get; set; }
         public ICommand SendCommand { get; set; }
         public ICommand StopCommand { get; set; }
         public ICommand MessageTappedCommand { get; set; }
+        public ICommand GoBackCommand { get; set; }
+        public ICommand OpenSessionsPageCommand { get; set; }
+        public ICommand OpenProfilePageCommand { get; set; }
+
     }
 }

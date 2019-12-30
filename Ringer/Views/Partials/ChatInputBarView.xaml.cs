@@ -1,7 +1,6 @@
 ﻿using Ringer.Helpers;
 using Ringer.ViewModels;
 using System;
-using System.Diagnostics;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;

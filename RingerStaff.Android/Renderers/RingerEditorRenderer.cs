@@ -8,6 +8,7 @@ using Android.Graphics.Drawables;
 using Android.Runtime;
 using Android.Widget;
 using System.ComponentModel;
+using DDebug = System.Diagnostics.Debug;
 
 [assembly: ExportRenderer(typeof(RingerEditor), typeof(RingerEditorRenderer))]
 namespace Ringerstaff.Droid.Renderers
@@ -16,9 +17,15 @@ namespace Ringerstaff.Droid.Renderers
     {
         bool initial = true;
         Drawable originalBackground;
+        private Context _context;
 
         public RingerEditorRenderer(Context context) : base(context)
         {
+            _context = context;
+            //var inputMethodManager = (InputMethodManager)MainActivity.TheInstance.GetSystemService(Context.InputMethodService);
+
+            //inputMethodManager.
+
         }
 
         protected override void OnElementChanged(ElementChangedEventArgs<Editor> e)
@@ -48,7 +55,7 @@ namespace Ringerstaff.Droid.Renderers
                 Control.SetMaxLines(5);
 
                 //Control.SetPadding(Control.PaddingLeft + 25, Control.PaddingTop, Control.PaddingRight + 90, Control.PaddingBottom);
-                Control.SetPaddingRelative(Control.PaddingLeft + 20, Control.PaddingTop - 10, Control.PaddingRight + 95, Control.PaddingBottom - 10);
+                Control.SetPaddingRelative(Control.PaddingLeft + 24, Control.PaddingTop - 10, Control.PaddingRight + 95, Control.PaddingBottom - 10);
             }
 
             if (e.NewElement != null)
@@ -66,8 +73,6 @@ namespace Ringerstaff.Droid.Renderers
 
                 }
             }
-
-
         }
 
         protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -99,6 +104,11 @@ namespace Ringerstaff.Droid.Renderers
                     this.Control.Background = originalBackground;
                 }
             }
+            else if (VisualElement.IsFocusedProperty.PropertyName == e.PropertyName)
+            {
+                DDebug.WriteLine(customControl.Text);
+            }
+
         }
 
         void ApplyBorder()

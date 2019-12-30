@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
 using RingerStaff.Models;
@@ -32,7 +33,7 @@ namespace RingerStaff.ViewModels
                 }
             };
 
-            VideoCommand = new Command(async () => await Shell.Current.GoToAsync("videopage"));
+            SearchCommand = new Command(() => Debug.WriteLine("Searching...."));
 
             RefreshCommand = new Command(() =>
             {
@@ -73,6 +74,6 @@ namespace RingerStaff.ViewModels
 
         public ICommand RefreshCommand { get; set; }
         public ICommand LoginCommand { get; set; }
-        public ICommand VideoCommand { get; set; }
+        public ICommand SearchCommand { get; set; }
     }
 }

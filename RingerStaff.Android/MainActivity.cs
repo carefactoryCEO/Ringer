@@ -8,6 +8,8 @@ using Android.Widget;
 using Android.OS;
 using Plugin.LocalNotification;
 using Android.Content;
+using Android.Net.Wifi.Aware;
+using System.Runtime.CompilerServices;
 
 namespace RingerStaff.Droid
 {

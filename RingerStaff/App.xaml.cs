@@ -1,8 +1,5 @@
-﻿using System;
-using Xamarin.Forms;
-using Xamarin.Forms.Xaml;
+﻿using Xamarin.Forms;
 using RingerStaff.Services;
-using RingerStaff.Views;
 using Plugin.LocalNotification;
 using System.Diagnostics;
 
@@ -18,6 +15,7 @@ namespace RingerStaff
             NotificationCenter.Current.NotificationTapped += OnLocalNotificationTapped;
 
             DependencyService.Register<MockDataStore>();
+
             MainPage = new AppShell();
         }
 

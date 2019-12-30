@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="RingerStaff.Views.ProfilePage">
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <StackLayout Margin="15,48,15,34" Spacing="10">
+
+        <StackLayout Spacing="0">
+            <Label Text="사용자(가족)" TextColor="Black"/>
+            <Frame HasShadow="False" CornerRadius="10" BackgroundColor="CornflowerBlue">
+                <StackLayout>
+                    <Label Text="신모범 44M 워싱턴(미국)" />
+                    <Label Text="김은미 39F 워싱턴(미국)" />
+                    <Label Text="신도윤 1M 워싱턴(미국)" />
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+
+        <StackLayout Spacing="0">
+            <Label Text="티켓" TextColor="Black"/>
+            <Frame HasShadow="False" CornerRadius="10" BackgroundColor="CornflowerBlue">
+                <StackLayout>
+                    <Label Text="2020.1.20 21:04 파로스여행사 02-718-3426" />
+                    <Label Text="김지윤 jwkim@paros.co.kr 010-2365-76389" />
+                    <Label Text="워싱턴(미국) 2020.1.20 - 2020.1.27" />
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+
+        <StackLayout Spacing="0">
+            <Label Text="과금" TextColor="Black"/>
+            <Frame HasShadow="False" CornerRadius="10" BackgroundColor="CornflowerBlue">
+                <StackLayout>
+                    <Label Text="신모범 5,000"/>
+                    <Label Text="김은미 5,000"/>
+                    <Label Text="신도윤 5,000"/>
+                    <Label Text="합계 15,000"/>
+                </StackLayout>
+            </Frame>
+        </StackLayout>
+
+    </StackLayout>
+    <!--<TableView Intent="Data">
+        <TableRoot>
+            <TableSection Title="사용자">
+                <TextCell Text="신모범 44M 워싱턴(미국) 👍" />
+                <TextCell Text="김은미 39F 워싱턴(미국)" />
+                <TextCell Text="신도윤 1M 워싱턴(미국)" />
+            </TableSection>
+            <TableSection Title="티켓">
+                <TextCell Text="파로스여행사" Detail="2020.1.20 21:04" />
+                <TextCell Text="김지윤" Detail="jwkim@paros.co.kr | 010-2347-7394" />
+                <TextCell Text="워싱턴(미국)" Detail="2020.1.20 - 2020.1.27" />
+            </TableSection>
+            <TableSection Title="결제">
+                <TextCell Text="신모범" Detail="5000" />
+                <TextCell Text="김은미" Detail="5000" />
+            </TableSection>
+        </TableRoot>
+    </TableView>-->
+</ContentPage>
