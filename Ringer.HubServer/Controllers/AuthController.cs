@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Text.Json;
 using System.Collections.Generic;
+using Ringer.HubServer.Services;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -19,11 +20,13 @@ namespace Ringer.HubServer.Controllers
     {
         private readonly RingerDbContext _dbContext;
         private readonly ILogger<AuthController> _logger;
+        private readonly IUserService _userService;
 
-        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger)
+        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _userService = userService;
         }
 
         [HttpPost("report")]
@@ -57,27 +60,29 @@ namespace Ringer.HubServer.Controllers
         [HttpPost("register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterInfo registerInfo)
         {
+            // TODO: implement AutoMapper registerInfo -> User
             var user = new User
             {
                 Email = registerInfo.Email,
-                Password = registerInfo.Password,
                 UserType = UserType.Staff,
                 CreatedAt = DateTime.Now
             };
 
-            _dbContext.Users.Add(user);
-            await _dbContext.SaveChangesAsync();
-
-            return Ok();
+            try
+            {
+                await _userService.CreateAsync(user, registerInfo.Password);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpPost("staff-login")]
         public async Task<ActionResult> StaffLoginAsync([FromBody]LoginInfo loginInfo)
         {
-            var user = await _dbContext.Users.SingleOrDefaultAsync(u => 
-                u.Email == loginInfo.Email && 
-                u.Password == loginInfo.Password &&
-                u.UserType == UserType.Staff);
+            var user = await _userService.LogInAsync(loginInfo.Email, loginInfo.Password);
 
             if (user == null)
                 return NoContent();

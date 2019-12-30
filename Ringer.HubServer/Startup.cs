@@ -11,14 +11,18 @@ using System.Text;
 using Ringer.HubServer.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Ringer.HubServer.Services;
 
 namespace Ringer.HubServer
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private readonly IWebHostEnvironment _env;
+
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            _env = env;
         }
 
         public IConfiguration Configuration { get; }
@@ -26,15 +30,15 @@ namespace Ringer.HubServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Production")
+            if (_env.IsProduction())
             {
                 // context
                 services.AddDbContext<RingerDbContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
 
                 // db migration
-                using (var context = services.BuildServiceProvider().GetService<RingerDbContext>())
-                    context.Database.Migrate();
+                //using var context = services.BuildServiceProvider().GetService<RingerDbContext>();
+                //context.Database.Migrate();
 
             }
             else
@@ -97,11 +101,18 @@ namespace Ringer.HubServer
             services.AddControllers();
 
             services.AddSignalR();
+
+            // configure DI for application services
+            services.AddScoped<IUserService, UserService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // migrate any database changes on startup (includes initial db creation)
+            using (var scope = app.ApplicationServices.CreateScope())
+                scope.ServiceProvider.GetService<RingerDbContext>().Database.Migrate();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

@@ -1,4 +1,5 @@
-﻿using RingerStaff.ViewModels;
+﻿using System.Linq;
+using RingerStaff.ViewModels;
 using Xamarin.Forms;
 
 namespace RingerStaff.Views

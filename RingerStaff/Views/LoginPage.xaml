@@ -9,12 +9,8 @@
         <Entry Text="{Binding EmailText}" Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
         <Entry Text="{Binding PasswordText}" Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
 
-        <StackLayout Orientation="Horizontal">
-            <Button Text="취소" TextColor="White" BackgroundColor="Gray" HorizontalOptions="FillAndExpand"
-                    Command="{Binding CancelCommand}"/>
-            <Button Text="로그인" TextColor="White" BackgroundColor="Accent" HorizontalOptions="FillAndExpand"
-                    Command="{Binding LoginCommand}"/>
-        </StackLayout>
+        <Button Text="로그인" TextColor="White" BackgroundColor="Accent" HorizontalOptions="FillAndExpand"
+                Command="{Binding LoginCommand}"/>
 
     </StackLayout>
 </ContentPage>
