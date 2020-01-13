@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Ringer.Backend.Hubs;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Ringer.HubServer.Data;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Ringer.HubServer.Services;
+using Ringer.HubServer.Hubs;
 
 namespace Ringer.HubServer
 {

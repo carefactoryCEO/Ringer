@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Ringer.Backend.Hubs
+namespace Ringer.HubServer.Hubs
 {
     [Authorize]
     public class ChatHub : Hub
@@ -139,6 +139,8 @@ namespace Ringer.Backend.Hubs
 
                 _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) Connected.");
 
+
+
                 foreach (Enrollment enrollment in user.Enrollments)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.Room.Id);
@@ -163,10 +165,16 @@ namespace Ringer.Backend.Hubs
                 if (_deviceId != null)
                 {
                     var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == _deviceId);
-                    device.IsOn = false;
-                    await _dbContext.SaveChangesAsync();
 
-                    _logger.LogWarning($"[{_deviceId}]({_deviceType})'s IsOn: {device.IsOn}");
+                    if (device != null)
+                    {
+                        device.IsOn = false;
+                        await _dbContext.SaveChangesAsync();
+
+                        _logger.LogWarning($"[{_deviceId}]({_deviceType})'s IsOn: {device.IsOn}");
+                    }
+                    else
+                        throw new ArgumentNullException("device is null.");
                 }
 
                 // 접속한 Device의 Ower(User)가 속한 모든 방에서 Device를 제거

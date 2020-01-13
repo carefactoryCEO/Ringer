@@ -39,8 +39,6 @@
         <!-- Messages Feed -->
         <controls:RingerListView ItemsSource="{Binding Messages}" Grid.Row="0"
                                  ItemTemplate="{StaticResource MessageTemplateSelector}"
-                                 ItemAppearing="ListView_ItemAppearing"
-                                 ItemDisappearing="ListView_ItemDisappearing"
                                  BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
                                  SeparatorVisibility="None"
                                  SelectionMode="None"

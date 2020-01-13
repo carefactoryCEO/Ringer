@@ -3,7 +3,7 @@
              Shell.NavBarIsVisible="False" Shell.TabBarIsVisible="False">
     <StackLayout Padding="40">
 
-        <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="0,30"/>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}" Margin="0,30"/>
 
         <Label Text="Ringer Staffs" FontSize="Title" HorizontalOptions="Center"/>
         <Entry Text="{Binding EmailText}" Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>

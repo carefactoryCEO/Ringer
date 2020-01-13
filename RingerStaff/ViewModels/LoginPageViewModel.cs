@@ -12,6 +12,8 @@ namespace RingerStaff.ViewModels
         public LoginPageViewModel()
         {
             LoginCommand = new Command(async () => await LoginAsync());
+            EmailText = "mbshin@carefactory.co.kr";
+            PasswordText = "password";
         }
 
         private string _emailText;
@@ -47,5 +49,10 @@ namespace RingerStaff.ViewModels
 
         public string EmailText { get => _emailText; set => SetProperty(ref _emailText, value); }
         public string PasswordText { get => _passwordText; set => SetProperty(ref _passwordText, value); }
+
+        ~LoginPageViewModel()
+        {
+            Debug.WriteLine("terminated");
+        }
     }
 }

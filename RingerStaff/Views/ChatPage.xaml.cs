@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using RingerStaff.Models;
 using RingerStaff.ViewModels;
 using Xamarin.Forms;
@@ -35,7 +31,6 @@ namespace RingerStaff.Views
 
             vm.NavBarHeight = _insets.Top + 44;
             vm.BottomPadding = new Thickness(0, 0, 0, _insets.Bottom);
-            //Debug.WriteLine($"-----------{_insets.Left}, {_insets.Top}, {_insets.Right}, {_insets.Bottom}-------------");
 
             base.OnSizeAllocated(width, height);
         }
@@ -46,29 +41,27 @@ namespace RingerStaff.Views
                 MessageFeed.ScrollToLast();
         }
 
-        protected override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
-            vm.LoadMessagesCommand.Execute(null);
 
 
+            // App.ChatPageIsOn = true;
+            // App.CurrentRoomId = roomId;
+
+            // subscribe MessageRepository's new message event
+
+            await vm.LoadMessagesAsync();
         }
 
-        void Label_Tapped(object sender, EventArgs e)
+        protected override void OnDisappearing()
         {
-            Debug.WriteLine("tapped(behind)");
-        }
+            // App.ChatPageIsOn = false;
+            // App.CurrentRoomId = null;
 
-        void ListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
-        {
-            //var messageModel = e.Item as MessageModel;
-            //Debug.WriteLine($"appearing {messageModel.Body}");
-        }
+            // subscribe MessageRepository's new message event
 
-        void ListView_ItemDisappearing(object sender, ItemVisibilityEventArgs e)
-        {
-            //var messageModel = e.Item as MessageModel;
-            //Debug.WriteLine($"disappearing {messageModel.Body}");
+            base.OnDisappearing();
         }
     }
 }

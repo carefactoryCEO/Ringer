@@ -23,7 +23,7 @@
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
 
-        <ToolbarItem Command="{Binding LoginCommand}"
+        <ToolbarItem Command="{Binding LogoutCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
@@ -46,7 +46,7 @@
                     <ViewCell>
                         <StackLayout Padding="15">
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Description}"
+                                <Label Text="{Binding Title}"
                                        LineBreakMode="NoWrap"
                                        Style="{DynamicResource ListItemTextStyle}"
                                        FontSize="16"
@@ -79,6 +79,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}"/>
     </Grid>
 
 
