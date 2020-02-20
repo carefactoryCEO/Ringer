@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
@@ -11,9 +12,9 @@ namespace Ringer.HubServer.Extensions
 {
     public static class UserExtension
     {
-        public static string JwtToken(this User user, LoginInfo loginInfo)
+        public static string JwtToken(this User user, LoginInfo loginInfo, string secretKey)
         {
-            var securityKey = "this_is_super_long_security_key_for_ringer_service";
+            var securityKey = secretKey;
             var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(securityKey));
             var signingCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature);
 
@@ -30,7 +31,7 @@ namespace Ringer.HubServer.Extensions
             (
                 issuer: "Ringer",
                 audience: "ringer.co.kr",
-                expires: DateTime.UtcNow.AddSeconds(10),
+                expires: DateTime.UtcNow.AddSeconds(5),
                 signingCredentials: signingCredentials,
                 claims: claims
             );

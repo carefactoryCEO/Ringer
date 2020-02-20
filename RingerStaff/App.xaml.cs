@@ -44,22 +44,9 @@ namespace RingerStaff
 
         private void App_PageAppearing(object sender, Page page)
         {
-            if (!IsLoggedIn)
-            {
-                if (page.Navigation.ModalStack.Count > 0 && page.Navigation.ModalStack.Last() is LoginPage)
-                {
-                    return;
-                }
-                else
-                {
-                    page.Navigation.PushModalAsync(new LoginPage());
-                }
-            }
-
-            //if (IsLoggedIn || page is LoginPage)
-            //    return;
-
-            //page.Navigation.PushModalAsync(new LoginPage());
+            //if (!IsLoggedIn)
+            //    if (page.Navigation.ModalStack.Count == 0 || !(page.Navigation.ModalStack.Last() is LoginPage))
+            //        page.Navigation.PushModalAsync(new LoginPage());
         }
 
         private void OnLocalNotificationTapped(NotificationTappedEventArgs e)

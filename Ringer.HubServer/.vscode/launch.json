@@ -13,6 +13,10 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
+            "launchBrowser": {
+                "enabled": true,
+                "args": "${auto-detect-url}"
+            },
             // "serverReadyAction": {
             //     "action": "openExternally",
             //     "pattern": "^\\s*Now listening on:\\s+(https?://\\S+)"

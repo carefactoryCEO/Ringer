@@ -12,7 +12,7 @@ namespace RingerStaff.ViewModels
         public LoginPageViewModel()
         {
             LoginCommand = new Command(async () => await LoginAsync());
-            EmailText = "mbshin@carefactory.co.kr";
+            EmailText = "test@test.com";
             PasswordText = "password";
         }
 

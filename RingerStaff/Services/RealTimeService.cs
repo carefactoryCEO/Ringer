@@ -96,7 +96,7 @@ namespace RingerStaff.Services
 
         private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
         {
-            throw new NotImplementedException();
+            Debug.WriteLine($"({senderName}): ({messageId}){body}");
         }
 
         private static Task OnReconnected(Exception arg)

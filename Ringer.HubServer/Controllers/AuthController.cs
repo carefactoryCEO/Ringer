@@ -11,6 +11,7 @@ using System;
 using System.Text.Json;
 using System.Collections.Generic;
 using Ringer.HubServer.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -21,12 +22,14 @@ namespace Ringer.HubServer.Controllers
         private readonly RingerDbContext _dbContext;
         private readonly ILogger<AuthController> _logger;
         private readonly IUserService _userService;
+        private readonly IConfiguration _configuration;
 
-        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService)
+        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService, IConfiguration configuration)
         {
             _dbContext = dbContext;
             _logger = logger;
             _userService = userService;
+            _configuration = configuration;
         }
 
         [HttpPost("report")]
@@ -83,14 +86,15 @@ namespace Ringer.HubServer.Controllers
         public async Task<ActionResult> StaffLoginAsync([FromBody]LoginInfo loginInfo)
         {
             var user = await _userService.LogInAsync(loginInfo.Email, loginInfo.Password);
+            var secretKey = _configuration["SecurityKey"];
 
             if (user == null)
-                return NoContent();
+                return BadRequest();
 
             loginInfo.DeviceId ??= "deviceId";
             user.Name ??= "name here";
 
-            var token = user.JwtToken(loginInfo);
+            var token = user.JwtToken(loginInfo, secretKey);
             var response = new { Token = token, RoomId = "room id here" };
 
             return Ok(response);
@@ -100,6 +104,7 @@ namespace Ringer.HubServer.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> UserLoginAsync([FromBody]LoginInfo loginInfo)
         {
+            var secretKey = _configuration["SecurityKey"];
             // TODO: Consumer인 경우 Ticket의 Travel 정보와 LoginInfo의 Location 정보를 대조
             User user = await _dbContext.Users
                 .Include(u => u.Devices)
@@ -157,7 +162,7 @@ namespace Ringer.HubServer.Controllers
 
             await _dbContext.SaveChangesAsync();
 
-            var token = user.JwtToken(loginInfo);
+            var token = user.JwtToken(loginInfo, secretKey);
             var response = new { Token = token, RoomId = roomId };
 
             return Ok(response);

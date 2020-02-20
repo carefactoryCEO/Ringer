@@ -51,18 +51,36 @@ namespace RingerStaff.ViewModels
 
         }
 
-        public async Task LoadRoomsAsync()
+        public async Task<bool> LoadRoomsAsync()
         {
             IsBusy = true;
 
-            var roomModels = await MessageRepository.LoadRoomsAsync();
+            try
+            {
+                var roomModels = await ApiService.LoadRoomsAsync();
 
-            Rooms.Clear();
+                if (roomModels.Count == 0)
+                    return false;
 
-            foreach (var roomModel in roomModels)
-                Rooms.Add(roomModel);
+                Rooms.Clear();
 
-            IsBusy = false;
+                foreach (var roomModel in roomModels)
+                    Rooms.Add(roomModel);
+
+                IsBusy = false;
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            return false;
         }
 
         private async Task ExcuteLogoutCommandAsync()

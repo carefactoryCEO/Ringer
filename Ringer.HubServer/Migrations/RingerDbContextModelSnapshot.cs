@@ -157,7 +157,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 53, 24, 547, DateTimeKind.Utc).AddTicks(1650),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(7180),
                             Gender = "Male",
                             Name = "Admin",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -167,7 +167,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 53, 24, 547, DateTimeKind.Utc).AddTicks(2510),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8100),
                             Gender = "Male",
                             Name = "신모범",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -177,7 +177,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 53, 24, 547, DateTimeKind.Utc).AddTicks(2530),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8120),
                             Gender = "Female",
                             Name = "김은미",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -187,7 +187,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 53, 24, 547, DateTimeKind.Utc).AddTicks(2530),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
                             Gender = "Male",
                             Name = "김순용",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -197,7 +197,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 53, 24, 547, DateTimeKind.Utc).AddTicks(2540),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
                             Gender = "Female",
                             Name = "함주희",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),

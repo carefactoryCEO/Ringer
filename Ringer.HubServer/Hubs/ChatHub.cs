@@ -20,7 +20,7 @@ namespace Ringer.HubServer.Hubs
         private readonly RingerDbContext _dbContext;
         private readonly ILogger<ChatHub> _logger;
 
-        int _userId => int.Parse(Context.UserIdentifier);
+        int _userId => Convert.ToInt32(Context.UserIdentifier);
         string _deviceId => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
         string _deviceType => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceType")?.Value;
 
@@ -50,9 +50,8 @@ namespace Ringer.HubServer.Hubs
 
             await Clients.Group(group).SendAsync("Left", user);
         }
-        public async Task SendMessageToRoomAsyc(string body, string roomId)
+        public async Task<int> SendMessageToRoomAsyc(string body, string roomId)
         {
-
             User user = await _dbContext.Users.FindAsync(_userId);
 
             Message message = new Message
@@ -125,6 +124,8 @@ namespace Ringer.HubServer.Hubs
 
             sw.Stop();
             _logger.LogWarning($"Push to unconnected Devices: {sw.ElapsedMilliseconds}");
+
+            return message?.Id ?? -1;
         }
 
         public override async Task OnConnectedAsync()

@@ -184,6 +184,7 @@ namespace Ringer
             if (DesignMode.IsDesignModeEnabled)
                 return;
 
+
             #region AppCenter
             // Intercept Push Notification
             if (!AppCenter.Configured)

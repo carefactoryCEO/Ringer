@@ -51,7 +51,7 @@
                                        Style="{DynamicResource ListItemTextStyle}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
-                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tth:mm}'}"
+                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tt h:mm}'}"
                                        TextColor="Gray"
                                        FontSize="12"
                                        HorizontalOptions="EndAndExpand"/>

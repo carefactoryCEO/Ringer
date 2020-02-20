@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -83,8 +84,21 @@ namespace Ringer.Services
 
         public async Task<List<PendingMessage>> PullPendingMessagesAsync()
         {
+            // context.Request.Headers.Add("Authorization", "Bearer " + JWToken);
+            if (App.IsLoggedIn)
+                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
+
 
             var response = await _client.GetAsync($"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastMessageId}").ConfigureAwait(false);
+
+            // if token expired -> response.StatusCode
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Debug.WriteLine(response.Headers.WwwAuthenticate.ToString());
+
+                return new List<PendingMessage>();
+            }
+
             var responseString = await response.Content.ReadAsStringAsync();
             var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
 
@@ -112,7 +126,7 @@ namespace Ringer.Services
                 Debug.WriteLine(await response.Content.ReadAsStringAsync());
 
             var responseString = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<ResponseJson>(responseString);
+            var responseObject = JsonSerializer.Deserialize<LoginResponse>(responseString);
 
             // TODO: token 발급되었는지 확인
             // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공

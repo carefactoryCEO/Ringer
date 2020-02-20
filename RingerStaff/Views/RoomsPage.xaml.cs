@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Diagnostics;
+using System.Linq;
 using RingerStaff.ViewModels;
 using Xamarin.Forms;
 
@@ -27,11 +28,34 @@ namespace RingerStaff.Views
         {
             base.OnAppearing();
 
-            // subscribe new message event of Realtime service
+            IsBusy = true;
 
-            // get Rooms from MessageRepository
-            await vm.LoadRoomsAsync();
+            try
+            {
+                if (App.IsLoggedIn)
+                {
+                    // subscribe new message event of Realtime service
 
+                    // get Rooms from MessageRepository
+                    var roomsPopulated = await vm.LoadRoomsAsync();
+
+                    if (!roomsPopulated)
+                        await DisplayAlert(null, "방이 없습니다", "닫기");
+                }
+                else
+                {
+                    if (Navigation.ModalStack.Count == 0 || !(Navigation.ModalStack.Last() is LoginPage))
+                        await Navigation.PushModalAsync(new LoginPage());
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.Write(ex);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
 
         protected override void OnDisappearing()

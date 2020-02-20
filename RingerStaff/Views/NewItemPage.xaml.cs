@@ -5,6 +5,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 using RingerStaff.Models;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace RingerStaff.Views
 {

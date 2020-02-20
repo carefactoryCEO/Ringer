@@ -9,8 +9,8 @@ using Ringer.HubServer.Data;
 namespace Ringer.HubServer.Migrations
 {
     [DbContext(typeof(RingerDbContext))]
-    [Migration("20191230150201_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20200121001213_Initial-Migration")]
+    partial class InitialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -141,6 +141,9 @@ namespace Ringer.HubServer.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("TEXT");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("UserType")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -156,45 +159,50 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 2, 0, 922, DateTimeKind.Utc).AddTicks(7170),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(7180),
                             Gender = "Male",
                             Name = "Admin",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Admin"
                         },
                         new
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 2, 0, 922, DateTimeKind.Utc).AddTicks(7990),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8100),
                             Gender = "Male",
                             Name = "신모범",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Consumer"
                         },
                         new
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 2, 0, 922, DateTimeKind.Utc).AddTicks(8010),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8120),
                             Gender = "Female",
                             Name = "김은미",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Consumer"
                         },
                         new
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 2, 0, 922, DateTimeKind.Utc).AddTicks(8020),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
                             Gender = "Male",
                             Name = "김순용",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Consumer"
                         },
                         new
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2019, 12, 30, 15, 2, 0, 922, DateTimeKind.Utc).AddTicks(8020),
+                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
                             Gender = "Female",
                             Name = "함주희",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Consumer"
                         });
                 });

@@ -105,6 +105,7 @@
             <converters:MessageTypesToLayoutOptionConverter x:Key="MessageTypesToLayoutOptionConverter"/>
             <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter"/>
             <converters:MessageTypesToColorConverter x:Key="MessageTypesToColorConverter"/>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

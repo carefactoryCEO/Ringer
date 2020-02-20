@@ -126,29 +126,33 @@ namespace Ringer.ViewModels
                     var numeric = TextToSend;
                     TextToSend = string.Empty;
 
+                    // process gender
+                    string gender = numeric.Substring(6, 1);
+                    if (int.TryParse(gender, out var parsedGenderInt))
+                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
+                    else
+                        Debug.WriteLine("Wrong Gender format");
+
+                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    // process date of birth
                     string year = numeric.Substring(0, 2);
                     string month = numeric.Substring(2, 2);
                     string day = numeric.Substring(4, 2);
-                    string gender = numeric.Substring(6, 1);
 
+                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
 
                     if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
                         Debug.WriteLine(parsedBirthdate);
                     else
                         Debug.WriteLine("Wrong DateTime format");
 
-                    if (int.TryParse(gender, out var parsedGenderInt))
-                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
-                    else
-                        Debug.WriteLine("Wrong Gender format");
 
                     //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
                     //birthDate = DateTime.Parse($"{year}-{month}-{day}");
                     //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
 
-                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
                     birthDate = parsedBirthdate;
-                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
 
                     _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
 

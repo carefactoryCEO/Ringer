@@ -6,11 +6,16 @@
         <ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}" Margin="0,30"/>
 
         <Label Text="Ringer Staffs" FontSize="Title" HorizontalOptions="Center"/>
-        <Entry Text="{Binding EmailText}" Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
-        <Entry Text="{Binding PasswordText}" Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
+        <Entry Text="{Binding EmailText}"
+               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+               Placeholder="이메일" Keyboard="Email" ClearButtonVisibility="WhileEditing" ReturnType="Next"/>
+        <Entry Text="{Binding PasswordText}"
+               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+               Placeholder="비밀번호" IsPassword="True" ClearButtonVisibility="WhileEditing" ReturnType="Done"/>
 
         <Button Text="로그인" TextColor="White" BackgroundColor="Accent" HorizontalOptions="FillAndExpand"
-                Command="{Binding LoginCommand}"/>
+                Command="{Binding LoginCommand}"
+                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
 
     </StackLayout>
 </ContentPage>

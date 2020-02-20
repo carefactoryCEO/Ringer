@@ -1,10 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Ringer.Core.Models;
 using Ringer.HubServer.Data;
 using Ringer.HubServer.Hubs;
 
@@ -25,20 +29,36 @@ namespace Ringer.HubServer.Controllers
             this.hubContext = hubContext;
         }
 
-        [HttpGet("hello")]
+        [Authorize]
+        [HttpGet]
         public async Task<ActionResult> GetAll()
         {
+            var id = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var name = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var deviceId = User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
+
+            var user = await dbContext.Users
+                .Include(u => u.Enrollments)
+                .FirstOrDefaultAsync(u => u.Id == int.Parse(id));
+
+            var roomList = new List<string>();
+            foreach (var enrollment in user.Enrollments)
+                roomList.Add(enrollment.RoomId);
+
             await Task.Delay(1);
 
-            var response = new Tester
+            var response = new
             {
-                HelloWorld = "world",
-                WelcomeToRinger = "nice to meet you"
+                Id = id,
+                Name = name,
+                DeviceId = deviceId,
+                Rooms = roomList
             };
 
             return Ok(response);
         }
 
+        [Authorize]
         [HttpGet("content")]
         public ContentResult GetContent()
         {
@@ -52,14 +72,41 @@ namespace Ringer.HubServer.Controllers
         }
 
         // GET api/authors/RickAndMSFT
-        [HttpGet("{alias}")]
+        [HttpGet("{body}")]
         [Authorize]
-        public async Task<Author> Get()
+        public async Task<Author> Get(string body)
         {
-            var user = User;
+            /*
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Context.UserIdentifier
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim("DeviceId", loginInfo.DeviceId),
+                new Claim("DeviceType", loginInfo.DeviceType.ToString())
+            */
 
-            await hubContext.Clients.All.SendAsync("ReceiveMessage", "알리아스", "외부에서 호출했음", 10, 11, DateTime.Now);
-            return new Author{ Id = 1, Name = "mike"};
+            var id = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            var name = User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
+            var deviceId = User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
+
+            var userId = int.Parse(id);
+
+            var user = await dbContext.Users.FindAsync(userId);
+            Message message = new Message
+            {
+                Body = body,
+                CreatedAt = DateTime.UtcNow,
+                RoomId = "563f122f-2f99-4dd3-806c-4f78a9b23645",
+                SenderId = userId
+            };
+
+            dbContext.Messages.Add(message);
+            await dbContext.SaveChangesAsync();
+
+
+
+            // private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
+            // await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
+            await hubContext.Clients.All.SendAsync("ReceiveMessage", name, body, message.Id, user.Id, message.CreatedAt);
+            return new Author { Id = 1, Name = "mike" };
         }
     }
 
