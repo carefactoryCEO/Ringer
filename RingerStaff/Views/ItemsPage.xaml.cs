@@ -10,6 +10,8 @@ using Xamarin.Forms.Xaml;
 using RingerStaff.Models;
 using RingerStaff.Views;
 using RingerStaff.ViewModels;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace RingerStaff.Views
 {
@@ -25,6 +27,11 @@ namespace RingerStaff.Views
             InitializeComponent();
 
             BindingContext = viewModel = new ItemsViewModel();
+
+            MessagingCenter.Subscribe<ItemsViewModel, Item>(this, "ScrollToItem", (obj, item) =>
+            {
+                ItemsListView.ScrollTo(item, ScrollToPosition.End, true);
+            });
         }
 
         async void OnItemSelected(object sender, SelectedItemChangedEventArgs args)
@@ -41,7 +48,12 @@ namespace RingerStaff.Views
 
         async void AddItem_Clicked(object sender, EventArgs e)
         {
-            await Navigation.PushModalAsync(new NavigationPage(new NewItemPage()));
+            var navPage = new Xamarin.Forms.NavigationPage(new NewItemPage());
+            navPage.On<iOS>().SetModalPresentationStyle(UIModalPresentationStyle.FormSheet);
+            navPage.On<iOS>().SetPrefersLargeTitles(true);
+            //navPage.BarBackgroundColor = Color.Pink;
+
+            await Navigation.PushModalAsync(navPage);
         }
 
         protected override void OnAppearing()

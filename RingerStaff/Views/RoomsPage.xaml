@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="RingerStaff.Views.RoomPage"
+             x:Class="RingerStaff.Views.RoomsPage"
              Title="{Binding Title}">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Command="{Binding RefreshCommand}"
+
+        <ToolbarItem Command="{Binding SearchCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
@@ -12,19 +13,21 @@
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
+
         <ToolbarItem Command="{Binding RefreshCommand}"
-                     Order="Primary">
+                     Order="Primary" >
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
                                  Glyph="{StaticResource IconNewChat}"
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
-        <ToolbarItem Command="{Binding RefreshCommand}"
+
+        <ToolbarItem Command="{Binding LogoutCommand}"
                      Order="Primary">
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
-                                 Glyph="{StaticResource IconSetting}"
+                                 Glyph="{StaticResource IconLogin}"
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
         </ToolbarItem>
@@ -43,12 +46,12 @@
                     <ViewCell>
                         <StackLayout Padding="15">
                             <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Description}"
+                                <Label Text="{Binding Title}"
                                        LineBreakMode="NoWrap"
                                        Style="{DynamicResource ListItemTextStyle}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
-                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tth:mm}'}"
+                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tt h:mm}'}"
                                        TextColor="Gray"
                                        FontSize="12"
                                        HorizontalOptions="EndAndExpand"/>
@@ -76,6 +79,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}"/>
     </Grid>
 
 

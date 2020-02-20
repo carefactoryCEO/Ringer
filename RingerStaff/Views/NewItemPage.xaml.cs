@@ -5,6 +5,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 using RingerStaff.Models;
+using Xamarin.Forms.PlatformConfiguration;
+using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace RingerStaff.Views
 {
@@ -30,8 +32,8 @@ namespace RingerStaff.Views
 
         async void Save_Clicked(object sender, EventArgs e)
         {
-            MessagingCenter.Send(this, "AddItem", Item);
             await Navigation.PopModalAsync();
+            MessagingCenter.Send(this, "AddItem", Item);
         }
 
         async void Cancel_Clicked(object sender, EventArgs e)

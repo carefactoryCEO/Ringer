@@ -1,14 +1,15 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:d="http://xamarin.com/schemas/2014/forms/design" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RingerStaff.Views.NewItemPage" Title="New Item">
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:d="http://xamarin.com/schemas/2014/forms/design" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="RingerStaff.Views.NewItemPage"
+             Title="아이템 추가">
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Cancel" Clicked="Cancel_Clicked" />
-        <ToolbarItem Text="Save" Clicked="Save_Clicked" />
+        <ToolbarItem Text="취소" Clicked="Cancel_Clicked" />
+        <ToolbarItem Text="저장" Clicked="Save_Clicked" />
     </ContentPage.ToolbarItems>
     <ContentPage.Content>
         <StackLayout Spacing="20" Padding="15">
-            <Label Text="Text" FontSize="Medium" />
+            <Label Text="항목" FontSize="Medium" />
             <Entry Text="{Binding Item.Text}" d:Text="Item name" FontSize="Small" />
-            <Label Text="Description" FontSize="Medium" />
+            <Label Text="설명" FontSize="Medium" />
             <Editor Text="{Binding Item.Description}" d:Text="Item description" FontSize="Small" Margin="0" />
         </StackLayout>
     </ContentPage.Content>

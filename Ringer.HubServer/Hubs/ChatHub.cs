@@ -12,7 +12,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Ringer.Backend.Hubs
+namespace Ringer.HubServer.Hubs
 {
     [Authorize]
     public class ChatHub : Hub
@@ -20,7 +20,7 @@ namespace Ringer.Backend.Hubs
         private readonly RingerDbContext _dbContext;
         private readonly ILogger<ChatHub> _logger;
 
-        int _userId => int.Parse(Context.UserIdentifier);
+        int _userId => Convert.ToInt32(Context.UserIdentifier);
         string _deviceId => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
         string _deviceType => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceType")?.Value;
 
@@ -50,9 +50,8 @@ namespace Ringer.Backend.Hubs
 
             await Clients.Group(group).SendAsync("Left", user);
         }
-        public async Task SendMessageToRoomAsyc(string body, string roomId)
+        public async Task<int> SendMessageToRoomAsyc(string body, string roomId)
         {
-
             User user = await _dbContext.Users.FindAsync(_userId);
 
             Message message = new Message
@@ -125,6 +124,8 @@ namespace Ringer.Backend.Hubs
 
             sw.Stop();
             _logger.LogWarning($"Push to unconnected Devices: {sw.ElapsedMilliseconds}");
+
+            return message?.Id ?? -1;
         }
 
         public override async Task OnConnectedAsync()
@@ -138,6 +139,8 @@ namespace Ringer.Backend.Hubs
                     .FirstOrDefaultAsync(u => u.Id == _userId);
 
                 _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) Connected.");
+
+
 
                 foreach (Enrollment enrollment in user.Enrollments)
                 {
@@ -163,10 +166,16 @@ namespace Ringer.Backend.Hubs
                 if (_deviceId != null)
                 {
                     var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == _deviceId);
-                    device.IsOn = false;
-                    await _dbContext.SaveChangesAsync();
 
-                    _logger.LogWarning($"[{_deviceId}]({_deviceType})'s IsOn: {device.IsOn}");
+                    if (device != null)
+                    {
+                        device.IsOn = false;
+                        await _dbContext.SaveChangesAsync();
+
+                        _logger.LogWarning($"[{_deviceId}]({_deviceType})'s IsOn: {device.IsOn}");
+                    }
+                    else
+                        throw new ArgumentNullException("device is null.");
                 }
 
                 // 접속한 Device의 Ower(User)가 속한 모든 방에서 Device를 제거

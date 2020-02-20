@@ -53,16 +53,33 @@ namespace Ringer.Core
             _hubConnection = new HubConnectionBuilder()
                 .WithUrl(url, options =>
                 {
-                    options.AccessTokenProvider = () => Task.FromResult(token);
+                    /*
+                        The access token function you provide is called before every HTTP request made by SignalR.
+                        If you need to renew the token in order to keep the connection active
+                        (because it may expire during the connection),
+                        do so from within this function and return the updated token.
+                        https://docs.microsoft.com/en-us/aspnet/core/signalr/authn-and-authz?view=aspnetcore-3.1#bearer-token-authentication
+                     */
+                    options.AccessTokenProvider = () =>
+                    {
+                        // verify access token here
+
+                        // if not verified, refresh access token using refresh token
+
+                        //Debug.WriteLine(token);
+                        Debug.Assert(token != null);
+
+                        return Task.FromResult(token);
+                    };
                 })
                 .WithAutomaticReconnect(new[]
                 {
                     // default: wait 0,2,10,30 seconds and try to reconnect
                     TimeSpan.FromSeconds(0),
                     TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(2),
                     TimeSpan.FromSeconds(1),
-                    TimeSpan.FromSeconds(1),
-                    TimeSpan.FromSeconds(1),
+                    TimeSpan.FromSeconds(2),
                     TimeSpan.FromSeconds(1)
                 })
                 .Build();
@@ -126,7 +143,7 @@ namespace Ringer.Core
             {
                 Connecting?.Invoke(this, new ConnectionEventArgs($"Try to Connect to SignalR Hub"));
 
-                await _hubConnection.StartAsync();
+                await _hubConnection.StartAsync().ConfigureAwait(false);
 
                 if (!IsConnected)
                     throw new InvalidOperationException($"Connecting to SignalR Hub failed.");
@@ -166,16 +183,17 @@ namespace Ringer.Core
 
         public async Task DisconnectAsync(string room, string user)
         {
-            if (IsConnected)
-                await LeaveRoomAsync(room, user);
+            if (!IsConnected)
+                return;
 
+            await LeaveRoomAsync(room, user);
             await DisconnectAsync();
         }
 
         public async Task JoinRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
@@ -183,7 +201,7 @@ namespace Ringer.Core
         public async Task LeaveRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
@@ -191,9 +209,11 @@ namespace Ringer.Core
         public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
-                await ConnectAsync();
+                await ConnectAsync().ConfigureAwait(false);
 
-            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId);
+            var id = await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
+
+            Debug.WriteLine($"A message with {id} delivered to server");
         }
         #endregion
 

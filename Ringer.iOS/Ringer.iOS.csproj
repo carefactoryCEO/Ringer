@@ -214,6 +214,9 @@
     <PackageReference Include="Microsoft.AppCenter.Push">
       <Version>2.1.1</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client">
+      <Version>2.4.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>

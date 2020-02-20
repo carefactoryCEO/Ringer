@@ -40,7 +40,14 @@
                     AbsoluteLayout.LayoutBounds=".97,.265,45,45"
                     Clicked="MapCurrentButton_Clicked" IsVisible="{OnPlatform False, iOS=True}" />
 
-            <ListView x:Name="ItemsListView" AbsoluteLayout.LayoutFlags="All" AbsoluteLayout.LayoutBounds="0,1,1,.65" Grid.Row="1" ItemsSource="{Binding Infomations}" VerticalOptions="FillAndExpand" ItemSelected="ItemsListView_ItemSelected" HasUnevenRows="true">
+            <ListView x:Name="ItemsListView"
+                      AbsoluteLayout.LayoutFlags="All"
+                      AbsoluteLayout.LayoutBounds="0,1,1,.65"
+                      Grid.Row="1"
+                      ItemsSource="{Binding Infomations}"
+                      VerticalOptions="FillAndExpand"
+                      ItemSelected="ItemsListView_ItemSelected"
+                      HasUnevenRows="true">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <ViewCell>

@@ -24,16 +24,19 @@ namespace Ringer.Core.Models
         [Display(Name = "성별")]
         public GenderType Gender { get; set; }
 
-        [Display(Name = "휴대폰번호")]
         public string PhoneNumber { get; set; }
 
-        [Display(Name = "이메일")]
         public string Email { get; set; }
 
-        [Display(Name = "비밀번호")]
         public string Password { get; set; }
 
+        public byte[] PasswordHash { get; set; }
+
+        public byte[] PasswordSalt { get; set; }
+
         public DateTime CreatedAt { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
 
         [InverseProperty("Owner")]
         public ICollection<Device> Devices { get; set; }

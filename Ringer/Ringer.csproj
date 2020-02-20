@@ -23,6 +23,7 @@
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.1.1" />
     <PackageReference Include="Microsoft.AppCenter.Push" Version="2.1.1" />
     <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,9 +41,6 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
     <EmbeddedResource Update="Views\MapPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Views\Partials\ChatInputBarView.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>

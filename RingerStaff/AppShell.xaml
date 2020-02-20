@@ -7,22 +7,13 @@
         <ResourceDictionary>
             <Color x:Key="NavigationPrimary">#2196F3</Color>
             <Style x:Key="BaseStyle" TargetType="Element">
-                <!--<Setter Property="Shell.BackgroundColor" Value="{StaticResource NavigationPrimary}" />-->
-                <!--<Setter Property="Shell.ForegroundColor" Value="White" />-->
-                <!--<Setter Property="Shell.TitleColor" Value="White" />-->
-                <!--<Setter Property="Shell.DisabledColor" Value="#B4FFFFFF" />-->
-                <!--<Setter Property="Shell.UnselectedColor" Value="#95FFFFFF" />-->
-                <!--<Setter Property="Shell.TabBarBackgroundColor" Value="{StaticResource NavigationPrimary}" />-->
-                <!--<Setter Property="Shell.TabBarForegroundColor" Value="White" />-->
-                <!--<Setter Property="Shell.TabBarUnselectedColor" Value="#95FFFFFF" />-->
-                <!--<Setter Property="Shell.TabBarTitleColor" Value="White" />-->
-                <Setter Property="Shell.BackgroundColor" Value="White" />
-                <Setter Property="Shell.ForegroundColor" Value="Black" />
-                <Setter Property="Shell.TitleColor" Value="Black" />
+                <Setter Property="Shell.BackgroundColor" Value="#FAF9FA" />
+                <Setter Property="Shell.ForegroundColor" Value="#666666" />
+                <Setter Property="Shell.TitleColor" Value="#222222" />
                 <Setter Property="Shell.DisabledColor" Value="Gray" />
                 <Setter Property="Shell.UnselectedColor" Value="Gray" />
                 <Setter Property="Shell.TabBarBackgroundColor" Value="#FAF9FA" />
-                <Setter Property="Shell.TabBarForegroundColor" Value="Black" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="#CCCCCC" />
                 <Setter Property="Shell.TabBarUnselectedColor" Value="LightSlateGray" />
                 <Setter Property="Shell.TabBarTitleColor" Value="Black" />
             </Style>
@@ -35,15 +26,17 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconChat}"/>
+                    Glyph="{StaticResource IconChat}"
+                    Size="20"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:RoomPage}" />
+            <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />
         </Tab>
         <Tab Title="스태프">
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconStaff}"/>
+                    Glyph="{StaticResource IconStaff}"
+                    Size="23"/>
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />
         </Tab>
@@ -51,7 +44,17 @@
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
-                    Glyph="{StaticResource IconSchedule}"/>
+                    Glyph="{StaticResource IconSchedule}"
+                    Size="20"/>
+            </Tab.Icon>
+            <ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />
+        </Tab>
+        <Tab Title="설정">
+            <Tab.Icon>
+                <FontImageSource
+                    FontFamily="{DynamicResource MaterialFontFamily}"
+                    Glyph="{StaticResource IconSetting}"
+                    Size="22"/>
             </Tab.Icon>
             <ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />
         </Tab>

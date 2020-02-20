@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CoreGraphics;
+﻿using CoreGraphics;
 using Foundation;
 using Ringer.iOS.Renderers;
 using Ringer.Views.Partials;
@@ -57,9 +53,7 @@ namespace Ringer.iOS.Renderers
             {
                 Element.Margin = new Thickness(0); //set the margins to zero when keyboard is dismissed
             }
-
         }
-
 
         void UnregisterForKeyboardNotifications()
         {

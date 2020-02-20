@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="RingerStaff.Views.SessionsPage">
+    <StackLayout HorizontalOptions="Center" VerticalOptions="FillAndExpand" Padding="20,88,20,34">
+
+        <Button Text="닫기" Clicked="CloseButton_Clicked" BackgroundColor="LightGray"/>
+
+        <StackLayout Orientation="Horizontal">
+            <Button Text="상담시작" BackgroundColor="LightBlue" HorizontalOptions="FillAndExpand"/>
+            <Button Text="상담종료" BackgroundColor="LightPink" VerticalOptions="FillAndExpand" Padding="20,0,20,0"/>
+        </StackLayout>
+
+        <CollectionView VerticalOptions="FillAndExpand">
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <ContentView>
+                        <Frame HasShadow="False" Margin="0,0,0,10" BackgroundColor="LightGray" Padding="10">
+                            <StackLayout >
+                                <Label Text="{Binding .}"/>
+                                <Label Text="200103 19:03 - 200103 19:28"/>
+                            </StackLayout>
+                        </Frame>
+                    </ContentView>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                    <x:String>신모범 44M 뉴욕</x:String>
+                </x:Array>
+            </CollectionView.ItemsSource>
+
+        </CollectionView>
+
+    </StackLayout>
+</ContentPage>

@@ -13,6 +13,7 @@ using Ringer.Core.Data;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
+using Ringer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -24,6 +25,7 @@ namespace Ringer.ViewModels
         MessagingService _messagingService;
         IMessageRepository _messageRepository;
         private IRESTService _restService;
+
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
         GenderType genderType;
@@ -37,6 +39,8 @@ namespace Ringer.ViewModels
             _messagingService = DependencyService.Resolve<MessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
+
+            Messages = _messageRepository.Messages;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
@@ -61,8 +65,7 @@ namespace Ringer.ViewModels
                 userInfoToQuery = UserInfoType.None;
 
                 // Disconnect Connection
-                if (_messagingService.IsConnected)
-                    await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
+                await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
 
                 // Clear Messages
                 _messageRepository.Messages.Clear();
@@ -123,15 +126,33 @@ namespace Ringer.ViewModels
                     var numeric = TextToSend;
                     TextToSend = string.Empty;
 
+                    // process gender
+                    string gender = numeric.Substring(6, 1);
+                    if (int.TryParse(gender, out var parsedGenderInt))
+                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
+                    else
+                        Debug.WriteLine("Wrong Gender format");
+
+                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    // process date of birth
                     string year = numeric.Substring(0, 2);
                     string month = numeric.Substring(2, 2);
                     string day = numeric.Substring(4, 2);
-                    string gender = numeric.Substring(6, 1);
 
-                    year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
+                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
 
-                    birthDate = DateTime.Parse($"{year}-{month}-{day}");
-                    genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+                    if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
+                        Debug.WriteLine(parsedBirthdate);
+                    else
+                        Debug.WriteLine("Wrong DateTime format");
+
+
+                    //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
+                    //birthDate = DateTime.Parse($"{year}-{month}-{day}");
+                    //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    birthDate = parsedBirthdate;
 
                     _messageRepository.AddLocalMessage(new Message { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
 
@@ -142,15 +163,28 @@ namespace Ringer.ViewModels
                     _messageRepository.AddLocalMessage(new Message { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
 
                     // Log in and get Token
+                    // TODO: Add user's Location data to validate ticket
                     await _restService.LogInAsync(App.UserName, birthDate, genderType);
 
                     if (App.IsLoggedIn)
                     {
+
+                        // TODO: _messageRepository.LoadMessageAsync, _messagingService.ConnectAsync를 await WhenAll()로 처리한다. 
+                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
+
                         _messageRepository.Messages.Clear();
-                        await _messageRepository.LoadMessagesAsync(true);
+                        await _messageRepository.LoadMessagesAsync(true).ConfigureAwait(false);
+
+                        Messages = _messageRepository.Messages;
+
+                        Debug.WriteLine("--------------------------LoadMessage Finished------------------------------");
+                        Debug.WriteLine("--------------------------Connect------------------------------");
+
 
                         _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync(); // 2초 정도 시간이 걸린다...
+                        await _messagingService.ConnectAsync().ConfigureAwait(false); // 2초 정도 시간이 걸린다...
+
+                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
                     }
 
                     break;
@@ -492,7 +526,7 @@ namespace Ringer.ViewModels
         public Keyboard Keyboard { get; set; }
         public double NavBarHeight { get; set; }
         public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
-        public ObservableCollection<Message> Messages => _messageRepository.Messages;
+        public ObservableCollection<Message> Messages { get; set; }
         #endregion
 
         #region public Commands

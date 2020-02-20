@@ -61,7 +61,7 @@ namespace Ringer.ConsoleApp
                 new StringContent(loginInfo, Encoding.UTF8, "application/json"));
 
             responseString = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<ResponseJson>(responseString);
+            var responseObject = JsonSerializer.Deserialize<LoginResponse>(responseString);
 
             var token = responseObject.token;
 

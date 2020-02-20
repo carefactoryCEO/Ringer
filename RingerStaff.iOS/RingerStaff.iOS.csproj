@@ -28,6 +28,7 @@
     <MtouchDebug>true</MtouchDebug>
     <CodesignProvision>VS: WildCard Development</CodesignProvision>
     <CodesignKey>iPhone Developer: Shin Mobum (G6376FUPDP)</CodesignKey>
+    <MtouchExtraArgs>--interpreter</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -53,8 +54,8 @@
     <MtouchDebug>true</MtouchDebug>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <CodesignProvision>VS: WildCard Development</CodesignProvision>
-    <MtouchExtraArgs>--interpreter</MtouchExtraArgs>
     <MtouchLink>None</MtouchLink>
+    <MtouchExtraArgs>--interpreter</MtouchExtraArgs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -73,6 +74,9 @@
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Renderers\RingerListViewRenderer.cs" />
+    <Compile Include="Renderers\RingerEditorRenderer.cs" />
+    <Compile Include="Renderers\ChatInputBarViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
@@ -128,6 +132,36 @@
     <BundleResource Include="Resources\xamarin_logo%403x.png" />
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
     <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
+    <BundleResource Include="Resources\good_things_happen.aiff" />
+    <BundleResource Include="Resources\good_things_happen.mp3" />
+    <BundleResource Include="Resources\filling_your_inbox.m4r" />
+    <BundleResource Include="Resources\SendButton.png" />
+    <BundleResource Include="Resources\SendButton%402x.png" />
+    <BundleResource Include="Resources\SendButton%403x.png" />
+    <BundleResource Include="Resources\CameraButton.png" />
+    <BundleResource Include="Resources\CameraButton%402x.png" />
+    <BundleResource Include="Resources\CameraButton%403x.png" />
+    <BundleResource Include="Resources\FilmButton.png" />
+    <BundleResource Include="Resources\FilmButton%402x.png" />
+    <BundleResource Include="Resources\FilmButton%403x.png" />
+    <BundleResource Include="Resources\ImageButton.png" />
+    <BundleResource Include="Resources\ImageButton%402x.png" />
+    <BundleResource Include="Resources\ImageButton%403x.png" />
+    <BundleResource Include="Resources\InviteButton.png" />
+    <BundleResource Include="Resources\InviteButton%402x.png" />
+    <BundleResource Include="Resources\InviteButton%403x.png" />
+    <BundleResource Include="Resources\PhoneCallButton.png" />
+    <BundleResource Include="Resources\PhoneCallButton%402x.png" />
+    <BundleResource Include="Resources\PhoneCallButton%403x.png" />
+    <BundleResource Include="Resources\VideoButton.png" />
+    <BundleResource Include="Resources\VideoButton%402x.png" />
+    <BundleResource Include="Resources\VideoButton%403x.png" />
+    <BundleResource Include="Resources\VideoCallButton.png" />
+    <BundleResource Include="Resources\VideoCallButton%402x.png" />
+    <BundleResource Include="Resources\VideoCallButton%403x.png" />
+    <BundleResource Include="Resources\ActionsButton.png" />
+    <BundleResource Include="Resources\ActionsButton%402x.png" />
+    <BundleResource Include="Resources\ActionsButton%403x.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -138,14 +172,41 @@
     <Reference Include="System.Numerics.Vectors" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.3.0.991221" />
+    <PackageReference Include="Xamarin.Forms" Version="4.4.0.991265" />
     <PackageReference Include="Xamarin.Essentials" Version="1.3.1" />
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>4.1.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xam.Plugin.SimpleAudioPlayer">
+      <Version>1.3.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading.Forms">
+      <Version>2.4.11.982</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AppCenter">
+      <Version>2.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AppCenter.Crashes">
+      <Version>2.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AppCenter.Analytics">
+      <Version>2.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AppCenter.Push">
+      <Version>2.6.4</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client">
+      <Version>2.4.1</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RingerStaff\RingerStaff.csproj">
       <Project>{FC8524A5-2C79-4545-93B2-985E120FA69E}</Project>
       <Name>RingerStaff</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Renderers\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
