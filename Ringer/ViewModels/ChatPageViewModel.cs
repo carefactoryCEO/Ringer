@@ -22,9 +22,10 @@ namespace Ringer.ViewModels
     class ChatPageViewModel : INotifyPropertyChanged
     {
         #region private members
-        MessagingService _messagingService;
-        IMessageRepository _messageRepository;
-        private IRESTService _restService;
+        private readonly IMessagingService _messagingService;
+        private readonly IMessageRepository _messageRepository;
+        private readonly IRESTService _restService;
+        private readonly ILocalDbService _localDbService;
 
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
@@ -36,9 +37,10 @@ namespace Ringer.ViewModels
         {
             Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
 
-            _messagingService = DependencyService.Resolve<MessagingService>();
+            _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
+            _localDbService = DependencyService.Resolve<ILocalDbService>();
 
             Messages = _messageRepository.Messages;
 
@@ -61,7 +63,7 @@ namespace Ringer.ViewModels
                 App.Token = null;
                 App.CurrentRoomId = null;
                 App.UserName = null;
-                App.LastMessageId = 0;
+                App.LastServerMessageId = 0;
                 userInfoToQuery = UserInfoType.None;
 
                 // Disconnect Connection
@@ -182,7 +184,7 @@ namespace Ringer.ViewModels
 
 
                         _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync().ConfigureAwait(false); // 2초 정도 시간이 걸린다...
+                        await _messagingService.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
 
                         Debug.WriteLine("--------------------------Connect Finished------------------------------");
                     }
@@ -204,12 +206,33 @@ namespace Ringer.ViewModels
                 return;
             }
 
+            var message = new Message
+            {
+                RoomId = App.CurrentRoomId,
+                Body = TextToSend,
+                Sender = App.UserName,
+                SenderId = App.UserId,
+                CreatedAt = DateTime.UtcNow,
+                ReceivedAt = DateTime.UtcNow
+            };
+
             try
             {
-                // TODO: activicy indicator on
-                await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, TextToSend);
-                // activity indicator off
+                // local Db 저장
+                var localId = await _localDbService.SaveMessageAsync(message);
+                var localMessage = await _localDbService.GetMessageAsync(localId);
 
+                // view에 표시
+                _messageRepository.AddLocalMessage(localMessage);
+
+                // send to hub
+                var remoteId = await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, TextToSend);
+
+                localMessage.ServerId = remoteId;
+
+                await _localDbService.SaveMessageAsync(message: localMessage, update: true);
+
+                // reset text
                 TextToSend = string.Empty;
             }
             catch (Exception ex)
@@ -368,7 +391,7 @@ namespace Ringer.ViewModels
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
 
-            if (status == PermissionStatus.Granted)
+            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 return true;
             else
             {
@@ -379,9 +402,9 @@ namespace Ringer.ViewModels
 
                 status = await CrossPermissions.Current.RequestPermissionAsync<PhotosPermission>();
 
-                if (status == PermissionStatus.Granted)
+                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                     return true;
-                else if (status != PermissionStatus.Unknown)
+                else if (status != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
                 {
                     if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {
@@ -399,7 +422,7 @@ namespace Ringer.ViewModels
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
 
-            if (status == PermissionStatus.Granted)
+            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 return true;
             else
             {
@@ -408,7 +431,7 @@ namespace Ringer.ViewModels
 
                 status = await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
 
-                if (status == PermissionStatus.Granted)
+                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                     return true;
 
                 return false;
@@ -426,7 +449,7 @@ namespace Ringer.ViewModels
             // camera permission check
             var cameraPermissionStatus = await CrossPermissions.Current.CheckPermissionStatusAsync<CameraPermission>();
 
-            if (cameraPermissionStatus == PermissionStatus.Granted)
+            if (cameraPermissionStatus == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 return true;
             else
             {
@@ -437,9 +460,9 @@ namespace Ringer.ViewModels
 
                 cameraPermissionStatus = await CrossPermissions.Current.RequestPermissionAsync<CameraPermission>();
 
-                if (cameraPermissionStatus == PermissionStatus.Granted)
+                if (cameraPermissionStatus == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                     return true;
-                else if (cameraPermissionStatus != PermissionStatus.Unknown)
+                else if (cameraPermissionStatus != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
                 {
                     if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {
@@ -462,7 +485,7 @@ namespace Ringer.ViewModels
 
             Debug.WriteLine(status.ToString());
 
-            if (status == PermissionStatus.Granted)
+            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 return true;
             else
             {
@@ -477,9 +500,9 @@ namespace Ringer.ViewModels
 
                 Debug.WriteLine(status.ToString());
 
-                if (status == PermissionStatus.Granted)
+                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                     return true;
-                else if (status != PermissionStatus.Unknown)
+                else if (status != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
                 {
                     if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
                     {

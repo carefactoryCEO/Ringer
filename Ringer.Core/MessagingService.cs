@@ -18,9 +18,10 @@ namespace Ringer.Core
 
         Task ConnectAsync();
         Task DisconnectAsync();
+        Task DisconnectAsync(string room, string user);
         Task JoinRoomAsync(string room, string user);
         Task LeaveRoomAsync(string room, string user);
-        Task SendMessageToRoomAsync(string roomId, string sender, string body);
+        Task<int> SendMessageToRoomAsync(string roomId, string sender, string body);
 
         event EventHandler<ConnectionEventArgs> Connecting;
         event EventHandler<ConnectionEventArgs> Connected;
@@ -193,7 +194,7 @@ namespace Ringer.Core
         public async Task JoinRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);
+                await ConnectAsync().ConfigureAwait(false);//JoinRoomAsync
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
@@ -201,19 +202,19 @@ namespace Ringer.Core
         public async Task LeaveRoomAsync(string room, string user)
         {
             if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);
+                await ConnectAsync().ConfigureAwait(false);//LeaveRoomAsync
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
 
-        public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
+        public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);
+                await ConnectAsync().ConfigureAwait(false);//SendMessageToRoomAsync
 
-            var id = await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
+            return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
 
-            Debug.WriteLine($"A message with {id} delivered to server");
+            //Debug.WriteLine($"A message with {id} delivered to server");
         }
         #endregion
 

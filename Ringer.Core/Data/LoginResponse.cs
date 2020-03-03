@@ -4,5 +4,6 @@
     {
         public string token { get; set; }
         public string roomId { get; set; }
+        public int userId { get; set; }
     }
 }

@@ -5,8 +5,11 @@ namespace Ringer.Models
 {
     public class Message
     {
-        [PrimaryKey]
+        [PrimaryKey, AutoIncrement]
         public int Id { get; set; }
+
+        [Indexed]
+        public int ServerId { get; set; }
 
         [Indexed]
         public string RoomId { get; set; }

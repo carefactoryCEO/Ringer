@@ -16,6 +16,8 @@ namespace Ringer.Models
 
         Task AddMessageAsync(Message message);
 
+        Task SaveToLocalDbAsync(Message message);
+
         void AddLocalMessage(Message message);
 
         Task LoadMessagesAsync(bool reset = false);
@@ -25,15 +27,15 @@ namespace Ringer.Models
 
     public class MessageRepository : IMessageRepository
     {
-        private LocalDbService _localDbService;
-        private IRESTService _restService;
+        private readonly ILocalDbService _localDbService;
+        private readonly IRESTService _restService;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MessageRepository()
         {
             Messages = new ObservableCollection<Message>();
-            _localDbService = DependencyService.Resolve<LocalDbService>();
+            _localDbService = DependencyService.Resolve<ILocalDbService>();
             _restService = DependencyService.Resolve<IRESTService>();
         }
 
@@ -48,20 +50,16 @@ namespace Ringer.Models
 
         public async Task SaveToLocalDbAsync(Message message)
         {
-            if (message.Id <= App.LastMessageId)
+            if (message.ServerId <= App.LastServerMessageId)
                 return;
 
             var sw = new Stopwatch();
             sw.Start();
 
-            // 로컬 디비 저장
-            message.RoomId = App.CurrentRoomId;
-            message.ReceivedAt = DateTime.UtcNow;
-
             var result = await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
 
             if (result > 0)
-                App.LastMessageId = message.Id;
+                App.LastServerMessageId = message.ServerId;
 
             sw.Stop();
             Debug.WriteLine($"Save {message.Id} local db(ms): {sw.Elapsed.TotalMilliseconds}");
@@ -71,7 +69,7 @@ namespace Ringer.Models
 
         public Task AddMessageAsync(Message message)
         {
-            if (message.Id <= App.LastMessageId)
+            if (message.ServerId <= App.LastServerMessageId)
                 return Task.CompletedTask;
 
             // 일단 표시
@@ -97,23 +95,25 @@ namespace Ringer.Models
             stopwatch.Stop();
             Debug.WriteLine($"Pull pending Messages from server time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
 
-            var dblastid = await _localDbService.GetLastMessageIndexAsync(App.CurrentRoomId).ConfigureAwait(false);
+            var locallySavedLastServerMessageId = await _localDbService.GetLocallySavedLastServerMessageIdAsync(App.CurrentRoomId).ConfigureAwait(false);
 
             _totalMilliSeconds = 0;
 
             stopwatch.Restart();
             foreach (var pendingMessage in pendingMessages)
             {
-                if (pendingMessage.Id <= dblastid)
+                if (pendingMessage.Id <= locallySavedLastServerMessageId)
                     continue;
 
                 await SaveToLocalDbAsync(new Message // App.LastMessageId보다 큰 것만 저 
                 {
-                    Id = pendingMessage.Id,
+                    ServerId = pendingMessage.Id,
                     Body = pendingMessage.SenderName == App.UserName ? pendingMessage.Body : pendingMessage.SenderName + ": " + pendingMessage.Body,
                     Sender = pendingMessage.SenderName,
+                    RoomId = App.CurrentRoomId,
                     SenderId = pendingMessage.SenderId,
-                    CreatedAt = pendingMessage.CreatedAt
+                    CreatedAt = pendingMessage.CreatedAt,
+                    ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
             }
             stopwatch.Stop();

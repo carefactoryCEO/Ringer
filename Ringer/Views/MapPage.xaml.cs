@@ -27,15 +27,13 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
-            await Task.WhenAll
-            (
-                PushAlert.TranslateTo(0, 0, 200, Easing.SinIn),
-                GetGeolocationAsync()
-            );
+            PushAlert.Text = "새 메시지가 도착했습니다.";
 
-            await Task.Delay(5000);
-
+            await PushAlert.TranslateTo(0, 0, 200, Easing.SinIn);
+            await Task.Delay(1000);
             await PushAlert.TranslateTo(0, -80, 200, Easing.SinInOut);
+
+            await GetGeolocationAsync();
         }
         #endregion
 

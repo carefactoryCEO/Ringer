@@ -19,10 +19,8 @@ namespace Ringer
     public partial class App : Application
     {
         #region private members
-        private LocalDbService _localDbService;
         private IMessageRepository _messageRepository;
-        private IRESTService _restService;
-        private MessagingService _messagingService;
+        private IMessagingService _messagingService;
         #endregion
 
         #region public static propertie
@@ -33,10 +31,10 @@ namespace Ringer
             get => Preferences.Get(nameof(DeviceIsOn), false);
             set => Preferences.Set(nameof(DeviceIsOn), value);
         }
-        public static int LastMessageId
+        public static int LastServerMessageId
         {
-            get => Preferences.Get(nameof(LastMessageId), 0);
-            set => Preferences.Set(nameof(LastMessageId), value);
+            get => Preferences.Get(nameof(LastServerMessageId), 0);
+            set => Preferences.Set(nameof(LastServerMessageId), value);
         }
         public static string DeviceId // Appcenter에서 받음
         {
@@ -53,6 +51,11 @@ namespace Ringer
             get => Preferences.Get(nameof(UserName), null);
             set => Preferences.Set(nameof(UserName), value);
         }
+        public static int UserId
+        {
+            get => Preferences.Get(nameof(UserId), -1);
+            set => Preferences.Set(nameof(UserId), value);
+        }
         public static string CurrentRoomId
         {
             get => Preferences.Get(nameof(CurrentRoomId), null);
@@ -68,25 +71,26 @@ namespace Ringer
             MainPage = new AppShell();
 
             #region Register messagingService
-            DependencyService.Register<MessagingService>();
-            DependencyService.Register<LocalDbService>();
+            DependencyService.Register<IMessagingService, MessagingService>();
+            DependencyService.Register<ILocalDbService, LocalDbService>();
             DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
 
-            _localDbService = DependencyService.Resolve<LocalDbService>();
-            _restService = DependencyService.Resolve<IRESTService>();
-            _messagingService = DependencyService.Resolve<MessagingService>();
+            _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
 
             _messagingService.Connecting += Trace_ConnectionStatus;
             _messagingService.Connected += Trace_ConnectionStatus;
-            _messagingService.ConnectionFailed += Trace_ConnectionStatus;
+            //_messagingService.ConnectionFailed += Trace_ConnectionStatus;
+            _messagingService.ConnectionFailed += ConnectionFailed; ;
 
             _messagingService.Disconnecting += Trace_ConnectionStatus;
-            _messagingService.Disconnected += MessagingService_Disconnected;
+            //_messagingService.Disconnected += Trace_ConnectionStatus;
+            _messagingService.Disconnected += ConnectionFailed;
             _messagingService.DisconnectionFailed += Trace_ConnectionStatus;
 
-            _messagingService.Closed += Trace_ConnectionStatus;
+            //_messagingService.Closed += Trace_ConnectionStatus;
+            _messagingService.Closed += ConnectionFailed;
             _messagingService.Reconnecting += Trace_ConnectionStatus;
             _messagingService.Reconnected += Trace_ConnectionStatus;
 
@@ -96,43 +100,20 @@ namespace Ringer
 
             #endregion
 
-            PageDisappearing += App_PageDisappearing;
-            PageAppearing += App_PageAppearing;
+            //PageDisappearing += App_PageDisappearing;
+            //PageAppearing += App_PageAppearing;
         }
 
-        #endregion
-
-        #region private methods
-        private void Trace_ConnectionStatus(object sender, ConnectionEventArgs e)
+        private void ConnectionFailed(object sender, ConnectionEventArgs e)
         {
-            //_messageRepository.AddLocalMessage(new Message { Body = $"{DateTime.UtcNow}\n{e.Message}", Sender = Constants.System });
-
-            Trace(e.Message);
-        }
-
-        private async void MessagingService_Disconnected(object sender, ConnectionEventArgs e)
-        {
-            Trace_ConnectionStatus(sender, e);
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
-
-        }
-        private async void App_PageAppearing(object sender, Page page)
-        {
-            if (page is ChatPage)
-                await _restService.ReportDeviceStatusDebouncedAsync(true);
-            //_restService.ReportDeviceStatus(true);
-        }
-        private async void App_PageDisappearing(object sender, Page page)
-        {
-            if (page is ChatPage)
-                await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
-
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
+            {
+                Shell.Current.DisplayAlert("이럴수가", e.Message, "닫기");
+            });
         }
         #endregion
 
-        #region messaging handlers
+        #region public static methods
         public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
         {
             message = $"\n[{DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
@@ -141,6 +122,13 @@ namespace Ringer
 
             if (analyticsAlso)
                 Analytics.TrackEvent(message);
+        }
+        #endregion
+
+        #region messaging handlers
+        private void Trace_ConnectionStatus(object sender, ConnectionEventArgs e)
+        {
+            Trace(e.Message);
         }
         private void SomeoneLeft(object sender, SignalREventArgs e)
         {
@@ -162,11 +150,13 @@ namespace Ringer
 
             await _messageRepository.AddMessageAsync(new Message
             {
-                Id = e.MessageId,
+                ServerId = e.MessageId,
+                RoomId = CurrentRoomId,
+                Body = $"{name}{e.Body}",
+                Sender = e.SenderName,
                 SenderId = e.SenderId,
                 CreatedAt = e.CreatedAt,
-                Body = $"{name}{e.Body}",
-                Sender = e.SenderName
+                ReceivedAt = DateTime.UtcNow
             });
 
             // 
@@ -243,7 +233,7 @@ namespace Ringer
             }
             #endregion
 
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //await _restService.ReportDeviceStatusDebouncedAsync(false);
             //_restService.ReportDeviceStatus(false);
 
             #region Connect and load messages
@@ -252,7 +242,7 @@ namespace Ringer
                 await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 _messagingService.Init(Constants.HubUrl, Token);
-                await _messagingService.ConnectAsync().ConfigureAwait(false);
+                await _messagingService.ConnectAsync().ConfigureAwait(false);//OnStart
             }
             #endregion
             base.OnStart();
@@ -260,7 +250,7 @@ namespace Ringer
         protected override async void OnSleep()
         {
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnSleep");
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
+            //await _restService.ReportDeviceStatusDebouncedAsync(false);
             //await _restService.ReportDeviceStatusDebouncedAsync(false, 1000);
             //_restService.ReportDeviceStatus(false);
             base.OnSleep();
@@ -272,14 +262,14 @@ namespace Ringer
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnResume");
 
             //_restService.ReportDeviceStatus(IsChatPage);
-            await _restService.ReportDeviceStatusDebouncedAsync(IsChatPage);
+            //await _restService.ReportDeviceStatusDebouncedAsync(IsChatPage);
 
             if (IsLoggedIn)
             {
                 await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 if (!_messagingService.IsReconnecting)
-                    await _messagingService.ConnectAsync().ConfigureAwait(false);
+                    await _messagingService.ConnectAsync().ConfigureAwait(false);//OnResume
 
             }
             //}

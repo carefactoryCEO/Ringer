@@ -32,6 +32,60 @@ namespace Ringer.HubServer.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet("user/{id}")]
+        public async Task<ActionResult<User>> GetUserByIdAsync(int id){
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id).ConfigureAwait(false);
+
+            if (user == null)
+                return NotFound();
+
+            return user;
+        }
+
+        [HttpGet("messagelist")]
+        public IEnumerable<Message> MessageList()
+        {
+            return _dbContext.Messages.ToList();
+        }
+
+        [HttpGet("messages")]
+        public async Task<IActionResult> Messages()
+        {
+            var messages = await _dbContext.Messages.ToListAsync();
+            return Ok(messages);
+        }
+
+        [HttpGet("json")]
+        public async Task<IActionResult> Json()
+        {
+            var messages = await _dbContext.Messages.ToListAsync();
+            var response = JsonSerializer.Serialize<List<Message>>(messages);
+            return Ok(messages);
+        }
+
+        [HttpGet("people")]
+        public List<Person> People() 
+        {
+            return new List<Person>
+            {
+                new Person(44, "Mobum"),
+                new Person(46, "Mose"),
+                new Person(39, "Eunmi"),
+                new Person(8, "Loc Shin"),
+            };
+        }
+        public class Person
+        {
+            public Person(int age, string name)
+            {
+                Age = age;
+                Name = name;
+            }
+            public int Age { get; set; }
+            public string Name { get; set; }
+
+        }
+
         [HttpPost("report")]
         public async Task<ActionResult> ReportStatusAsync(DeviceReport report)
         {
@@ -43,6 +97,7 @@ namespace Ringer.HubServer.Controllers
             if (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android)
             {
                 device.IsOn = report.Status;
+
                 await _dbContext.SaveChangesAsync();
 
                 _logger.LogWarning($"Device [{device.Id}]({device.DeviceType}) is On:{device.IsOn}");
@@ -163,9 +218,10 @@ namespace Ringer.HubServer.Controllers
             await _dbContext.SaveChangesAsync();
 
             var token = user.JwtToken(loginInfo, secretKey);
-            var response = new { Token = token, RoomId = roomId };
+            var response = new LoginResponse { token = token, roomId = roomId, userId = user.Id };
 
             return Ok(response);
         }
+
     }
 }
