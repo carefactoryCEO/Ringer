@@ -15,7 +15,7 @@ namespace RingerStaff
 {
     public partial class App : Application
     {
-        public static string BaseUrl = DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
+        public static string BaseUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net" : DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
         public static string Huburl = BaseUrl + "/hubs/chat";
         public static string LoginUrl = BaseUrl + "/auth/staff-login";
         public static string Token

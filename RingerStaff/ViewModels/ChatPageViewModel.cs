@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ringer.Core.EventArgs;
 using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Types;
@@ -27,11 +28,87 @@ namespace RingerStaff.ViewModels
 
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
             LoadMessagesCommand = new Command(async () => await LoadMessagesAsync());
-            SendCommand = new Command(() => ExcuteSendCommand());
+            SendCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await ExcuteGoBackCommand());
             OpenSessionsPageCommand = new Command(async () => await ExcuteOpenSessionsPageCommand());
             OpenProfilePageCommand = new Command(async () => await ExcuteOpenProfilePageCommand());
+
+            RealTimeService.MessageReceived += RealTimeService_MessageReceived;
         }
+
+
+
+        private void RealTimeService_MessageReceived(object sender, MessageReceivedEventArgs e)
+        {
+            MessageModel message = new MessageModel
+            {
+                Body = e.Body,
+                Sender = e.SenderName,
+                CreatedAt = e.CreatedAt.ToLocalTime(),
+                MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing
+            };
+
+            // text, image, video (media type)
+            message.MessageTypes |= MessageTypes.Text;
+
+            MessageModel lastMessage = Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+
+            if (lastMessage != null)
+            {
+                if (lastMessage.Sender == message.Sender && InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+                {
+                    lastMessage.MessageTypes ^= MessageTypes.Trailing;
+                    message.MessageTypes ^= MessageTypes.Leading;
+                }
+            }
+
+            Messages.Add(message);
+            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+        }
+
+        private bool InSameMinute(DateTime current, DateTime last)
+        {
+            return current - last < TimeSpan.FromMinutes(1) && current.Minute == last.Minute;
+        }
+
+        private async Task SendMessageAsync()
+        {
+            if (TextToSend == string.Empty)
+                return;
+
+            var message = new MessageModel
+            {
+                Body = TextToSend,
+                Sender = "",
+                UnreadCount = 2,
+                MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing,
+                CreatedAt = DateTime.UtcNow.ToLocalTime()
+            };
+
+            // text, image, video (media type)
+            message.MessageTypes |= MessageTypes.Text;
+
+            MessageModel lastMessage = Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
+
+            if (lastMessage != null)
+            {
+                if (lastMessage.Sender == message.Sender && InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+                {
+                    lastMessage.MessageTypes ^= MessageTypes.Trailing;
+                    message.MessageTypes ^= MessageTypes.Leading;
+                }
+            }
+
+
+
+
+            Messages.Add(message);
+            TextToSend = string.Empty;
+            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+
+            await RealTimeService.SendMessageAsync(message, App.CurrentRoomId);
+        }
+
 
         private Task ExcuteOpenProfilePageCommand()
         {
@@ -43,18 +120,16 @@ namespace RingerStaff.ViewModels
             return Shell.Current.Navigation.PushModalAsync(new SessionsPage());
         }
 
+        internal async Task OnAppearingAsync()
+        {
+            await RealTimeService.EnterRoomAsync(App.CurrentRoomId, "staff");
+        }
+
         private Task ExcuteGoBackCommand()
         {
             return Shell.Current.Navigation.PopAsync();
         }
 
-        private void ExcuteSendCommand()
-        {
-            var message = new MessageModel { Body = TextToSend, Sender = "", UnreadCount = 2, MessageTypes = MessageTypes.Text | MessageTypes.Outgoing | MessageTypes.Trailing };
-            Messages.Add(message);
-            TextToSend = string.Empty;
-            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
-        }
 
         public async Task LoadMessagesAsync()
         {
@@ -86,5 +161,19 @@ namespace RingerStaff.ViewModels
         public ICommand OpenSessionsPageCommand { get; set; }
         public ICommand OpenProfilePageCommand { get; set; }
 
+    }
+
+    public static class FlagExtension
+    {
+        public static MessageTypes Add(this MessageTypes flag, MessageTypes toAdd)
+        {
+            return flag | toAdd;
+        }
+
+        public static MessageTypes Remove(this MessageTypes flag, MessageTypes toAdd)
+        {
+            var newflag = flag & ~toAdd;
+            return newflag;
+        }
     }
 }

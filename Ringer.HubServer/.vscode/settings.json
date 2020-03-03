@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/e2d80d58-0671-412c-8465-2f45292c7fe6/resourceGroups/ringer/providers/Microsoft.Web/sites/RingerHub",
+    "appService.deploySubpath": "publish"
+}

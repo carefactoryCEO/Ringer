@@ -20,9 +20,9 @@ namespace Ringer.HubServer.Hubs
         private readonly RingerDbContext _dbContext;
         private readonly ILogger<ChatHub> _logger;
 
-        int _userId => Convert.ToInt32(Context.UserIdentifier);
-        string _deviceId => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
-        string _deviceType => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceType")?.Value;
+        private int UserId => Convert.ToInt32(Context.UserIdentifier);
+        private string DeviceId => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
+        private string DeviceType => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceType")?.Value;
 
         public ChatHub(RingerDbContext dbContext, ILogger<ChatHub> logger)
         {
@@ -52,14 +52,14 @@ namespace Ringer.HubServer.Hubs
         }
         public async Task<int> SendMessageToRoomAsyc(string body, string roomId)
         {
-            User user = await _dbContext.Users.FindAsync(_userId);
+            User user = await _dbContext.Users.FindAsync(UserId);
 
             Message message = new Message
             {
                 Body = body,
                 CreatedAt = DateTime.UtcNow,
                 RoomId = roomId,
-                SenderId = _userId
+                SenderId = UserId
             };
 
             var sw = new Stopwatch();
@@ -73,9 +73,12 @@ namespace Ringer.HubServer.Hubs
 
             sw.Restart();
 
+            // sender를 제외한 접속 기기들은 기존대로 메시지를 보냄.
+            //await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, body, message.Id, UserId, message.CreatedAt);
+
             // 접속중인 디바이스는 일단 다 보낸다.
             //await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, _userId, message.CreatedAt);
-            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
+            await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, body, message.Id, UserId, message.CreatedAt);
 
             _logger.LogWarning($"Send to Connected Devices: {sw.ElapsedMilliseconds}");
 
@@ -97,16 +100,16 @@ namespace Ringer.HubServer.Hubs
 
             foreach (Enrollment enroll in room.Enrollments)
             {
-                if (enroll.UserId != _userId)
+                if (enroll.UserId != UserId)
                     foreach (Device device in enroll.User.Devices)
                     {
                         if (!device.IsOn &&
-                            (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android))
-                            pushDic.Add(device.Id, device.DeviceType == DeviceType.iOS ? "iOS" : "Android");
+                            (device.DeviceType == Core.Data.DeviceType.iOS || device.DeviceType == Core.Data.DeviceType.Android))
+                            pushDic.Add(device.Id, device.DeviceType == Core.Data.DeviceType.iOS ? "iOS" : "Android");
                     }
             }
 
-            if (pushDic.Count > 0)
+            if (pushDic.Count > 0 && false)
             {
                 var customDataDic = new Dictionary<string, string>();
                 customDataDic.Add("sound", "default");
@@ -132,20 +135,28 @@ namespace Ringer.HubServer.Hubs
         {
             try
             {
+                var currentDevice = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == DeviceId);
+
+                if (currentDevice != null)
+                {
+                    currentDevice.IsOn = true;
+                    currentDevice.ConnectionId = Context.ConnectionId;
+
+                    await _dbContext.SaveChangesAsync();
+                }
+
                 // 접속한 Device의 Owner(User)가 속한 모든 방에 Device를 추가
                 User user = await _dbContext.Users
                     .Include(user => user.Enrollments)
                         .ThenInclude(enrollment => enrollment.Room)
-                    .FirstOrDefaultAsync(u => u.Id == _userId);
+                    .FirstOrDefaultAsync(u => u.Id == UserId);
 
-                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) Connected.");
-
-
+                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Connected.");
 
                 foreach (Enrollment enrollment in user.Enrollments)
                 {
                     await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.Room.Id);
-                    _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
+                    _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
                 }
             }
             catch (Exception ex)
@@ -163,16 +174,17 @@ namespace Ringer.HubServer.Hubs
         {
             try
             {
-                if (_deviceId != null)
+                if (DeviceId != null)
                 {
-                    var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == _deviceId);
+                    var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == DeviceId);
 
                     if (device != null)
                     {
+                        device.ConnectionId = null;
                         device.IsOn = false;
                         await _dbContext.SaveChangesAsync();
 
-                        _logger.LogWarning($"[{_deviceId}]({_deviceType})'s IsOn: {device.IsOn}");
+                        _logger.LogWarning($"[{DeviceId}]({DeviceType})'s IsOn: {device.IsOn}");
                     }
                     else
                         throw new ArgumentNullException("device is null.");
@@ -182,15 +194,15 @@ namespace Ringer.HubServer.Hubs
                 User user = await _dbContext.Users
                     .Include(u => u.Enrollments)
                         .ThenInclude(enrollment => enrollment.Room)
-                    .FirstOrDefaultAsync(u => u.Id == _userId);
+                    .FirstOrDefaultAsync(u => u.Id == UserId);
 
-                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{_deviceId}]({_deviceType}) Disconnected.");
+                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Disconnected.");
 
                 foreach (Enrollment enrollment in user.Enrollments)
                 {
                     await Groups.RemoveFromGroupAsync(Context.ConnectionId, enrollment.Room.Id);
 
-                    _logger.LogWarning($"user {user.Name}[{Context.ConnectionId}] with device [{_deviceId}]({_deviceType}) removed from romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
+                    _logger.LogWarning($"user {user.Name}[{Context.ConnectionId}] with device [{DeviceId}]({DeviceType}) removed from romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
                 }
             }
             catch (Exception ex)

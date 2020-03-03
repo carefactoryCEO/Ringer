@@ -45,7 +45,8 @@
                                  HasUnevenRows="true"
                                  x:Name="MessageFeed">
             <controls:RingerListView.Header>
-                <BoxView HeightRequest="{Binding NavBarHeight}" BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"/>
+                <BoxView HeightRequest="{Binding NavBarHeight}"
+                         BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"/>
             </controls:RingerListView.Header>
         </controls:RingerListView>
 

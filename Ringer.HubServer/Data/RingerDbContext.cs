@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
+using Ringer.HubServer.Models;
 
 namespace Ringer.HubServer.Data
 {
@@ -17,6 +18,7 @@ namespace Ringer.HubServer.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Room> Rooms { get; set; }
+        public DbSet<Consulate> Consulates {get; set;}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +61,11 @@ namespace Ringer.HubServer.Data
             modelBuilder
                 .Entity<Room>()
                 .ToTable("Room");
+
+            // Consulate
+            modelBuilder
+                .Entity<Consulate>()
+                .ToTable("Consulate");
 
         }
     }

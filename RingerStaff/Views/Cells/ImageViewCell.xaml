@@ -83,6 +83,8 @@
                 <ff:CachedImage Source="{Binding Body}"
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
+                                FadeAnimationEnabled="True"
+                                DownsampleWidth="300"
                                 CacheDuration="50"
                                 RetryCount="3"
                                 RetryDelay="250"/>

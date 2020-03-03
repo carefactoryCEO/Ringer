@@ -12,8 +12,8 @@ namespace Ringer.Services
         Task<Message> GetMessageAsync(int id);
         Task<int> SaveMessageAsync(Message message, bool update = false);
         Task ResetMessagesAsync();
-        Task<Message> GetLastMessage(string currentRoomId);
-        Task<int> GetLastMessageIndexAsync(string currentRoomId);
+        Task<Message> GetLocallySavedLastServerMessageAsync(string currentRoomId);
+        Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId);
     }
 
     public class LocalDbService : ILocalDbService
@@ -39,27 +39,29 @@ namespace Ringer.Services
                 .Where(m => m.Id == id)
                 .FirstOrDefaultAsync();
         }
-        public Task<int> SaveMessageAsync(Message message, bool update = false)
+        public async Task<int> SaveMessageAsync(Message message, bool update = false)
         {
             if (update)
-                return _database.UpdateAsync(message);
+                return await _database.UpdateAsync(message);
 
-            return _database.InsertAsync(message);
+            _ = await _database.InsertAsync(message);
+
+            return message.Id;
         }
         public Task ResetMessagesAsync()
         {
             return _database.DeleteAllAsync<Message>();
         }
-        public async Task<int> GetLastMessageIndexAsync(string currentRoomId)
+        public async Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId)
         {
-            var message = await GetLastMessage(currentRoomId);
-            return message?.Id ?? 0;
+            var message = await GetLocallySavedLastServerMessageAsync(currentRoomId);
+            return message?.ServerId ?? 0;
         }
-        public Task<Message> GetLastMessage(string currentRoomId)
+        public Task<Message> GetLocallySavedLastServerMessageAsync(string currentRoomId)
         {
             return _database.Table<Message>()
                 .Where(m => m.RoomId == currentRoomId)
-                .OrderByDescending(m => m.Id)
+                .OrderByDescending(m => m.ServerId)
                 .FirstOrDefaultAsync();
         }
     }

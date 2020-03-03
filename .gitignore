@@ -350,4 +350,5 @@ Ringer.PartnerWeb/appsettings.json
 *.db
 Ringer.HubServer/appsettings.json
 Ringer.HubServer/appsettings.json
+Ringer.HubServer/wwwroot/
 Ringer.Console/ringer-log2.zip

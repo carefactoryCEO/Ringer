@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ringer.Core.Models;
 using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Views;
@@ -51,6 +52,12 @@ namespace RingerStaff.ViewModels
 
         }
 
+        internal void SetCurrentRoomId(object roomModel)
+        {
+            if (roomModel is RoomModel)
+                App.CurrentRoomId = ((RoomModel)roomModel).Id;
+        }
+
         public async Task<bool> LoadRoomsAsync()
         {
             IsBusy = true;
@@ -63,6 +70,8 @@ namespace RingerStaff.ViewModels
                     return false;
 
                 Rooms.Clear();
+
+                await Task.Delay(1000);
 
                 foreach (var roomModel in roomModels)
                     Rooms.Add(roomModel);

@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core.EventArgs;
+using RingerStaff.Models;
 
 namespace RingerStaff.Services
 {
@@ -48,6 +49,25 @@ namespace RingerStaff.Services
 
         public static string Url;
         public static string Token;
+
+        public static async Task SendMessageAsync(MessageModel message, string roomId)
+        {
+            if (!IsConnected)
+                await ConnectAsync();
+
+            var id = await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", message.Body, roomId);
+
+            Debug.WriteLine(id);
+
+        }
+
+        public static async Task EnterRoomAsync(string roomId, string name)
+        {
+            if (!IsConnected)
+                await ConnectAsync();
+
+            await _hubConnection.InvokeAsync("AddToGroup", roomId, name);
+        }
 
         public static async Task ConnectAsync(string url, string token)
         {
@@ -96,7 +116,7 @@ namespace RingerStaff.Services
 
         private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
         {
-            Debug.WriteLine($"({senderName}): ({messageId}){body}");
+            MessageReceived?.Invoke(_hubConnection, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt));
         }
 
         private static Task OnReconnected(Exception arg)

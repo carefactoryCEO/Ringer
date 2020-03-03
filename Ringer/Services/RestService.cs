@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
 using Ringer.Core.Data;
 using Ringer.Helpers;
@@ -15,94 +15,56 @@ namespace Ringer.Services
 {
     public interface IRESTService
     {
-        void ReportDeviceStatus(bool isOn);
-        Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds = 50);
         Task<List<PendingMessage>> PullPendingMessagesAsync();
         Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
     }
 
     public class RESTService : IRESTService
     {
-        private HttpClient _client;
-        private CancellationTokenSource _cts;
+        private readonly HttpClient _client;
 
         public RESTService()
         {
             _client = new HttpClient();
-            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", App.Token);
-            _cts = new CancellationTokenSource();
-        }
-
-        public async Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds)
-        {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            var thisToken = _cts.Token;
-
-            await Task.Delay(debounceMilliSeconds);
-
-            if (!thisToken.IsCancellationRequested)
-            {
-                if (App.DeviceId == null || App.DeviceIsOn == isOn)
-                    return;
-
-                App.DeviceIsOn = isOn;
-
-                var report = JsonSerializer.Serialize(new DeviceReport
-                {
-                    DeviceId = App.DeviceId,
-                    Status = isOn
-                });
-
-                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json")).ConfigureAwait(false);
-
-                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
-            }
-        }
-
-        public void ReportDeviceStatus(bool isOn)
-        {
-            if (App.DeviceId == null || App.DeviceIsOn == isOn)
-                return;
-
-            App.DeviceIsOn = isOn;
-
-            var report = JsonSerializer.Serialize(new DeviceReport
-            {
-                DeviceId = App.DeviceId,
-                Status = isOn
-            });
-
-            Task.Run(async () =>
-            {
-                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json")).ConfigureAwait(false);
-
-                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
-
-            }).ConfigureAwait(false);
         }
 
         public async Task<List<PendingMessage>> PullPendingMessagesAsync()
         {
-            // context.Request.Headers.Add("Authorization", "Bearer " + JWToken);
             if (App.IsLoggedIn)
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
+            else
+                return new List<PendingMessage>();
 
-
-            var response = await _client.GetAsync($"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastMessageId}").ConfigureAwait(false);
-
-            // if token expired -> response.StatusCode
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            try
             {
-                Debug.WriteLine(response.Headers.WwwAuthenticate.ToString());
+                string requestUri = $"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastServerMessageId}";
+                var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException();
+
+                // if token expired -> response.StatusCode
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                {
+                    Debug.WriteLine(response.Headers.WwwAuthenticate.ToString());
+
+                    return new List<PendingMessage>();
+                }
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
+
+                return pendingMessages;
+            }
+            catch (Exception ex)
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    Shell.Current.DisplayAlert("이럴수가", ex.Message, "닫기");
+                });
 
                 return new List<PendingMessage>();
             }
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
-
-            return pendingMessages;
         }
 
         public async Task LogInAsync(string name, DateTime birthDate, GenderType genderType)
@@ -132,9 +94,11 @@ namespace Ringer.Services
             // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
             App.Token = responseObject.token;
             App.CurrentRoomId = responseObject.roomId;
+            App.UserId = responseObject.userId;
 
             Debug.WriteLine(App.Token);
             Debug.WriteLine(App.CurrentRoomId);
+            Debug.WriteLine(App.UserId);
         }
     }
 }

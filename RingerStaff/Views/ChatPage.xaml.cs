@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using RingerStaff.Models;
+using RingerStaff.Services;
 using RingerStaff.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -20,7 +24,8 @@ namespace RingerStaff.Views
 
             MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
             {
-                MessageFeed.ScrollTo(message, ScrollToPosition.End, false);
+                MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
+                //MessageFeed.ScrollToLast();
             });
         }
 
@@ -44,6 +49,9 @@ namespace RingerStaff.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            await vm.OnAppearingAsync();
+
 
 
             // App.ChatPageIsOn = true;
