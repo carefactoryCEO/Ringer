@@ -15,7 +15,7 @@ namespace Ringer.Helpers
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
         public static readonly string ReportUrl = BaseUrl + "/auth/report";
         public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");
-        public static readonly string System = "system";
+        public static readonly string System = "링거";
 
         // Camera action
         public static readonly string Title = "작업을 선택하세요.";

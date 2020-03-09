@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using RingerStaff.Models;
-using RingerStaff.Services;
 using RingerStaff.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -13,7 +9,7 @@ namespace RingerStaff.Views
 {
     public partial class ChatPage : ContentPage
     {
-        private ChatPageViewModel vm;
+        private readonly ChatPageViewModel vm;
         private Thickness _insets;
 
         public ChatPage()
@@ -25,7 +21,14 @@ namespace RingerStaff.Views
             MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
             {
                 MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
-                //MessageFeed.ScrollToLast();
+            });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("reconnecting", message, "닫기");
+                });
             });
         }
 
@@ -50,26 +53,14 @@ namespace RingerStaff.Views
         {
             base.OnAppearing();
 
-            await vm.OnAppearingAsync();
-
-
-
-            // App.ChatPageIsOn = true;
-            // App.CurrentRoomId = roomId;
-
-            // subscribe MessageRepository's new message event
-
-            await vm.LoadMessagesAsync();
+            await vm.OnAppearingAsync().ConfigureAwait(false);
         }
 
-        protected override void OnDisappearing()
+        protected override async void OnDisappearing()
         {
-            // App.ChatPageIsOn = false;
-            // App.CurrentRoomId = null;
-
-            // subscribe MessageRepository's new message event
-
             base.OnDisappearing();
+
+            await vm.OnDisappearingAsync().ConfigureAwait(false);
         }
     }
 }

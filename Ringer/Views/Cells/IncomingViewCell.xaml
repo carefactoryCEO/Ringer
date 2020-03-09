@@ -1,25 +1,90 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ViewCell xmlns="http://xamarin.com/schemas/2014/forms" 
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             x:Class="Ringer.Views.Cells.IncomingViewCell">
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          x:Class="Ringer.Views.Cells.IncomingViewCell">
     <ContentView>
-        <Frame BackgroundColor="#FFFFFF"
-              BorderColor="#FFFFFF"
-              HasShadow="false"
-              Padding="{OnPlatform '10,8', Android='10,6'}"
-              Margin="80,6,7.5,0"
-              CornerRadius="12"
-              HorizontalOptions="Start"
-              VerticalOptions="Start"
-              Rotation="180"
-              FlowDirection="LeftToRight">
-            <Label Text="{Binding Body}"
-                  d:Text="Hello world and this is the new world How do you feel? Im very excied!"
-                  TextColor="#291900"
-                  FontSize="{OnPlatform iOS=15, Android=14}"/>
-        </Frame>
+
+        <Grid ColumnSpacing="0" RowSpacing="0"
+              Margin="{Binding MessageTypes,
+                Converter={StaticResource MessageTypesToThicknessConverter},
+                ConverterParameter='IncommingMargin'}">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="45"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="70"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 1st Column : Avatar -->
+            <Frame BackgroundColor="SkyBlue"
+                   d:IsVisible="true"
+                   HasShadow="False"
+                   CornerRadius="13"
+                   Margin="5"
+                   Padding="10"
+                   VerticalOptions="Start"
+                   IsVisible="{Binding
+                        MessageTypes,
+                        Converter={StaticResource MessageTypesToBooleanConverter},
+                        ConverterParameter='Avatar'}">
+                <Image>
+                    <Image.Source>
+                        <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                    Glyph="{StaticResource IconAccount}"
+                                    Size="18" Color="Black"/>
+                    </Image.Source>
+                </Image>
+            </Frame>
+
+            <!-- 2nd Column -->
+            <StackLayout Grid.Column="1" Spacing="0" VerticalOptions="End">
+
+                <!-- Sender -->
+                <Label d:Text="우도윤"
+                       d:IsVisible="true"
+                       Text="{Binding Sender}"
+                       FontSize="12" TextColor="Gray" VerticalOptions="End"
+                       IsVisible="{Binding MessageTypes,
+                            Converter={StaticResource MessageTypesToBooleanConverter},
+                            ConverterParameter='Sender'}"/>
+
+                <!-- Body -->
+                <Frame BackgroundColor="White"
+                       Padding="10,5"
+                       BorderColor="Gray"
+                       Grid.Row="1"
+                       Grid.Column="1"
+                       VerticalOptions="Start"
+                       CornerRadius="15"
+                       HasShadow="False">
+                    <Label Text="{Binding Body}" d:Text="안녕하세요 링거입니다.✊ 무엇을 도와드릴까요?" FontSize="15"/>
+                </Frame>
+
+            </StackLayout>
+
+            <!-- 3rd Column : metadata -->
+            <StackLayout Grid.Column="2" VerticalOptions="End" Spacing="0"
+                         d:IsVisible="true"
+                         Margin="3,0,0,1"
+                         IsVisible="{Binding MessageTypes,
+                            Converter={StaticResource MessageTypesToBooleanConverter},
+                            ConverterParameter='Timestamp'}">
+
+                <!-- unread count -->
+                <Label TextColor="Gray" FontSize="10" Text="오전 10:21🇰🇷"/>
+
+                <!-- timestamp -->
+                <Label TextColor="Gray" FontSize="10" Text="오후 9:21🇻🇳"/>
+
+            </StackLayout>
+
+        </Grid>
     </ContentView>
 </ViewCell>

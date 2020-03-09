@@ -52,7 +52,7 @@ namespace RingerStaff.ViewModels
 
         }
 
-        internal void SetCurrentRoomId(object roomModel)
+        internal void SetRoomId(object roomModel)
         {
             if (roomModel is RoomModel)
                 App.CurrentRoomId = ((RoomModel)roomModel).Id;

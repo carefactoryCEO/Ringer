@@ -1,111 +1,81 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:helpers="clr-namespace:Ringer.Helpers"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
-             xmlns:vm="clr-namespace:Ringer.ViewModels"
-             mc:Ignorable="d"
              x:Class="Ringer.Views.ChatPage"
-             Title="링거 상담실"
+             Title="{Binding Title}"
+             x:Name="ChatContentPage"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled">
 
-    <ContentPage.BindingContext>
-        <vm:ChatPageViewModel x:Name="ChatPageVM"/>
-    </ContentPage.BindingContext>
-
-    <!-- Resources -->
     <ContentPage.Resources>
         <ResourceDictionary>
-            <helpers:ChatTemplateSelector x:Key="MessageTemplateSelector" />
-            <Color x:Key="Primary">#2196F3</Color>
-            <Color x:Key="Accento">#384f81</Color>
-            <Color x:Key="Accent">#5E5C5C</Color>
-            <Color x:Key="NavBarButtonBackgroundColor">Transparent</Color>
-            <Color x:Key="LightTextColor">#999999</Color>
+
+            <helpers:MessageTemplateSelector x:Key="MessageTemplateSelector"/>
+
+            <Style x:Key="NavBarButtonsStyle" TargetType="Button">
+                <Setter Property="Padding" Value="15,0,15,0"/>
+                <Setter Property="VerticalOptions" Value="EndAndExpand"/>
+                <Setter Property="Margin" Value="0,0,0,0"/>
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+                <Setter Property="TextColor" Value="White"/>
+            </Style>
+
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <!-- Main Grid -->
     <Grid RowSpacing="0" ColumnSpacing="0">
-
         <Grid.RowDefinitions>
-            <!-- navigation box -->
-            <RowDefinition x:Name="NavBarRow"/>
-            <!-- messages feed -->
-            <RowDefinition Height="*" />
-            <!-- input module -->
-            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- messages feed -->
-        <controls:ExtendedListView x:Name="ChatList"            
-            ItemsSource="{Binding Messages}"
-            ItemTemplate="{StaticResource MessageTemplateSelector}"
-            BackgroundColor="{StaticResource Accent}"
-            
-            Grid.Row="0" 
-            Grid.RowSpan="2"
-            
-            Margin="0"
-            SeparatorColor="Transparent"                                   
-            HasUnevenRows="True"
-            VerticalOptions="FillAndExpand"
-            
-            FlowDirection="RightToLeft" 
-            Rotation="180"/>
+        <!-- Messages Feed -->
+        <controls:RingerListView ItemsSource="{Binding Messages}" Grid.Row="0"
+                                 ItemTemplate="{StaticResource MessageTemplateSelector}"
+                                 BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                                 SeparatorVisibility="None"
+                                 SelectionMode="None"
+                                 HasUnevenRows="true"
+                                 x:Name="MessageFeed">
+            <controls:RingerListView.Header>
+                <BoxView HeightRequest="{Binding NavBarHeight}"
+                         BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"/>
+            </controls:RingerListView.Header>
+        </controls:RingerListView>
 
+        <!-- Navigation Bar -->
+        <StackLayout Grid.Row="0" Orientation="Horizontal"
+                     BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                     HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9"
+                     Padding="{OnPlatform Android='0,0,0,0', iOS='5,0,5,0'}">
 
-        <!-- navigation box -->
-        <StackLayout BackgroundColor="{StaticResource Accent}"
-                     Grid.Row="0"                     
-                     Opacity=".9"
-                     Orientation="Horizontal"
-                     Padding="0,0,0,8">
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="Start"
+                    Command="{Binding GoBackCommand}"
+                    Text="닫기"/>
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="CenterAndExpand"
+                    Command="{Binding OpenProfilePageCommand}"
+                    Text="{Binding NavBarTitle}"
+                    FontAttributes="Bold"/>
 
-            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
-                   Source="BackButton"
-                   HorizontalOptions="StartAndExpand"
-                   VerticalOptions="EndAndExpand"                         
-                   WidthRequest="50"
-                   HeightRequest="28">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GoBackCommand}"></TapGestureRecognizer>
-                </Image.GestureRecognizers>
-            </Image>
-
-            <Label Text="{Binding NavBarTitle}"
-                   Margin="{OnPlatform Android='0,0,0,7', iOS='0,0,0,4'}"
-                   FontAttributes="Bold"
-                   TextColor="White"
-                   HorizontalOptions="Center"
-                   VerticalOptions="EndAndExpand"/>
-
-            <Button Text="초기화" Command="{Binding ResetConnectionCommand}" TextColor="White"
-                    HorizontalOptions="End" VerticalOptions="End" BackgroundColor="Transparent" Padding="0,0,0,5" HeightRequest="28" WidthRequest="50"/>
-
-            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
-                     
-                         Source="CamButton"
-                         HorizontalOptions="EndAndExpand"
-                         VerticalOptions="EndAndExpand"
-                         WidthRequest="50"
-                         HeightRequest="28">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding ShowVidyoCommand}"></TapGestureRecognizer>
-                </Image.GestureRecognizers>
-            </Image>
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="End"
+                    Command="{Binding OpenSessionsPageCommand}"
+                    Text="상담관리"/>
 
         </StackLayout>
 
-
-        <!-- input module -->
-        <partials:ChatInputBarView Grid.Row="2" x:Name="chatInput" BindingContext="{x:Reference ChatPageVM}"/>
+        <!-- Input Bar -->
+        <partials:InputBarView x:Name="chatInputBarView"
+                                   Grid.Row="1"
+                                   ListShouldBeScrolled="OnListShouldBeScrolled"
+                                   BindingContext="{Binding .}"
+                                   PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
 
     </Grid>
-
 </ContentPage>

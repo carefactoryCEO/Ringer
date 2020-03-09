@@ -4,7 +4,7 @@ using Xamarin.Forms;
 
 namespace Ringer.Helpers
 {
-    class ChatTemplateSelector : DataTemplateSelector
+    public class ChatTemplateSelector : DataTemplateSelector
     {
         DataTemplate incomingDataTemplate;
         DataTemplate outgoingDataTemplate;

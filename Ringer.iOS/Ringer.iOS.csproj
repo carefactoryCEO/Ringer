@@ -94,6 +94,11 @@
     <None Include="Entitlements.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Info.plist" />
+    <Compile Include="Renderers\RingerListViewRenderer.cs" />
+    <None Include="filling_your_inbox.m4r" />
+    <None Include="good_things_happen.aiff" />
+    <None Include="good_things_happen.mp3" />
+    <Compile Include="Renderers\InputBarViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
@@ -160,9 +165,6 @@
       <Visible>false</Visible>
     </ImageAsset>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
-    <BundleResource Include="Resources\CameraButton.png" />
-    <BundleResource Include="Resources\CameraButton%402x.png" />
-    <BundleResource Include="Resources\CameraButton%403x.png" />
     <BundleResource Include="Resources\BackButton.png" />
     <BundleResource Include="Resources\BackButton%402x.png" />
     <BundleResource Include="Resources\BackButton%403x.png" />
@@ -175,6 +177,34 @@
     <BundleResource Include="Resources\StartChatButton.png" />
     <BundleResource Include="Resources\StartChatButton%402x.png" />
     <BundleResource Include="Resources\StartChatButton%403x.png" />
+    <BundleResource Include="Resources\FilmButton.png" />
+    <BundleResource Include="Resources\FilmButton%402x.png" />
+    <BundleResource Include="Resources\FilmButton%403x.png" />
+    <BundleResource Include="Resources\ImageButton.png" />
+    <BundleResource Include="Resources\ImageButton%402x.png" />
+    <BundleResource Include="Resources\ImageButton%403x.png" />
+    <BundleResource Include="Resources\InviteButton.png" />
+    <BundleResource Include="Resources\InviteButton%402x.png" />
+    <BundleResource Include="Resources\InviteButton%403x.png" />
+    <BundleResource Include="Resources\PhoneCallButton.png" />
+    <BundleResource Include="Resources\PhoneCallButton%402x.png" />
+    <BundleResource Include="Resources\PhoneCallButton%403x.png" />
+    <BundleResource Include="Resources\VideoButton.png" />
+    <BundleResource Include="Resources\VideoButton%402x.png" />
+    <BundleResource Include="Resources\VideoButton%403x.png" />
+    <BundleResource Include="Resources\VideoCallButton.png" />
+    <BundleResource Include="Resources\VideoCallButton%402x.png" />
+    <BundleResource Include="Resources\VideoCallButton%403x.png" />
+    <BundleResource Include="Resources\ActionsButton.png" />
+    <BundleResource Include="Resources\ActionsButton%402x.png" />
+    <BundleResource Include="Resources\ActionsButton%403x.png" />
+    <BundleResource Include="Resources\SendButton.png" />
+    <BundleResource Include="Resources\SendButton%402x.png" />
+    <BundleResource Include="Resources\SendButton%403x.png" />
+    <BundleResource Include="Resources\CameraButton.png" />
+    <BundleResource Include="Resources\CameraButton%402x.png" />
+    <BundleResource Include="Resources\CameraButton%403x.png" />
+    <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -220,6 +250,15 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.1</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading">
+      <Version>2.4.11.982</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading.Forms">
+      <Version>2.4.11.982</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading.Transformations">
+      <Version>2.4.11.982</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

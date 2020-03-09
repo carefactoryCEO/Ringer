@@ -13,6 +13,8 @@ using System.Runtime.CompilerServices;
 using Ringer.Services;
 using Ringer.Views;
 using Ringer.Core.EventArgs;
+using Ringer.Types;
+using System.Linq;
 
 namespace Ringer
 {
@@ -20,6 +22,7 @@ namespace Ringer
     {
         #region private members
         private IMessageRepository _messageRepository;
+        private ILocalDbService _localDbService;
         private IMessagingService _messagingService;
         #endregion
 
@@ -78,10 +81,10 @@ namespace Ringer
 
             _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
+            _localDbService = DependencyService.Resolve<ILocalDbService>();
 
             _messagingService.Connecting += Trace_ConnectionStatus;
             _messagingService.Connected += Trace_ConnectionStatus;
-            //_messagingService.ConnectionFailed += Trace_ConnectionStatus;
             _messagingService.ConnectionFailed += ConnectionFailed; ;
 
             _messagingService.Disconnecting += Trace_ConnectionStatus;
@@ -133,31 +136,32 @@ namespace Ringer
         private void SomeoneLeft(object sender, SignalREventArgs e)
         {
             if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new MessageModel { Body = $"{e.Sender}님이 나갔습니다.", Sender = Constants.System, MessageTypes = MessageTypes.EntranceNotice });
 
             Trace(e.Message);
         }
         private void SomeoneEntered(object sender, SignalREventArgs e)
         {
             if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = Constants.System });
+                _messageRepository.AddLocalMessage(new MessageModel { Body = $"{e.Sender}님이 들어왔습니다.", Sender = Constants.System, MessageTypes = MessageTypes.EntranceNotice });
 
             Trace(e.Message);
         }
         private async void MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            var name = e.SenderName == UserName ? string.Empty : $"{e.SenderName}: ";
-
-            await _messageRepository.AddMessageAsync(new Message
+            var message = new MessageModel
             {
                 ServerId = e.MessageId,
                 RoomId = CurrentRoomId,
-                Body = $"{name}{e.Body}",
+                Body = e.Body,
                 Sender = e.SenderName,
                 SenderId = e.SenderId,
                 CreatedAt = e.CreatedAt,
-                ReceivedAt = DateTime.UtcNow
-            });
+                ReceivedAt = DateTime.UtcNow,
+                MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing
+            };
+
+            await _messageRepository.AddMessageAsync(message);
 
             // 
             //Preferences.Set(CurrentRoomId, e.MessageId);
@@ -166,6 +170,7 @@ namespace Ringer
 
             Trace(e.Body);
         }
+
         #endregion
 
         #region Life Cycle Methods
@@ -248,7 +253,7 @@ namespace Ringer
             #endregion
             base.OnStart();
         }
-        protected override async void OnSleep()
+        protected override void OnSleep()
         {
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnSleep");
             //await _restService.ReportDeviceStatusDebouncedAsync(false);

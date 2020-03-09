@@ -1,0 +1,132 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Ringer.Views.Controls"
+             x:Class="Ringer.Views.Partials.InputBarView"
+             Padding="{Binding BottomPadding}">
+    <ContentView.Resources>
+        <ResourceDictionary>
+            <Style TargetType="ImageButton">
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+            </Style>
+
+            <Style x:Key="InputBarStyle" TargetType="Grid">
+
+                <Setter Property="Padding" Value="0,2"/>
+                <Setter Property="ColumnSpacing" Value="0"/>
+                <Setter Property="RowSpacing" Value="0"/>
+            </Style>
+        </ResourceDictionary>
+    </ContentView.Resources>
+
+    <Grid Style="{StaticResource InputBarStyle}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Row 1 -->
+        <ImageButton x:Name="ActionsButton" Source="ActionsButton"
+                     HorizontalOptions="Start"
+                     VerticalOptions="End"
+                     Clicked="ActionsButton_Clicked"
+                     Grid.Row="0"/>
+
+        <controls:ExtendedEditorControl x:Name="RingerEditor"
+                               Text="{Binding TextToSend}"
+                               HeightRequest="{OnPlatform iOS=38}"
+                               CornerRadius="19"
+                               HasRoundedCorner="True"
+                               Keyboard="{Binding Keyboard}"
+                               IsExpandable="True"
+                               AutoSize="Disabled"
+                               HorizontalOptions="Fill"
+                               Focused="RingerEditor_Focused"
+                               VerticalOptions="Center"
+                               Margin="{OnPlatform iOS='60,0,30,0', Android='60,0,32,0'}"
+                               FontSize="{OnPlatform iOS=18, Android=16}"
+                               Grid.Row="0"/>
+
+        <ImageButton Source="SendButton"
+                     x:Name="SendButton"
+               HorizontalOptions="End"
+               VerticalOptions="End"
+               Command="{Binding SendMessageCommand}"
+                     Clicked="SendButton_Tapped"
+               Grid.Row="0">
+
+        </ImageButton>
+
+        <!-- Row 2 -->
+        <Grid ColumnSpacing="0" RowSpacing="20"
+              Grid.Row="1" 
+              Padding="20, 25"
+              IsVisible="False"
+              x:Name="ActionsGrid">
+
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+
+            <StackLayout Grid.Row="0" Grid.Column="0">
+
+                <ImageButton Source="CameraButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="사진찍기" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="0" Grid.Column="1">
+                <ImageButton Source="ImageButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="사진보내기" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="0" Grid.Column="2">
+                <ImageButton Source="VideoButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="동영상찍기" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="0" Grid.Column="3">
+                <ImageButton Source="FilmButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="동영상보내기" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="1" Grid.Column="0">
+                <ImageButton Source="PhoneCallButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="음성통화" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="1" Grid.Column="1">
+                <ImageButton Source="VideoCallButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="영상통화" HorizontalOptions="Center"/>
+            </StackLayout>
+
+            <StackLayout Grid.Row="1" Grid.Column="2">
+                <ImageButton Source="InviteButton"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"/>
+                <Label Text="초대" HorizontalOptions="Center"/>
+            </StackLayout>
+
+        </Grid>
+
+    </Grid>
+</ContentView>

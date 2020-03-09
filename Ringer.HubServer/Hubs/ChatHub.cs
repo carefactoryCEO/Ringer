@@ -165,6 +165,7 @@ namespace Ringer.HubServer.Hubs
                     await _dbContext.SaveChangesAsync();
                 }
 
+
                 // 접속한 Device의 Owner(User)가 속한 모든 방에 Device를 추가
                 User user = await _dbContext.Users
                     .Include(user => user.Enrollments)
@@ -173,10 +174,13 @@ namespace Ringer.HubServer.Hubs
 
                 _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Connected.");
 
-                foreach (Enrollment enrollment in user.Enrollments)
+                if (user.UserType == UserType.Consumer)
                 {
-                    await Groups.AddToGroupAsync(Context.ConnectionId, enrollment.Room.Id);
-                    _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
+                    foreach (Enrollment enrollment in user.Enrollments)
+                    {
+                        await AddToGroup(enrollment.Room.Id, user.Name);
+                        _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
+                    }
                 }
             }
             catch (Exception ex)

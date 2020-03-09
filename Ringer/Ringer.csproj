@@ -23,6 +23,9 @@
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.0.0" />
     <PackageReference Include="Microsoft.AppCenter.Push" Version="3.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.6.292" />
+    <PackageReference Include="Xamarin.FFImageLoading" Version="2.4.11.982" />
+    <PackageReference Include="Xamarin.FFImageLoading.Forms" Version="2.4.11.982" />
+    <PackageReference Include="Xamarin.FFImageLoading.Transformations" Version="2.4.11.982" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,5 +48,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Services\" />
+    <Folder Include="Views\Cells\" />
+    <Folder Include="Types\" />
+    <Folder Include="Converters\" />
   </ItemGroup>
 </Project>

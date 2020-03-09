@@ -19,20 +19,22 @@ namespace RingerStaff.Droid
 
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
             FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
+
+            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
 
             NotificationCenter.CreateNotificationChannel(new Plugin.LocalNotification.Platform.Droid.NotificationChannelRequest
             {
                 Sound = Resource.Raw.filling_your_inbox.ToString(),
                 Importance = NotificationImportance.Max
             });
+            NotificationCenter.NotifyNotificationTapped(Intent);
 
-            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
 
             LoadApplication(new App());
 
-            NotificationCenter.NotifyNotificationTapped(Intent);
 
         }
 

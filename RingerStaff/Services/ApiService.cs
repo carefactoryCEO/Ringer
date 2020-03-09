@@ -70,15 +70,13 @@ namespace RingerStaff.Services
                     if (!_client.DefaultRequestHeaders.Contains("Authorization"))
                         _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + App.Token);
 
-                    var response = await _client.GetStringAsync(App.BaseUrl + "/auth/list");
-                    //var apiResponse = await _client.GetAsync(App.BaseUrl + "/rooms");
+                    string response = await _client.GetStringAsync(App.BaseUrl + "/auth/list");
 
-                    Debug.WriteLine(response);
+                    Debug.WriteLine($"ApiService.LoadRoomAsync(): {response}");
 
                     var rooms = JsonSerializer.Deserialize<List<RoomsResponse>>(response);
 
                     var roomModels = new List<RoomModel>();
-
                     foreach (var room in rooms)
                         roomModels.Add(new RoomModel { Id = room.Id, Title = room.Name });
 

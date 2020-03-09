@@ -8,58 +8,72 @@ namespace Ringer.Services
 {
     public interface ILocalDbService
     {
-        Task<List<Message>> GetMessagesAsync(bool desc);
-        Task<Message> GetMessageAsync(int id);
-        Task<int> SaveMessageAsync(Message message, bool update = false);
+        Task<List<MessageModel>> GetMessagesAsync(bool desc = false);
+        Task<MessageModel> GetMessageAsync(int id);
+        Task<MessageModel> SaveMessageAsync(MessageModel message, bool update = false);
         Task ResetMessagesAsync();
-        Task<Message> GetLocallySavedLastServerMessageAsync(string currentRoomId);
+        Task<MessageModel> GetLocallySavedLastServerMessageAsync(string currentRoomId);
         Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId);
+        Task<MessageModel> GetLastMessageAsync();
     }
 
     public class LocalDbService : ILocalDbService
     {
         private SQLiteAsyncConnection _database;
 
+        public async Task<MessageModel> GetLastMessageAsync()
+        {
+            return await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.CreatedAt).FirstOrDefaultAsync();
+        }
+
+
         public LocalDbService()
         {
             _database = new SQLiteAsyncConnection(Constants.DbPath);
-            _database.CreateTableAsync<Message>().Wait();
+            _database.CreateTableAsync<MessageModel>().Wait();
         }
 
-        public Task<List<Message>> GetMessagesAsync(bool desc = false)
+        public async Task<List<MessageModel>> GetMessagesAsync(bool desc = false)
         {
-            if (desc)
-                return _database.Table<Message>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.Id).ToListAsync();
+            List<MessageModel> messageModels = desc ?
+                await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.Id).ToListAsync() :
+                await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).ToListAsync();
 
-            return _database.Table<Message>().Where(m => m.RoomId == App.CurrentRoomId).ToListAsync();
+            return messageModels;
         }
-        public Task<Message> GetMessageAsync(int id)
+        public async Task<MessageModel> GetMessageAsync(int id)
         {
-            return _database.Table<Message>()
+            MessageModel message = await _database.Table<MessageModel>()
                 .Where(m => m.Id == id)
                 .FirstOrDefaultAsync();
+
+            return message;
         }
-        public async Task<int> SaveMessageAsync(Message message, bool update = false)
+        public async Task<MessageModel> SaveMessageAsync(MessageModel message, bool update = false)
         {
             if (update)
-                return await _database.UpdateAsync(message);
+            {
+                await _database.UpdateAsync(message);
+            }
+            else
+            {
+                await _database.InsertAsync(message);
+            }
 
-            _ = await _database.InsertAsync(message);
-
-            return message.Id;
+            return message;
         }
         public Task ResetMessagesAsync()
         {
-            return _database.DeleteAllAsync<Message>();
+            return _database.DeleteAllAsync<MessageModel>();
         }
         public async Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId)
         {
             var message = await GetLocallySavedLastServerMessageAsync(currentRoomId);
             return message?.ServerId ?? 0;
         }
-        public Task<Message> GetLocallySavedLastServerMessageAsync(string currentRoomId)
+        public Task<MessageModel> GetLocallySavedLastServerMessageAsync(string currentRoomId)
         {
-            return _database.Table<Message>()
+            return _database.Table<MessageModel>()
                 .Where(m => m.RoomId == currentRoomId)
                 .OrderByDescending(m => m.ServerId)
                 .FirstOrDefaultAsync();
