@@ -104,14 +104,14 @@ namespace RingerStaff.Services
             }
         }
 
-        private static void OnLeft(string obj)
+        private static void OnLeft(string userName)
         {
-            throw new NotImplementedException();
+            Debug.WriteLine($"{userName} left..");
         }
 
-        private static void OnEntered(string obj)
+        private static void OnEntered(string userName)
         {
-            throw new NotImplementedException();
+            Debug.WriteLine($"{userName} Entered..");
         }
 
         private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)

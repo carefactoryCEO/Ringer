@@ -67,14 +67,16 @@
                      Orientation="Horizontal"
                      Padding="0,0,0,8">
 
-            <ImageButton Command="{Binding GoBackCommand}"
-                         BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
-                         Source="BackButton"
-                         HorizontalOptions="StartAndExpand"
-                         VerticalOptions="EndAndExpand"                         
-                         WidthRequest="50"
-                         HeightRequest="28"
-                         Padding="5, 3"/>
+            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+                   Source="BackButton"
+                   HorizontalOptions="StartAndExpand"
+                   VerticalOptions="EndAndExpand"                         
+                   WidthRequest="50"
+                   HeightRequest="28">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoBackCommand}"></TapGestureRecognizer>
+                </Image.GestureRecognizers>
+            </Image>
 
             <Label Text="{Binding NavBarTitle}"
                    Margin="{OnPlatform Android='0,0,0,7', iOS='0,0,0,4'}"
@@ -86,16 +88,17 @@
             <Button Text="초기화" Command="{Binding ResetConnectionCommand}" TextColor="White"
                     HorizontalOptions="End" VerticalOptions="End" BackgroundColor="Transparent" Padding="0,0,0,5" HeightRequest="28" WidthRequest="50"/>
 
-            <ImageButton BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
-                         Command="{Binding ShowVidyoCommand}"
+            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+                     
                          Source="CamButton"
                          HorizontalOptions="EndAndExpand"
                          VerticalOptions="EndAndExpand"
                          WidthRequest="50"
-                         HeightRequest="28"
-                         Padding="5, 3"
-                         >
-            </ImageButton>
+                         HeightRequest="28">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ShowVidyoCommand}"></TapGestureRecognizer>
+                </Image.GestureRecognizers>
+            </Image>
 
         </StackLayout>
 

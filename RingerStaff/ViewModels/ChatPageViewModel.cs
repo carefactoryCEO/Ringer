@@ -34,9 +34,20 @@ namespace RingerStaff.ViewModels
             OpenProfilePageCommand = new Command(async () => await ExcuteOpenProfilePageCommand());
 
             RealTimeService.MessageReceived += RealTimeService_MessageReceived;
+            RealTimeService.Reconnecting += RealTimeService_Reconnecting;
+            RealTimeService.Reconnected += RealTimeService_Reconnected;
         }
 
+        private async void RealTimeService_Reconnecting(object sender, ConnectionEventArgs e)
+        {
+            Debug.WriteLine(e.Message);
+            await App.Current.MainPage.DisplayAlert("reconnecting", "reconnecting...", "닫기");
+        }
 
+        private void RealTimeService_Reconnected(object sender, ConnectionEventArgs e)
+        {
+            Debug.WriteLine(e.Message);
+        }
 
         private void RealTimeService_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
@@ -99,12 +110,9 @@ namespace RingerStaff.ViewModels
                 }
             }
 
-
-
-
             Messages.Add(message);
             TextToSend = string.Empty;
-            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+            MessagingCenter.Send(this, "MessageAdded", message);
 
             await RealTimeService.SendMessageAsync(message, App.CurrentRoomId);
         }

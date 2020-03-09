@@ -87,7 +87,12 @@ namespace Ringer.Models
             var stopwatch = new Stopwatch();
 
             if (reset)
-                await Shell.Current.Navigation.PopToRootAsync();
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await Shell.Current.Navigation.PopToRootAsync();
+                });
+            }
 
             // 서버에서 긁어와 로컬 디비에 저장
             stopwatch.Start();
@@ -138,7 +143,13 @@ namespace Ringer.Models
             Debug.WriteLine($"Add to Messages collection time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
 
             if (reset)
-                await Shell.Current.GoToAsync($"//mappage/chatpage?room={App.CurrentRoomId}");
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await Shell.Current.GoToAsync($"//mappage/chatpage?room={App.CurrentRoomId}");
+                });
+
+            }
         }
 
         public void ClearLocalDb()

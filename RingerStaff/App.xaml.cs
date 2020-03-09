@@ -58,7 +58,7 @@ namespace RingerStaff
         {
             #region AppCenter
 
-            /** // Intercept Push Notification
+            // Intercept Push Notification
             if (!AppCenter.Configured)
             {
                 Push.PushNotificationReceived += async (sender, e) =>
@@ -88,14 +88,14 @@ namespace RingerStaff
                         }
                     }
 
-                    if (CurrentRoomId != null && !IsChatPage)
-                    {
-                        await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
-                    }
+                    //if (CurrentRoomId != null)
+                    //{
+                    //    await Shell.Current.Navigation.PopToRootAsync(false);
+                    //    await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
+                    //}
                 };
             }
-            **/
+
 
             AppCenter.Start(
                 "ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +

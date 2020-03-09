@@ -70,31 +70,31 @@ namespace Ringer.Services
         public async Task LogInAsync(string name, DateTime birthDate, GenderType genderType)
         {
 
-            var loginInfo = JsonSerializer.Serialize(new LoginInfo
+            LoginInfo loginInfo = new LoginInfo
             {
-                Name = App.UserName,
+                Name = name,
                 BirthDate = birthDate,
                 Gender = genderType,
                 DeviceId = App.DeviceId,
                 DeviceType = Device.RuntimePlatform == Device.iOS ? DeviceType.iOS : DeviceType.Android
-            });
+            };
 
-            Debug.WriteLine(loginInfo);
+            var loginInfoJson = JsonSerializer.Serialize(loginInfo);
 
-            HttpResponseMessage response = await _client.PostAsync(Constants.LoginUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+            HttpResponseMessage response = await _client.PostAsync(Constants.LoginUrl, new StringContent(loginInfoJson, Encoding.UTF8, "application/json"));
 
             // 로그인 실패
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            if (response.StatusCode != HttpStatusCode.OK)
                 Debug.WriteLine(await response.Content.ReadAsStringAsync());
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<LoginResponse>(responseString);
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(responseJson);
 
             // TODO: token 발급되었는지 확인
             // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
-            App.Token = responseObject.token;
-            App.CurrentRoomId = responseObject.roomId;
-            App.UserId = responseObject.userId;
+            App.Token = loginResponse.token;
+            App.CurrentRoomId = loginResponse.roomId;
+            App.UserId = loginResponse.userId;
 
             Debug.WriteLine(App.Token);
             Debug.WriteLine(App.CurrentRoomId);

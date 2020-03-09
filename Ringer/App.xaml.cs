@@ -224,12 +224,13 @@ namespace Ringer
             if (await Push.IsEnabledAsync())
             {
                 Guid? id = await AppCenter.GetInstallIdAsync();
+
                 Debug.WriteLine("-------------------------");
-                Debug.WriteLine($"device id: {DeviceId}");
+                Debug.WriteLine($"device id: {id}");
                 Debug.WriteLine("-------------------------");
 
-                // Set Device Id
-                DeviceId = id?.ToString();
+                if (id != null)
+                    DeviceId = id?.ToString();
             }
             #endregion
 

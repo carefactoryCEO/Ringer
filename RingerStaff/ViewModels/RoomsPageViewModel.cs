@@ -71,8 +71,6 @@ namespace RingerStaff.ViewModels
 
                 Rooms.Clear();
 
-                await Task.Delay(1000);
-
                 foreach (var roomModel in roomModels)
                     Rooms.Add(roomModel);
 
