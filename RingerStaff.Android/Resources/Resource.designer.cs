@@ -11567,115 +11567,139 @@ namespace RingerStaff.Droid
 			public const int common_signin_button_text_long = 2131623984;
 			
 			// aapt resource value: 0x7F0E0031
-			public const int fab_transformation_scrim_behavior = 2131623985;
+			public const int default_web_client_id = 2131623985;
 			
 			// aapt resource value: 0x7F0E0032
-			public const int fab_transformation_sheet_behavior = 2131623986;
+			public const int fab_transformation_scrim_behavior = 2131623986;
 			
 			// aapt resource value: 0x7F0E0033
-			public const int fcm_fallback_notification_channel_label = 2131623987;
+			public const int fab_transformation_sheet_behavior = 2131623987;
 			
 			// aapt resource value: 0x7F0E0034
-			public const int hide_bottom_view_on_scroll_behavior = 2131623988;
+			public const int fcm_fallback_notification_channel_label = 2131623988;
 			
 			// aapt resource value: 0x7F0E0035
-			public const int library_name = 2131623989;
+			public const int firebase_database_url = 2131623989;
 			
 			// aapt resource value: 0x7F0E0036
-			public const int mr_button_content_description = 2131623990;
+			public const int gcm_defaultSenderId = 2131623990;
 			
 			// aapt resource value: 0x7F0E0037
-			public const int mr_cast_button_connected = 2131623991;
+			public const int google_api_key = 2131623991;
 			
 			// aapt resource value: 0x7F0E0038
-			public const int mr_cast_button_connecting = 2131623992;
+			public const int google_app_id = 2131623992;
 			
 			// aapt resource value: 0x7F0E0039
-			public const int mr_cast_button_disconnected = 2131623993;
+			public const int google_crash_reporting_api_key = 2131623993;
 			
 			// aapt resource value: 0x7F0E003A
-			public const int mr_cast_dialog_title_view_placeholder = 2131623994;
+			public const int google_storage_bucket = 2131623994;
 			
 			// aapt resource value: 0x7F0E003B
-			public const int mr_chooser_searching = 2131623995;
+			public const int hide_bottom_view_on_scroll_behavior = 2131623995;
 			
 			// aapt resource value: 0x7F0E003C
-			public const int mr_chooser_title = 2131623996;
+			public const int library_name = 2131623996;
 			
 			// aapt resource value: 0x7F0E003D
-			public const int mr_controller_album_art = 2131623997;
+			public const int mr_button_content_description = 2131623997;
 			
 			// aapt resource value: 0x7F0E003E
-			public const int mr_controller_casting_screen = 2131623998;
+			public const int mr_cast_button_connected = 2131623998;
 			
 			// aapt resource value: 0x7F0E003F
-			public const int mr_controller_close_description = 2131623999;
+			public const int mr_cast_button_connecting = 2131623999;
 			
 			// aapt resource value: 0x7F0E0040
-			public const int mr_controller_collapse_group = 2131624000;
+			public const int mr_cast_button_disconnected = 2131624000;
 			
 			// aapt resource value: 0x7F0E0041
-			public const int mr_controller_disconnect = 2131624001;
+			public const int mr_cast_dialog_title_view_placeholder = 2131624001;
 			
 			// aapt resource value: 0x7F0E0042
-			public const int mr_controller_expand_group = 2131624002;
+			public const int mr_chooser_searching = 2131624002;
 			
 			// aapt resource value: 0x7F0E0043
-			public const int mr_controller_no_info_available = 2131624003;
+			public const int mr_chooser_title = 2131624003;
 			
 			// aapt resource value: 0x7F0E0044
-			public const int mr_controller_no_media_selected = 2131624004;
+			public const int mr_controller_album_art = 2131624004;
 			
 			// aapt resource value: 0x7F0E0045
-			public const int mr_controller_pause = 2131624005;
+			public const int mr_controller_casting_screen = 2131624005;
 			
 			// aapt resource value: 0x7F0E0046
-			public const int mr_controller_play = 2131624006;
+			public const int mr_controller_close_description = 2131624006;
 			
 			// aapt resource value: 0x7F0E0047
-			public const int mr_controller_stop = 2131624007;
+			public const int mr_controller_collapse_group = 2131624007;
 			
 			// aapt resource value: 0x7F0E0048
-			public const int mr_controller_stop_casting = 2131624008;
+			public const int mr_controller_disconnect = 2131624008;
 			
 			// aapt resource value: 0x7F0E0049
-			public const int mr_controller_volume_slider = 2131624009;
+			public const int mr_controller_expand_group = 2131624009;
 			
 			// aapt resource value: 0x7F0E004A
-			public const int mr_dialog_groupable_header = 2131624010;
+			public const int mr_controller_no_info_available = 2131624010;
 			
 			// aapt resource value: 0x7F0E004B
-			public const int mr_dialog_transferable_header = 2131624011;
+			public const int mr_controller_no_media_selected = 2131624011;
 			
 			// aapt resource value: 0x7F0E004C
-			public const int mr_system_route_name = 2131624012;
+			public const int mr_controller_pause = 2131624012;
 			
 			// aapt resource value: 0x7F0E004D
-			public const int mr_user_route_category_name = 2131624013;
+			public const int mr_controller_play = 2131624013;
 			
 			// aapt resource value: 0x7F0E004E
-			public const int mtrl_chip_close_icon_content_description = 2131624014;
+			public const int mr_controller_stop = 2131624014;
 			
 			// aapt resource value: 0x7F0E004F
-			public const int password_toggle_content_description = 2131624015;
+			public const int mr_controller_stop_casting = 2131624015;
 			
 			// aapt resource value: 0x7F0E0050
-			public const int path_password_eye = 2131624016;
+			public const int mr_controller_volume_slider = 2131624016;
 			
 			// aapt resource value: 0x7F0E0051
-			public const int path_password_eye_mask_strike_through = 2131624017;
+			public const int mr_dialog_groupable_header = 2131624017;
 			
 			// aapt resource value: 0x7F0E0052
-			public const int path_password_eye_mask_visible = 2131624018;
+			public const int mr_dialog_transferable_header = 2131624018;
 			
 			// aapt resource value: 0x7F0E0053
-			public const int path_password_strike_through = 2131624019;
+			public const int mr_system_route_name = 2131624019;
 			
 			// aapt resource value: 0x7F0E0054
-			public const int search_menu_title = 2131624020;
+			public const int mr_user_route_category_name = 2131624020;
 			
 			// aapt resource value: 0x7F0E0055
-			public const int status_bar_notification_info_overflow = 2131624021;
+			public const int mtrl_chip_close_icon_content_description = 2131624021;
+			
+			// aapt resource value: 0x7F0E0056
+			public const int password_toggle_content_description = 2131624022;
+			
+			// aapt resource value: 0x7F0E0057
+			public const int path_password_eye = 2131624023;
+			
+			// aapt resource value: 0x7F0E0058
+			public const int path_password_eye_mask_strike_through = 2131624024;
+			
+			// aapt resource value: 0x7F0E0059
+			public const int path_password_eye_mask_visible = 2131624025;
+			
+			// aapt resource value: 0x7F0E005A
+			public const int path_password_strike_through = 2131624026;
+			
+			// aapt resource value: 0x7F0E005B
+			public const int project_id = 2131624027;
+			
+			// aapt resource value: 0x7F0E005C
+			public const int search_menu_title = 2131624028;
+			
+			// aapt resource value: 0x7F0E005D
+			public const int status_bar_notification_info_overflow = 2131624029;
 			
 			static String()
 			{

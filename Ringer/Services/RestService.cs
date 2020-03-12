@@ -37,7 +37,7 @@ namespace Ringer.Services
 
             try
             {
-                string requestUri = $"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastServerMessageId}";
+                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastnumber={App.LastServerMessageId}";
                 var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
@@ -58,12 +58,16 @@ namespace Ringer.Services
             }
             catch (Exception ex)
             {
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    Shell.Current.DisplayAlert("이럴수가", ex.Message, "닫기");
-                });
+                //Device.BeginInvokeOnMainThread(() =>
+                //{
+                //    Shell.Current.DisplayAlert("이럴수가", ex.Message, "닫기");
+                //});
 
                 return new List<PendingMessage>();
+            }
+            finally
+            {
+
             }
         }
 
@@ -93,11 +97,11 @@ namespace Ringer.Services
             // TODO: token 발급되었는지 확인
             // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
             App.Token = loginResponse.token;
-            App.CurrentRoomId = loginResponse.roomId;
+            App.RoomId = loginResponse.roomId;
             App.UserId = loginResponse.userId;
 
             Debug.WriteLine(App.Token);
-            Debug.WriteLine(App.CurrentRoomId);
+            Debug.WriteLine(App.RoomId);
             Debug.WriteLine(App.UserId);
         }
     }

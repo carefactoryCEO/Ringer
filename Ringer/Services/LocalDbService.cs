@@ -8,24 +8,18 @@ namespace Ringer.Services
 {
     public interface ILocalDbService
     {
-        Task<List<MessageModel>> GetMessagesAsync(bool desc = false);
+        Task<List<MessageModel>> GetAllAsync(bool desc = false);
+        Task ResetMessagesAsync();
         Task<MessageModel> GetMessageAsync(int id);
         Task<MessageModel> SaveMessageAsync(MessageModel message, bool update = false);
-        Task ResetMessagesAsync();
         Task<MessageModel> GetLocallySavedLastServerMessageAsync(string currentRoomId);
         Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId);
-        Task<MessageModel> GetLastMessageAsync();
+        Task<MessageModel> GetLastMessageAsync(string roomId);
     }
 
     public class LocalDbService : ILocalDbService
     {
         private SQLiteAsyncConnection _database;
-
-        public async Task<MessageModel> GetLastMessageAsync()
-        {
-            return await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.CreatedAt).FirstOrDefaultAsync();
-        }
-
 
         public LocalDbService()
         {
@@ -33,11 +27,19 @@ namespace Ringer.Services
             _database.CreateTableAsync<MessageModel>().Wait();
         }
 
-        public async Task<List<MessageModel>> GetMessagesAsync(bool desc = false)
+        public async Task<MessageModel> GetLastMessageAsync(string roomId)
+        {
+            return await _database.Table<MessageModel>()
+                .Where(m => m.RoomId == roomId)
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<MessageModel>> GetAllAsync(bool desc = false)
         {
             List<MessageModel> messageModels = desc ?
-                await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.Id).ToListAsync() :
-                await _database.Table<MessageModel>().Where(m => m.RoomId == App.CurrentRoomId).ToListAsync();
+                await _database.Table<MessageModel>().Where(m => m.RoomId == App.RoomId).OrderByDescending(m => m.Id).ToListAsync() :
+                await _database.Table<MessageModel>().Where(m => m.RoomId == App.RoomId).ToListAsync();
 
             return messageModels;
         }

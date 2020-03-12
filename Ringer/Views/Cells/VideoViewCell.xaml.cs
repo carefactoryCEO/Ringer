@@ -1,4 +1,5 @@
 ﻿using System;
+using Ringer.Models;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -17,9 +18,8 @@ namespace Ringer.Views.Cells
 
         async void Video_Clicked(object sender, EventArgs e)
         {
-            //var video = (BindingContext as MessageModel).Body;
-
-            //await Browser.OpenAsync(video, BrowserLaunchMode.SystemPreferred);
+            var video = (BindingContext as MessageModel).Body;
+            await Browser.OpenAsync(video, BrowserLaunchMode.SystemPreferred);
         }
     }
 }

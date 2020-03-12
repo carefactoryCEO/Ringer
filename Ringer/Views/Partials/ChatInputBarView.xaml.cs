@@ -42,7 +42,7 @@ namespace Ringer.Views.Partials
                 Constants.AttachingVideo,
                 "설정 열기");
 
-            vm?.CameraCommand.Execute(action);
+            //vm?.CameraCommand.Execute(action);
         }
 
         ChatPage _page;

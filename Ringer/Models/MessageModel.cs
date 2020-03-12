@@ -13,7 +13,13 @@ namespace Ringer.Models
         public int ServerId { get; set; }
         [Indexed]
         public string RoomId { get; set; }
-        public string Body { get; set; }
+
+        private string body;
+        public string Body
+        {
+            get => body;
+            set => SetProperty(ref body, value);
+        }
         public string Sender { get; set; }
         public int SenderId { get; set; }
         public DateTime CreatedAt { get; set; }
@@ -32,6 +38,5 @@ namespace Ringer.Models
             get => unreadCount;
             set => SetProperty(ref unreadCount, value);
         }
-
     }
 }

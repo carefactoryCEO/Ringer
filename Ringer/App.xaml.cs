@@ -15,6 +15,7 @@ using Ringer.Views;
 using Ringer.Core.EventArgs;
 using Ringer.Types;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Ringer
 {
@@ -28,7 +29,7 @@ namespace Ringer
 
         #region public static propertie
         public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().EndsWith("chatpage", StringComparison.CurrentCultureIgnoreCase);
-        public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && CurrentRoomId != null;
+        public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && RoomId != null;
         public static bool DeviceIsOn
         {
             get => Preferences.Get(nameof(DeviceIsOn), false);
@@ -59,16 +60,18 @@ namespace Ringer
             get => Preferences.Get(nameof(UserId), -1);
             set => Preferences.Set(nameof(UserId), value);
         }
-        public static string CurrentRoomId
+        public static string RoomId
         {
-            get => Preferences.Get(nameof(CurrentRoomId), null);
-            set => Preferences.Set(nameof(CurrentRoomId), value);
+            get => Preferences.Get(nameof(RoomId), null);
+            set => Preferences.Set(nameof(RoomId), value);
         }
         #endregion
 
         #region Constructor
         public App()
         {
+            //Xamarin.Forms.Device.SetFlags(new string[] { "MediaElement_Experimental" });
+
             InitializeComponent();
 
             MainPage = new AppShell();
@@ -149,16 +152,36 @@ namespace Ringer
         }
         private async void MessageReceived(object sender, MessageReceivedEventArgs e)
         {
+            var messageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing;
+
+            string videoPattern = @"^https://ringerstoragekr.blob.core.windows.net/ringer/[\w-]+(?:\.mov|\.mp4)$";
+            string imagePattern = @"^https://ringerstoragekr.blob.core.windows.net/ringer/[\w-]+\.jpg$";
+            string input = e.Body;
+
+            if (Regex.IsMatch(input, videoPattern))
+            {
+                messageTypes |= MessageTypes.Video;
+                messageTypes ^= MessageTypes.Text;
+            }
+
+            if (Regex.IsMatch(input, imagePattern))
+            {
+                messageTypes |= MessageTypes.Image;
+                messageTypes ^= MessageTypes.Text;
+            }
+
+            messageTypes |= (e.SenderId == UserId) ? MessageTypes.Outgoing : MessageTypes.Incomming;
+
             var message = new MessageModel
             {
                 ServerId = e.MessageId,
-                RoomId = CurrentRoomId,
+                RoomId = RoomId,
                 Body = e.Body,
                 Sender = e.SenderName,
                 SenderId = e.SenderId,
                 CreatedAt = e.CreatedAt,
                 ReceivedAt = DateTime.UtcNow,
-                MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing
+                MessageTypes = messageTypes
             };
 
             await _messageRepository.AddMessageAsync(message);
@@ -166,9 +189,9 @@ namespace Ringer
             // 
             //Preferences.Set(CurrentRoomId, e.MessageId);
 
-            Debug.WriteLine(Preferences.Get(CurrentRoomId, 0));
+            Debug.WriteLine(Preferences.Get(RoomId, 0));
 
-            Trace(e.Body);
+            Trace(message.MessageTypes.ToString());
         }
 
         #endregion
@@ -197,7 +220,7 @@ namespace Ringer
                             switch (key)
                             {
                                 case "room":
-                                    CurrentRoomId = e.CustomData[key];
+                                    RoomId = e.CustomData[key];
                                     break;
 
                                 case "body":
@@ -214,10 +237,10 @@ namespace Ringer
                         }
                     }
 
-                    if (CurrentRoomId != null && !IsChatPage)
+                    if (RoomId != null && !IsChatPage)
                     {
                         await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
+                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={RoomId}", false);
                     }
                 };
             }

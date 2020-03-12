@@ -26,6 +26,16 @@ namespace Ringer.Views.Partials
                     _previousHeight = Height;
                 };
             }
+
+            MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "CameraActionCompleted", (s, e) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    ActionsGrid.IsVisible = false;
+                    SendButton.IsEnabled = true;
+                    ActionsButton.IsEnabled = true;
+                });
+            });
         }
         #endregion
 

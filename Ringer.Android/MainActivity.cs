@@ -7,7 +7,7 @@ using Android.Views;
 using Android.Widget;
 using Android.OS;
 using Android;
-using Plugin.CurrentActivity;
+//using Plugin.CurrentActivity;
 using Microsoft.AppCenter.Push;
 
 namespace Ringer.Droid
@@ -23,12 +23,16 @@ namespace Ringer.Droid
             base.OnCreate(savedInstanceState);
 
             // camera
-            CrossCurrentActivity.Current.Init(this, savedInstanceState);
+            //CrossCurrentActivity.Current.Init(this, savedInstanceState);
 
             global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
 
             // essentials
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
+
+            //FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
+            //FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
+
 
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 

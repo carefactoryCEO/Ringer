@@ -106,6 +106,15 @@ namespace RingerStaff.Services
 
                 },
 
+                // https://ringerstoragekr.blob.core.windows.net/ringer/VIDEO_20200312_132905.mp4
+
+                new MessageModel
+                {
+                    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/VIDEO_20200312_132905.mp4",
+                    Sender = "video",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                    UnreadCount = 1
+                },
 
             };
 

@@ -23,19 +23,6 @@ namespace Ringer.Views
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
-
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
-            {
-                MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
-            });
-
-            MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
-            {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await DisplayAlert("reconnecting", message, "닫기");
-                });
-            });
         }
 
         public string Room
@@ -69,76 +56,63 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
+            MessagingCenter.Subscribe<MessageRepository, MessageModel>(this, "MessageAdded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
+                });
+            });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
+                });
+            });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await DisplayAlert("reconnecting", message, "닫기");
+                });
+            });
+
             await vm.ExcuteLogInProcessAsync();
 
             await vm.OnAppearingAsync().ConfigureAwait(false);
+
+            MessageFeed.ScrollToLast();
         }
 
         protected override async void OnDisappearing()
         {
             base.OnDisappearing();
 
+            MessagingCenter.Unsubscribe<MessageRepository, MessageModel>(this, "MessageAdded");
+
+            MessagingCenter.Unsubscribe<ChatPageViewModel, string>(this, "ConnectionEvent");
+
             await vm.OnDisappearingAsync().ConfigureAwait(false);
         }
-    }
-    /**
-    [XamlCompilation(XamlCompilationOptions.Compile)]
-    [QueryProperty("Room", "room")]
-    public partial class ChatPage : ContentPage
-    {
-        #region Private Members
-        bool initial = true;
 
-        private string _room;
-        private IRESTService _restService;
-
-        public string Room
+        void Button_Clicked(object sender, EventArgs e)
         {
-            get => _room;
-            set
-            {
-                _room = value;
-                Debug.WriteLine(_room);
-            }
+            chatInputBarView.IsVisible = false;
+            datePicker.Focus();
         }
 
-        #endregion
-
-        #region Constructor
-        public ChatPage()
+        void datePicker_DateSelected(object sender, DateChangedEventArgs e)
         {
-            InitializeComponent();
-            _restService = DependencyService.Resolve<IRESTService>();
-        }
-        #endregion
-
-        #region Life Cycle Methods
-        protected override void OnSizeAllocated(double width, double height)
-        {
-            base.OnSizeAllocated(width, height);
-
-            if (!initial)
-                return;
-
-            initial = false;
-
-            var topInset = (Device.RuntimePlatform == Device.iOS) ? On<iOS>().SafeAreaInsets().Top : 0;
-
-            NavBarRow.Height = topInset + 40;
-        }
-        #endregion
-
-        protected override async void OnAppearing()
-        {
-            await ChatPageVM.ExcuteLogInProcessAsync();
-
-            base.OnAppearing();
+            chatInputBarView.IsVisible = true;
         }
 
-        protected override void OnDisappearing()
+        void datePicker_Unfocused(object sender, FocusEventArgs e)
         {
-            base.OnDisappearing();
+
         }
     }
-    **/
+
 }

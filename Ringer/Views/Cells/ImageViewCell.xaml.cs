@@ -1,4 +1,5 @@
 ﻿using System;
+using Ringer.Models;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -15,9 +16,9 @@ namespace Ringer.Views.Cells
 
         async void Image_Tapped(object sender, EventArgs e)
         {
-            //var image = (BindingContext as MessageModel).Body;
+            var url = (BindingContext as MessageModel).Body;
 
-            //await Browser.OpenAsync(image, BrowserLaunchMode.SystemPreferred);
+            await Browser.OpenAsync(url, BrowserLaunchMode.SystemPreferred);
         }
     }
 }

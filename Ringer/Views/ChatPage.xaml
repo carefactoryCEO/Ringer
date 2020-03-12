@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              xmlns:helpers="clr-namespace:Ringer.Helpers"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
@@ -23,6 +24,9 @@
                 <Setter Property="BackgroundColor" Value="Transparent"/>
                 <Setter Property="TextColor" Value="White"/>
             </Style>
+
+            <Color x:Key="NavBarButtonBackgroundColor">Transparent</Color>
+            <Color x:Key="NavBarBackgroundColor">Pink</Color>
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -51,31 +55,56 @@
         <StackLayout Grid.Row="0" Orientation="Horizontal"
                      BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
                      HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9"
-                     Padding="{OnPlatform Android='0,0,0,0', iOS='5,0,5,0'}">
+                     Padding="{OnPlatform Android='0,0,0,0', iOS='0,0,0,0'}">
 
-            <Button Style="{StaticResource NavBarButtonsStyle}"
-                    HorizontalOptions="Start"
-                    Command="{Binding GoBackCommand}"
-                    Text="닫기"/>
-            <Button Style="{StaticResource NavBarButtonsStyle}"
+            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+                   Source="BackButton"
+                   HorizontalOptions="Start"
+                   TranslationY="-4"
+                   VerticalOptions="End"                   
+                   WidthRequest="70"
+                   HeightRequest="34">
+                <Image.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding GoBackCommand}"></TapGestureRecognizer>
+                </Image.GestureRecognizers>
+            </Image>
+
+            <Label HorizontalOptions="CenterAndExpand"
+                   VerticalOptions="EndAndExpand"
+                   TextColor="White"
+                   FontAttributes="Bold"
+                   Padding="0,13"
+                   Text="{Binding NavBarTitle}"/>
+
+            <!--<Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="CenterAndExpand"
                     Command="{Binding OpenProfilePageCommand}"
                     Text="{Binding NavBarTitle}"
-                    FontAttributes="Bold"/>
+                    FontAttributes="Bold"/>-->
 
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
                     Command="{Binding OpenSessionsPageCommand}"
-                    Text="상담관리"/>
+                    Clicked="Button_Clicked"
+                    Text="Picker"/>
+            <!--<BoxView HorizontalOptions="End" BackgroundColor="Transparent" WidthRequest="70"/>-->
 
         </StackLayout>
 
         <!-- Input Bar -->
         <partials:InputBarView x:Name="chatInputBarView"
-                                   Grid.Row="1"
-                                   ListShouldBeScrolled="OnListShouldBeScrolled"
-                                   BindingContext="{Binding .}"
-                                   PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
+                                Grid.Row="1"
+                                ListShouldBeScrolled="OnListShouldBeScrolled"
+                                PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
 
+        <DatePicker Grid.Row="1" x:Name="datePicker" HeightRequest="5" BackgroundColor="Bisque"
+                    IsVisible="False"
+                    DateSelected="datePicker_DateSelected"
+                    ios:DatePicker.UpdateMode="WhenFinished"/>
+
+        <ContentView IsVisible="{Binding IsBusy}" 
+                               Grid.RowSpan="2" BackgroundColor="#bfff">
+            <ActivityIndicator IsEnabled="{Binding IsBusy}" IsRunning="{Binding IsBusy}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
+        </ContentView>
     </Grid>
 </ContentPage>

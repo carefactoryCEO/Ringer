@@ -61,7 +61,7 @@ namespace RingerStaff
             // Intercept Push Notification
             if (!AppCenter.Configured)
             {
-                Push.PushNotificationReceived += async (sender, e) =>
+                Push.PushNotificationReceived += (sender, e) =>
                 {
                     string body = null;
                     string pushSender = null;
@@ -71,6 +71,8 @@ namespace RingerStaff
                     {
                         foreach (var key in e.CustomData.Keys)
                         {
+                            Debug.WriteLine($"[{key}]{e.CustomData[key]}");
+
                             switch (key)
                             {
                                 case "room":
@@ -97,9 +99,11 @@ namespace RingerStaff
             }
 
 
+            //"ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +
+            //"android=b4662d44-77f1-47f8-8256-dd1756a6f015;"
             AppCenter.Start(
-                "ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +
-                "android=b4662d44-77f1-47f8-8256-dd1756a6f015;",
+                "ios=9573aacd-70c3-459f-aa6c-b841953e7f1d;" +
+                "android=2468e092-6b08-4ce9-a777-cc06f2d20408;",
                 typeof(Analytics),
                 typeof(Crashes),
                 typeof(Push));

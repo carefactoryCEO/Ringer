@@ -80,49 +80,56 @@
 
                 <ImageButton Source="CameraButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             Command="{Binding TakingPhotoCommand}"/>
                 <Label Text="사진찍기" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="0" Grid.Column="1">
                 <ImageButton Source="ImageButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             Command="{Binding GalleryPhotoCommand}"/>
                 <Label Text="사진보내기" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="0" Grid.Column="2">
                 <ImageButton Source="VideoButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             Command="{Binding TakingVideoCommand}"/>
                 <Label Text="동영상찍기" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="0" Grid.Column="3">
                 <ImageButton Source="FilmButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             Command="{Binding GalleryVideoCommand}"/>
                 <Label Text="동영상보내기" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="1" Grid.Column="0">
                 <ImageButton Source="PhoneCallButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             IsEnabled="False"/>
                 <Label Text="음성통화" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="1" Grid.Column="1">
                 <ImageButton Source="VideoCallButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             IsEnabled="False"/>
                 <Label Text="영상통화" HorizontalOptions="Center"/>
             </StackLayout>
 
             <StackLayout Grid.Row="1" Grid.Column="2">
                 <ImageButton Source="InviteButton"
                              HorizontalOptions="Center"
-                             VerticalOptions="Center"/>
+                             VerticalOptions="Center"
+                             IsEnabled="False"/>
                 <Label Text="초대" HorizontalOptions="Center"/>
             </StackLayout>
 

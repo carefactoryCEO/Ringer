@@ -2,8 +2,12 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Azure;
+using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
@@ -27,6 +31,7 @@ namespace Ringer.ViewModels
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
         private readonly ILocalDbService _localDbService;
+        readonly BlobContainerClient _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
 
         DateTime birthDate;
         UserInfoType userInfoToQuery = UserInfoType.None;
@@ -51,7 +56,11 @@ namespace Ringer.ViewModels
             ShowVidyoCommand = new Command(async () => await Browser.OpenAsync("https://appr.tc/r/5433210"));
 
 
-            CameraCommand = new Command<string>(async actionString => await ProcessCameraAction(actionString));
+            TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
+            TakingVideoCommand = new Command(async () => await TakeVideoAsync());
+            GalleryPhotoCommand = new Command(async () => await GalleryPhotoAsync());
+            GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
+
 
             // Initialize the properties for binding
             NavBarHeight = 0;
@@ -62,13 +71,13 @@ namespace Ringer.ViewModels
             {
                 // Reset Token
                 App.Token = null;
-                App.CurrentRoomId = null;
+                App.RoomId = null;
                 App.UserName = null;
                 App.LastServerMessageId = 0;
                 userInfoToQuery = UserInfoType.None;
 
                 // Disconnect Connection
-                await _messagingService.DisconnectAsync(App.CurrentRoomId, App.UserName);
+                await _messagingService.DisconnectAsync(App.RoomId, App.UserName);
 
                 // Clear Messages
                 _messageRepository.Messages.Clear();
@@ -81,6 +90,250 @@ namespace Ringer.ViewModels
             });
         }
 
+        private async Task TakePhotoAsync()
+        {
+            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+            if (await TakingPhotoPermittedAsync())
+            {
+                if (!CrossMedia.Current.IsTakePhotoSupported)
+                {
+                    await Shell.Current.DisplayAlert("사진촬영 불가", "촬영 가능한 카메라가 없습니다 :(", "확인");
+                    return;
+                }
+
+                try
+                {
+                    // Taking picture
+                    MediaFile mediaFile = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                    {
+                        Directory = "RingerPhoto",
+                        SaveToAlbum = true,
+                        SaveMetaData = true,
+                        RotateImage = true,
+                        CompressionQuality = 75,
+                        CustomPhotoSize = 50,
+                        PhotoSize = PhotoSize.MaxWidthHeight,
+                        MaxWidthHeight = 1000,
+                        DefaultCamera = CameraDevice.Rear
+                    });
+
+                    if (mediaFile == null)
+                        return;
+
+                    IsBusy = true;
+
+                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+
+                    // Upload to azure blob storage
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }).ConfigureAwait(false);
+                    // Send image message to server
+                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString()).ConfigureAwait(false);
+
+                    IsBusy = false;
+
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = serverId,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
+                    };
+
+                    // Display image message to view locally
+                    await _messageRepository.AddMessageAsync(message);
+
+                    mediaFile.Dispose();
+
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+
+                }
+            }
+        }
+        private async Task GalleryPhotoAsync()
+        {
+            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+            if (AttachingPhotoPermitted())
+            {
+                try
+                {
+                    if (!CrossMedia.Current.IsPickPhotoSupported)
+                    {
+                        await Shell.Current.DisplayAlert("사진 불러오기 실패", "사진 불러오기가 지원되지 않는 기기입니다. :(", "확인");
+                        return;
+                    }
+
+                    var mediaFile = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
+                    {
+                        PhotoSize = PhotoSize.Medium
+                    });
+
+
+                    if (mediaFile == null)
+                        return;
+
+                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+
+                    IsBusy = true;
+
+                    // upload to azure blob storage
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }).ConfigureAwait(false);
+                    // send image message
+                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString());
+
+                    IsBusy = false;
+
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = serverId,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
+                    };
+
+                    // save message locally
+                    await _messageRepository.AddMessageAsync(message);
+
+                    mediaFile.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+        }
+        private async Task TakeVideoAsync()
+        {
+            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+            if (await TakingVideoPermittedAsync())
+            {
+                if (!CrossMedia.Current.IsTakeVideoSupported)
+                {
+                    await Shell.Current.DisplayAlert("동영상 촬영 불가", "촬영 가능한 카메라가 없습니다 :(", "확인");
+                    return;
+                }
+
+                try
+                {
+                    // Taking Video
+                    MediaFile mediaFile = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
+                    {
+                        DesiredLength = TimeSpan.FromMinutes(2.0d),
+                        DefaultCamera = CameraDevice.Rear,
+                        Directory = "RingerVideo",
+                        SaveToAlbum = true,
+                        Quality = VideoQuality.Medium
+                    }); ;
+
+                    if (mediaFile == null)
+                        return;
+
+                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+
+                    IsBusy = true;
+
+                    // Upload to Azure blob storage
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }).ConfigureAwait(false);
+                    // Send Video message
+                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString()).ConfigureAwait(false);
+
+                    IsBusy = false;
+
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = serverId,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
+                    };
+
+                    // Save message locally
+                    await _messageRepository.AddMessageAsync(message);
+
+                    mediaFile.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+        }
+        private async Task GalleryVideoAsync()
+        {
+            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+            if (AttachingVideoPermitted())
+            {
+                if (!CrossMedia.Current.IsPickVideoSupported)
+                {
+                    await Shell.Current.DisplayAlert("비디오 불러오기 실패", "비디오 접근 권한이 없습니다 :(", "확인");
+
+                    return;
+                }
+
+                try
+                {
+                    var mediaFile = await CrossMedia.Current.PickVideoAsync();
+
+                    if (mediaFile == null)
+                        return;
+
+                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+
+                    IsBusy = true;
+
+                    // upload to azure blob storage
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }).ConfigureAwait(false);
+
+                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString());
+
+                    IsBusy = false;
+
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = serverId,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
+                    };
+
+                    // Save message locally
+                    await _messageRepository.AddMessageAsync(message);
+
+                    mediaFile.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+        }
+
         internal async Task OnAppearingAsync()
         {
             //await RealTimeService.EnterRoomAsync(App.CurrentRoomId, "staff");
@@ -88,7 +341,6 @@ namespace Ringer.ViewModels
 
             await Task.Delay(0);
         }
-
         internal async Task OnDisappearingAsync()
         {
             await Task.Delay(0);
@@ -222,7 +474,8 @@ namespace Ringer.ViewModels
 
             var message = new MessageModel
             {
-                RoomId = App.CurrentRoomId,
+                RoomId = App.RoomId,
+                ServerId = -1,
                 Body = TextToSend,
                 Sender = App.UserName,
                 SenderId = App.UserId,
@@ -233,22 +486,23 @@ namespace Ringer.ViewModels
 
             try
             {
+                // reset text
+                TextToSend = string.Empty;
+
                 // local Db 저장
                 await _localDbService.SaveMessageAsync(message);
+                await _messageRepository.ModifyLastMessageAsync(message).ConfigureAwait(false);
 
-                await _messageRepository.ModifyLastMessageAsync(message);
                 // view에 표시
                 _messageRepository.AddLocalMessage(message);
 
                 // send to hub
-                var remoteId = await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, TextToSend);
+                var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
 
-                message.ServerId = remoteId;
+                message.ServerId = serverId;
 
-                await _messageRepository.UpdateAsync(message: message);
+                await _messageRepository.UpdateAsync(message);
 
-                // reset text
-                TextToSend = string.Empty;
             }
             catch (Exception ex)
             {
@@ -290,7 +544,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -326,7 +580,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -359,7 +613,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -390,7 +644,7 @@ namespace Ringer.ViewModels
                         if (file == null)
                             return;
 
-                        await _messagingService.SendMessageToRoomAsync(App.CurrentRoomId, App.UserName, $"{action}:{file.Path}");
+                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
 
                         file.Dispose();
                     }
@@ -560,6 +814,7 @@ namespace Ringer.ViewModels
         #endregion
 
         #region Public Properties
+        public bool IsBusy { get; set; }
         public string TextToSend { get; set; }
         public Keyboard Keyboard { get; set; }
         public double NavBarHeight { get; set; }
@@ -571,10 +826,14 @@ namespace Ringer.ViewModels
 
         #region public Commands
         public ICommand SendMessageCommand { get; }
-        public ICommand CameraCommand { get; }
         public ICommand GoBackCommand { get; }
         public ICommand ShowVidyoCommand { get; }
         public ICommand ResetConnectionCommand { get; }
+
+        public ICommand TakingPhotoCommand { get; }
+        public ICommand TakingVideoCommand { get; }
+        public ICommand GalleryPhotoCommand { get; }
+        public ICommand GalleryVideoCommand { get; }
         #endregion
 
         #region Events
