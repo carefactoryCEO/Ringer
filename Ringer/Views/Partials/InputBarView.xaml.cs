@@ -53,7 +53,7 @@ namespace Ringer.Views.Partials
 
         #region Bindable Properties
         public static BindableProperty PagePaddingProperty
-            = BindableProperty.Create(nameof(PagePadding), typeof(Thickness), typeof(ChatInputBarView));
+            = BindableProperty.Create(nameof(PagePadding), typeof(Thickness), typeof(InputBarView));
         private double _previousHeight;
         private ChatPageViewModel vm;
 

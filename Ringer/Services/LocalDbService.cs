@@ -71,7 +71,7 @@ namespace Ringer.Services
         public async Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId)
         {
             var message = await GetLocallySavedLastServerMessageAsync(currentRoomId);
-            return message?.ServerId ?? 0;
+            return message?.ServerId ?? -1;
         }
         public Task<MessageModel> GetLocallySavedLastServerMessageAsync(string currentRoomId)
         {

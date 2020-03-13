@@ -152,25 +152,7 @@ namespace Ringer
         }
         private async void MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            var messageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing;
-
-            string videoPattern = @"^https://ringerstoragekr.blob.core.windows.net/ringer/[\w-]+(?:\.mov|\.mp4)$";
-            string imagePattern = @"^https://ringerstoragekr.blob.core.windows.net/ringer/[\w-]+\.jpg$";
-            string input = e.Body;
-
-            if (Regex.IsMatch(input, videoPattern))
-            {
-                messageTypes |= MessageTypes.Video;
-                messageTypes ^= MessageTypes.Text;
-            }
-
-            if (Regex.IsMatch(input, imagePattern))
-            {
-                messageTypes |= MessageTypes.Image;
-                messageTypes ^= MessageTypes.Text;
-            }
-
-            messageTypes |= (e.SenderId == UserId) ? MessageTypes.Outgoing : MessageTypes.Incomming;
+            MessageTypes messageTypes = Utilities.SetMessageTypes(e.Body, e.SenderId, UserId);
 
             var message = new MessageModel
             {
@@ -186,13 +168,12 @@ namespace Ringer
 
             await _messageRepository.AddMessageAsync(message);
 
-            // 
-            //Preferences.Set(CurrentRoomId, e.MessageId);
-
             Debug.WriteLine(Preferences.Get(RoomId, 0));
 
             Trace(message.MessageTypes.ToString());
         }
+
+
 
         #endregion
 

@@ -16,7 +16,6 @@ namespace Ringer.Models
     public interface IMessageRepository
     {
         ObservableCollection<MessageModel> Messages { get; }
-        Task<MessageModel> ModifyLastMessageAsync(MessageModel message);
         void AddLocalMessage(MessageModel message);
         void AddLoginMessage(MessageModel message);
         Task SaveToLocalDbAsync(MessageModel message);
@@ -43,11 +42,54 @@ namespace Ringer.Models
         }
 
         public ObservableCollection<MessageModel> Messages { get; set; }
-        public async Task<MessageModel> ModifyLastMessageAsync(MessageModel message)
+
+
+        public void AddLoginMessage(MessageModel message)
         {
-            MessageModel lastMessage = (Messages.Count > 0) ?
-                Messages.Where(m => m.RoomId == App.RoomId).OrderByDescending(m => m.CreatedAt).FirstOrDefault() :
-                await _localDbService.GetLastMessageAsync(message.RoomId).ConfigureAwait(false);
+            Messages.Add(message);
+        }
+
+        public async Task UpdateAsync(MessageModel message)
+        {
+            if (message.ServerId > App.LastServerMessageId)
+                App.LastServerMessageId = message.ServerId;
+
+            await _localDbService.SaveMessageAsync(message, update: true);
+        }
+        public async Task AddMessageAsync(MessageModel message)
+        {
+            if (message.ServerId != -1 && message.ServerId <= App.LastServerMessageId)
+                return;
+
+            // 뷰에 표시
+            AddLocalMessage(message);
+
+            // 로컬 디비 저장
+            await SaveToLocalDbAsync(message);
+
+        }
+
+        public void AddLocalMessage(MessageModel message)
+        {
+            Messages.Add(message);
+            MessagingCenter.Send(this, "MessageAdded", message);
+        }
+
+        public async Task SaveToLocalDbAsync(MessageModel message)
+        {
+            if (message.ServerId != -1 && message.ServerId > App.LastServerMessageId)
+                App.LastServerMessageId = message.ServerId;
+
+            await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
+            await ModifyLastMessageAsync(message).ConfigureAwait(false);
+        }
+
+        private async Task ModifyLastMessageAsync(MessageModel message)
+        {
+            MessageModel lastMessage =
+                //(Messages.Count > 0) ?
+                Messages.LastOrDefault(m => m.RoomId == App.RoomId && m.Id < message.Id);
+            //await _localDbService.GetLastMessageAsync(message.RoomId).ConfigureAwait(false);
 
             if (lastMessage != null)
             {
@@ -57,45 +99,14 @@ namespace Ringer.Models
                     message.MessageTypes ^= MessageTypes.Leading;
 
                     await _localDbService.SaveMessageAsync(lastMessage, update: true).ConfigureAwait(false);
+
+                    Debug.WriteLine(Messages.Last().MessageTypes);
                 }
             }
+        }
 
-            return message;
-        }
-        public void AddLocalMessage(MessageModel message)
-        {
-            Messages.Add(message);
-            MessagingCenter.Send(this, "MessageAdded", message);
-        }
-        public void AddLoginMessage(MessageModel message)
-        {
-            Messages.Add(message);
-        }
-        public async Task SaveToLocalDbAsync(MessageModel message)
-        {
-            if (message.ServerId <= App.LastServerMessageId)
-                return;
 
-            App.LastServerMessageId = message.ServerId;
 
-            await ModifyLastMessageAsync(message).ConfigureAwait(false);
-            await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
-        }
-        public async Task UpdateAsync(MessageModel message)
-        {
-            await _localDbService.SaveMessageAsync(message, update: true);
-        }
-        public async Task AddMessageAsync(MessageModel message)
-        {
-            if (message.ServerId <= App.LastServerMessageId)
-                return;
-
-            // 로컬 디비 저장
-            await SaveToLocalDbAsync(message);
-
-            // 뷰에 표시
-            AddLocalMessage(message);
-        }
         public async Task LoadMessagesAsync(bool reset = false)
         {
             if (!App.IsLoggedIn)
@@ -123,10 +134,8 @@ namespace Ringer.Models
                     SenderId = pendingMessage.SenderId,
                     CreatedAt = pendingMessage.CreatedAt,
                     ReceivedAt = DateTime.UtcNow,
-                    MessageTypes = (pendingMessage.SenderId == App.UserId) ? MessageTypes.Outgoing : MessageTypes.Incomming
+                    MessageTypes = Utilities.SetMessageTypes(pendingMessage.Body, pendingMessage.SenderId, App.UserId)
                 };
-
-                message.MessageTypes |= MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing;
 
                 await SaveToLocalDbAsync(message).ConfigureAwait(false);
             }
@@ -135,7 +144,10 @@ namespace Ringer.Models
             List<MessageModel> localDbMessages = await _localDbService.GetAllAsync().ConfigureAwait(false); // 로컬 디비 전부 불러옴.
             foreach (var message in localDbMessages)
             {
-                if (Messages.Count > 0 && Messages[0].Id == message.Id) // 메모리 로드된 메시지 중 Id 최대값이 추가하려는 메시지와 같으면 중단. 즉 추가하려는 메시지가 이미 로드된 메시지들보다 Id값보다 더 커야 추가. 즉 메모리에 있는 메시지보다 최신인 것만 추가한다는 얘기.
+                // 메모리 로드된 메시지 중 Id 최대값이 추가하려는 메시지와 같으면 중단.
+                // 즉 추가하려는 메시지가 이미 로드된 메시지들보다 Id값보다 더 커야 추가.
+                // 즉 메모리에 있는 메시지보다 최신인 것만 추가한다는 얘기.
+                if (Messages.Count > 0 && Messages[0].Id == message.Id)
                     break;
 
                 Debug.WriteLine($"Add to Messages collection. message id: {message.Id}");

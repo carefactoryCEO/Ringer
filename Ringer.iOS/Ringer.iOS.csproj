@@ -88,9 +88,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
-    <Compile Include="Renderers\ChatInputBarViewRenderer.cs" />
     <Compile Include="Renderers\CustomEditorRenderer.cs" />
-    <Compile Include="Renderers\ExtendedListViewRenderer.cs" />
     <None Include="Entitlements.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Info.plist" />

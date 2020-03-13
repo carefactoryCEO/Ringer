@@ -58,20 +58,13 @@ namespace Ringer.Views
 
             MessagingCenter.Subscribe<MessageRepository, MessageModel>(this, "MessageAdded", (sender, message) =>
             {
-                Device.BeginInvokeOnMainThread(() =>
+                // 0.2초간 기다린다
+                Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
                 {
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
+                    MessageFeed.ScrollToLast();
+                    return false;
                 });
             });
-
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
-            {
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
-                });
-            });
-
             MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
             {
                 Device.BeginInvokeOnMainThread(async () =>
@@ -92,7 +85,6 @@ namespace Ringer.Views
             base.OnDisappearing();
 
             MessagingCenter.Unsubscribe<MessageRepository, MessageModel>(this, "MessageAdded");
-
             MessagingCenter.Unsubscribe<ChatPageViewModel, string>(this, "ConnectionEvent");
 
             await vm.OnDisappearingAsync().ConfigureAwait(false);
@@ -113,6 +105,10 @@ namespace Ringer.Views
         {
 
         }
-    }
 
+        async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        {
+            await Navigation.PopAsync();
+        }
+    }
 }

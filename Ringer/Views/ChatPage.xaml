@@ -65,7 +65,7 @@
                    WidthRequest="70"
                    HeightRequest="34">
                 <Image.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding GoBackCommand}"></TapGestureRecognizer>
+                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"></TapGestureRecognizer>
                 </Image.GestureRecognizers>
             </Image>
 
@@ -103,7 +103,7 @@
                     ios:DatePicker.UpdateMode="WhenFinished"/>
 
         <ContentView IsVisible="{Binding IsBusy}" 
-                               Grid.RowSpan="2" BackgroundColor="#bfff">
+                               Grid.RowSpan="2" BackgroundColor="#b000">
             <ActivityIndicator IsEnabled="{Binding IsBusy}" IsRunning="{Binding IsBusy}" HorizontalOptions="CenterAndExpand" VerticalOptions="CenterAndExpand"/>
         </ContentView>
     </Grid>

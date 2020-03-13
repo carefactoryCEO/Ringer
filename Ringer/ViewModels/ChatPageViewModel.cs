@@ -2,10 +2,8 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Plugin.Media;
@@ -18,8 +16,6 @@ using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
 using Ringer.Types;
-using Ringer.Views;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Ringer.ViewModels
@@ -30,37 +26,32 @@ namespace Ringer.ViewModels
         private readonly IMessagingService _messagingService;
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
-        private readonly ILocalDbService _localDbService;
-        readonly BlobContainerClient _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
+        readonly BlobContainerClient _blobContainer;
 
         DateTime birthDate;
-        UserInfoType userInfoToQuery = UserInfoType.None;
+        UserInfoType userInfoToQuery;
         GenderType genderType;
         #endregion
 
         #region Constructor
         public ChatPageViewModel()
         {
+            _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
+            userInfoToQuery = UserInfoType.None;
+
             Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
 
             _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
-            _localDbService = DependencyService.Resolve<ILocalDbService>();
 
             Messages = _messageRepository.Messages;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
-            GoBackCommand = new Command(async () => await Shell.Current.Navigation.PopAsync());
-            //ShowVidyoCommand = new Command(async () => await Shell.Current.GoToAsync("vidyopage?vidyoRoom=fd17626e-29c8-4e2f-a5bb-3215ffe8e61a"));
-            ShowVidyoCommand = new Command(async () => await Browser.OpenAsync("https://appr.tc/r/5433210"));
-
-
             TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
             TakingVideoCommand = new Command(async () => await TakeVideoAsync());
             GalleryPhotoCommand = new Command(async () => await GalleryPhotoAsync());
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
-
 
             // Initialize the properties for binding
             NavBarHeight = 0;
@@ -372,14 +363,19 @@ namespace Ringer.ViewModels
 
                 case UserInfoType.Name:
 
+
                     App.UserName = TextToSend;
                     _messageRepository.AddLocalMessage(new MessageModel { Body = TextToSend, Sender = App.UserName, MessageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Outgoing, CreatedAt = DateTime.UtcNow });
                     TextToSend = string.Empty;
+
                     // TODO: name validation here
+                    // 여기서 1차로 서버에 이름을 조회
+                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
+
+                    // if name validation passed
 
                     // await Task.Delay(1000);
 
-                    // name validation pass
                     _messageRepository.AddLoginMessage(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
                     // await Task.Delay(600);
 
@@ -390,6 +386,10 @@ namespace Ringer.ViewModels
                     break;
 
                 case UserInfoType.BirthDate:
+
+                    // TODO: birth date and sex validation here
+                    // 형식 조회 등
+                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
 
                     var numeric = TextToSend;
                     TextToSend = string.Empty;
@@ -436,23 +436,22 @@ namespace Ringer.ViewModels
 
                     if (App.IsLoggedIn)
                     {
-
                         // TODO: _messageRepository.LoadMessageAsync, _messagingService.ConnectAsync를 await WhenAll()로 처리한다. 
-                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
 
                         _messageRepository.Messages.Clear();
-                        await _messageRepository.LoadMessagesAsync(true).ConfigureAwait(false);
+                        await _messageRepository.LoadMessagesAsync(reset: true).ConfigureAwait(false);
 
                         Messages = _messageRepository.Messages;
 
                         Debug.WriteLine("--------------------------LoadMessage Finished------------------------------");
+                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
                         Debug.WriteLine("--------------------------Connect------------------------------");
+                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
 
 
                         _messagingService.Init(Constants.HubUrl, App.Token);
                         await _messagingService.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
 
-                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
                     }
 
                     break;
@@ -484,25 +483,19 @@ namespace Ringer.ViewModels
                 MessageTypes = MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Text | MessageTypes.Outgoing
             };
 
+            // reset text
+            TextToSend = string.Empty;
+            // view에 표시
+            await _messageRepository.AddMessageAsync(message);
+
             try
             {
-                // reset text
-                TextToSend = string.Empty;
-
-                // local Db 저장
-                await _localDbService.SaveMessageAsync(message);
-                await _messageRepository.ModifyLastMessageAsync(message).ConfigureAwait(false);
-
-                // view에 표시
-                _messageRepository.AddLocalMessage(message);
-
                 // send to hub
                 var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
-
                 message.ServerId = serverId;
 
+                // local Db 저장
                 await _messageRepository.UpdateAsync(message);
-
             }
             catch (Exception ex)
             {
@@ -510,152 +503,6 @@ namespace Ringer.ViewModels
             }
         }
 
-        private async Task ProcessCameraAction(string action)
-        {
-            if (action == "설정 열기")
-            {
-                CrossPermissions.Current.OpenAppSettings();
-            }
-
-            #region taking photo
-            if (action == Constants.TakingPhoto)
-            {
-                if (await TakingPhotoPermittedAsync())
-                {
-                    if (!CrossMedia.Current.IsTakePhotoSupported)
-                    {
-                        await Shell.Current.DisplayAlert("사진촬영 불가", "촬영 가능한 카메라가 없습니다 :(", "확인");
-                        return;
-                    }
-
-                    try
-                    {
-                        var file = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
-                        {
-                            Directory = "RingerPhoto",
-                            SaveToAlbum = true,
-                            CompressionQuality = 75,
-                            CustomPhotoSize = 50,
-                            PhotoSize = PhotoSize.MaxWidthHeight,
-                            MaxWidthHeight = 2000,
-                            DefaultCamera = CameraDevice.Rear
-                        });
-
-                        if (file == null)
-                            return;
-
-                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
-
-                        file.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-
-                    }
-                }
-            }
-            #endregion
-
-            #region taking video
-            if (action == Constants.TakingVideo)
-            {
-                if (await TakingVideoPermittedAsync())
-                {
-                    if (!CrossMedia.Current.IsTakeVideoSupported)
-                    {
-                        await Shell.Current.DisplayAlert("동영상 촬영 불가", "촬영 가능한 카메라가 없습니다 :(", "확인");
-                        return;
-                    }
-
-                    try
-                    {
-                        var file = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
-                        {
-                            Name = "VIDEO-" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + ".mp4",
-                            Directory = "RingerVideo",
-                            SaveToAlbum = true
-                        });
-
-                        if (file == null)
-                            return;
-
-                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
-
-                        file.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
-                }
-            }
-            #endregion
-
-            #region attaching photo
-            if (action == Constants.AttachingPhoto)
-            {
-                if (AttachingPhotoPermitted())
-                {
-                    try
-                    {
-                        if (!CrossMedia.Current.IsPickPhotoSupported)
-                        {
-                            await Shell.Current.DisplayAlert("사진 불러오기 실패", "사진 불러오기가 지원되지 않는 기기입니다. :(", "확인");
-                            return;
-                        }
-
-                        var file = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
-                        {
-                            PhotoSize = PhotoSize.Medium
-                        });
-
-                        if (file == null)
-                            return;
-
-                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
-
-                        file.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
-                }
-            }
-            #endregion
-
-            #region attaching video            
-            if (action == Constants.AttachingVideo)
-            {
-                if (AttachingVideoPermitted())
-                {
-                    if (!CrossMedia.Current.IsPickVideoSupported)
-                    {
-                        await Shell.Current.DisplayAlert("비디오 불러오기 실패", "비디오 접근 권한이 없습니다 :(", "확인");
-
-                        return;
-                    }
-
-                    try
-                    {
-                        var file = await CrossMedia.Current.PickVideoAsync();
-
-                        if (file == null)
-                            return;
-
-                        await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, $"{action}:{file.Path}");
-
-                        file.Dispose();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(ex.Message);
-                    }
-                }
-            }
-            #endregion
-        }
         private async Task<bool> CheckPhotosPermissionsAsync()
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
@@ -826,8 +673,6 @@ namespace Ringer.ViewModels
 
         #region public Commands
         public ICommand SendMessageCommand { get; }
-        public ICommand GoBackCommand { get; }
-        public ICommand ShowVidyoCommand { get; }
         public ICommand ResetConnectionCommand { get; }
 
         public ICommand TakingPhotoCommand { get; }

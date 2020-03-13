@@ -77,7 +77,7 @@ namespace Ringer.Views.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(ex.ToString());
+                    Debug.WriteLine(ex.ToString());
                 }
 
             });
