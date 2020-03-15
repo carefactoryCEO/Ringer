@@ -15,6 +15,9 @@ namespace Ringer.Services
         Task<MessageModel> GetLocallySavedLastServerMessageAsync(string currentRoomId);
         Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId);
         Task<MessageModel> GetLastMessageAsync(string roomId);
+        Task<MessageModel> GetLastMessageAsync(MessageModel message);
+        Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50);
+        Task<MessageModel> GetSentMessageAsync(string roomId);
     }
 
     public class LocalDbService : ILocalDbService
@@ -27,6 +30,13 @@ namespace Ringer.Services
             _database.CreateTableAsync<MessageModel>().Wait();
         }
 
+        public async Task<MessageModel> GetSentMessageAsync(string roomId)
+        {
+            return await _database.Table<MessageModel>()
+                .OrderByDescending(m => m.Id)
+                .FirstOrDefaultAsync(m => m.RoomId == roomId && m.ServerId == -1);
+        }
+
         public async Task<MessageModel> GetLastMessageAsync(string roomId)
         {
             return await _database.Table<MessageModel>()
@@ -34,6 +44,30 @@ namespace Ringer.Services
                 .OrderByDescending(m => m.CreatedAt)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<MessageModel> GetLastMessageAsync(MessageModel message)
+        {
+            return await _database.Table<MessageModel>()
+                .Where(m => m.RoomId == message.RoomId && m.Id < message.Id)
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50)
+        {
+            List<MessageModel> messageModels =
+                await _database.Table<MessageModel>()
+                    .Where(m => m.RoomId == App.RoomId)
+                    .OrderByDescending(m => m.Id)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
+
+            messageModels.Sort((m1, m2) => m1.Id.CompareTo(m2.Id));
+
+            return messageModels;
+        }
+
 
         public async Task<List<MessageModel>> GetAllAsync(bool desc = false)
         {

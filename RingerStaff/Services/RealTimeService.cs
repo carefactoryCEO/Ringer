@@ -43,7 +43,7 @@ namespace RingerStaff.Services
             _hubConnection.Reconnecting += OnReconnecting;
             _hubConnection.Reconnecting += OnReconnected;
 
-            _hubConnection.On<string, string, int, int, DateTime>("ReceiveMessage", OnReceiveMessage);
+            _hubConnection.On<string, string, int, int, DateTime, string>("ReceiveMessage", OnReceiveMessage);
             _hubConnection.On<string>("Entered", OnEntered);
             _hubConnection.On<string>("Left", OnLeft);
         }
@@ -118,9 +118,9 @@ namespace RingerStaff.Services
 
         }
 
-        private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
+        private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt, string roomId = null)
         {
-            MessageReceived?.Invoke(_hubConnection, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt));
+            MessageReceived?.Invoke(_hubConnection, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt, roomId));
         }
 
         private static Task OnReconnected(Exception arg)

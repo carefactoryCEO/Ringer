@@ -1,21 +1,18 @@
-﻿using Xamarin.Forms;
-using Ringer.Core;
+﻿using System;
 using System.Diagnostics;
-using System;
+using System.Runtime.CompilerServices;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
-using Ringer.Helpers;
 using Xamarin.Essentials;
-using Ringer.Models;
-using System.Runtime.CompilerServices;
-using Ringer.Services;
-using Ringer.Views;
+using Xamarin.Forms;
+using Ringer.Core;
 using Ringer.Core.EventArgs;
+using Ringer.Services;
 using Ringer.Types;
-using System.Linq;
-using System.Text.RegularExpressions;
+using Ringer.Helpers;
+using Ringer.Models;
 
 namespace Ringer
 {
@@ -23,7 +20,6 @@ namespace Ringer
     {
         #region private members
         private IMessageRepository _messageRepository;
-        private ILocalDbService _localDbService;
         private IMessagingService _messagingService;
         #endregion
 
@@ -70,46 +66,38 @@ namespace Ringer
         #region Constructor
         public App()
         {
-            //Xamarin.Forms.Device.SetFlags(new string[] { "MediaElement_Experimental" });
-
             InitializeComponent();
 
             MainPage = new AppShell();
 
-            #region Register messagingService
             DependencyService.Register<IMessagingService, MessagingService>();
             DependencyService.Register<ILocalDbService, LocalDbService>();
             DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
-
             _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
-            _localDbService = DependencyService.Resolve<ILocalDbService>();
 
+            #region register Messaging service event handlers
             _messagingService.Connecting += Trace_ConnectionStatus;
             _messagingService.Connected += Trace_ConnectionStatus;
-            _messagingService.ConnectionFailed += ConnectionFailed; ;
+            _messagingService.ConnectionFailed += ConnectionFailed;
 
             _messagingService.Disconnecting += Trace_ConnectionStatus;
-            //_messagingService.Disconnected += Trace_ConnectionStatus;
             _messagingService.Disconnected += ConnectionFailed;
             _messagingService.DisconnectionFailed += Trace_ConnectionStatus;
 
-            //_messagingService.Closed += Trace_ConnectionStatus;
             _messagingService.Closed += ConnectionFailed;
             _messagingService.Reconnecting += Trace_ConnectionStatus;
             _messagingService.Reconnected += Trace_ConnectionStatus;
 
-            _messagingService.MessageReceived += MessageReceived;
-            _messagingService.SomeoneEntered += SomeoneEntered;
-            _messagingService.SomeoneLeft += SomeoneLeft;
-
+            //_messagingService.SomeoneEntered += SomeoneEntered;
+            //_messagingService.SomeoneLeft += SomeoneLeft;
+            //_messagingService.MessageReceived += MessageReceived;
             #endregion
-
-            //PageDisappearing += App_PageDisappearing;
-            //PageAppearing += App_PageAppearing;
         }
+        #endregion
 
+        #region Connection handlers
         private void ConnectionFailed(object sender, ConnectionEventArgs e)
         {
             Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
@@ -117,64 +105,10 @@ namespace Ringer
                 Shell.Current.DisplayAlert("이럴수가", e.Message, "닫기");
             });
         }
-        #endregion
-
-        #region public static methods
-        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
-        {
-            message = $"\n[{DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
-
-            Debug.WriteLine(message);
-
-            if (analyticsAlso)
-                Analytics.TrackEvent(message);
-        }
-        #endregion
-
-        #region messaging handlers
         private void Trace_ConnectionStatus(object sender, ConnectionEventArgs e)
         {
-            Trace(e.Message);
+            Utilities.Trace(e.Message);
         }
-        private void SomeoneLeft(object sender, SignalREventArgs e)
-        {
-            if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new MessageModel { Body = $"{e.Sender}님이 나갔습니다.", Sender = Constants.System, MessageTypes = MessageTypes.EntranceNotice });
-
-            Trace(e.Message);
-        }
-        private void SomeoneEntered(object sender, SignalREventArgs e)
-        {
-            if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new MessageModel { Body = $"{e.Sender}님이 들어왔습니다.", Sender = Constants.System, MessageTypes = MessageTypes.EntranceNotice });
-
-            Trace(e.Message);
-        }
-        private async void MessageReceived(object sender, MessageReceivedEventArgs e)
-        {
-            MessageTypes messageTypes = Utilities.SetMessageTypes(e.Body, e.SenderId, UserId);
-
-            var message = new MessageModel
-            {
-                ServerId = e.MessageId,
-                RoomId = RoomId,
-                Body = e.Body,
-                Sender = e.SenderName,
-                SenderId = e.SenderId,
-                CreatedAt = e.CreatedAt,
-                ReceivedAt = DateTime.UtcNow,
-                MessageTypes = messageTypes
-            };
-
-            await _messageRepository.AddMessageAsync(message);
-
-            Debug.WriteLine(Preferences.Get(RoomId, 0));
-
-            Trace(message.MessageTypes.ToString());
-        }
-
-
-
         #endregion
 
         #region Life Cycle Methods
@@ -249,7 +183,7 @@ namespace Ringer
             #region Connect and load messages
             if (IsLoggedIn)
             {
-                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
+                //await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 _messagingService.Init(Constants.HubUrl, Token);
                 await _messagingService.ConnectAsync().ConfigureAwait(false);//OnStart
@@ -276,7 +210,7 @@ namespace Ringer
 
             if (IsLoggedIn)
             {
-                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
+                //await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
                 if (!_messagingService.IsReconnecting)
                     await _messagingService.ConnectAsync().ConfigureAwait(false);//OnResume

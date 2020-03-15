@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Azure.Storage.Blobs;
@@ -26,16 +28,27 @@ namespace Ringer.ViewModels
         private readonly IMessagingService _messagingService;
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
-        readonly BlobContainerClient _blobContainer;
+        private readonly BlobContainerClient _blobContainer;
+        private DateTime birthDate;
+        private UserInfoType userInfoToQuery;
+        private GenderType genderType;
+        #endregion
 
-        DateTime birthDate;
-        UserInfoType userInfoToQuery;
-        GenderType genderType;
+        #region Public Properties
+        public bool IsBusy { get; set; }
+        public string TextToSend { get; set; }
+        public Keyboard Keyboard { get; set; }
+        public double NavBarHeight { get; set; }
+        public Thickness BottomPadding { get; set; }
+        public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
+        public ObservableCollection<MessageModel> Messages { get; set; }
         #endregion
 
         #region Constructor
         public ChatPageViewModel()
         {
+            Messages = new ObservableCollection<MessageModel>();
+
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
             userInfoToQuery = UserInfoType.None;
 
@@ -45,7 +58,19 @@ namespace Ringer.ViewModels
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
 
-            Messages = _messageRepository.Messages;
+            _messageRepository.MessageAdded += (s, newMessage) =>
+            {
+                Messages.Add(newMessage);
+                MessagingCenter.Send(this, "MessageAdded", newMessage);
+            };
+            _messageRepository.MessageUpdated += (s, updatedMessage) =>
+            {
+                var targetMessage = Messages.LastOrDefault(t => t.Id == updatedMessage.Id);
+
+                targetMessage.MessageTypes = updatedMessage.MessageTypes;
+            };
+
+            //Messages = _messageRepository.Messages;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
@@ -71,7 +96,7 @@ namespace Ringer.ViewModels
                 await _messagingService.DisconnectAsync(App.RoomId, App.UserName);
 
                 // Clear Messages
-                _messageRepository.Messages.Clear();
+                //_messageRepository.Messages.Clear();
 
                 // reset local db's Message table
                 _messageRepository.ClearLocalDb();
@@ -79,6 +104,51 @@ namespace Ringer.ViewModels
                 // Go Back
                 await Shell.Current.Navigation.PopAsync();
             });
+        }
+        #endregion
+
+        #region Private Methods
+        private async Task SendMessageAsync()
+        {
+            if (string.IsNullOrEmpty(TextToSend))
+                return;
+
+            if (!App.IsLoggedIn)
+            {
+                await ExcuteLogInProcessAsync();
+                return;
+            }
+
+            var message = new MessageModel
+            {
+                RoomId = App.RoomId,
+                ServerId = -1,
+                Body = TextToSend,
+                Sender = App.UserName,
+                SenderId = App.UserId,
+                CreatedAt = DateTime.UtcNow,
+                ReceivedAt = DateTime.UtcNow,
+                MessageTypes = MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Text | MessageTypes.Outgoing
+            };
+
+            // reset text
+            TextToSend = string.Empty;
+            // view에 표시
+            await _messageRepository.AddMessageAsync(message);
+
+            try
+            {
+                // send to hub
+                var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
+                message.ServerId = serverId;
+
+                // local Db 저장
+                await _messageRepository.UpdateAsync(message);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"vs.SendMessage:Send failed: {ex.Message}");
+            }
         }
 
         private async Task TakePhotoAsync()
@@ -325,189 +395,11 @@ namespace Ringer.ViewModels
             }
         }
 
-        internal async Task OnAppearingAsync()
-        {
-            //await RealTimeService.EnterRoomAsync(App.CurrentRoomId, "staff");
-            //await LoadMessagesAsync();
-
-            await Task.Delay(0);
-        }
-        internal async Task OnDisappearingAsync()
-        {
-            await Task.Delay(0);
-        }
-
-        public async Task ExcuteLogInProcessAsync()
-        {
-            if (App.IsLoggedIn)
-                return;
-
-            switch (userInfoToQuery)
-            {
-                case UserInfoType.None:
-
-                    // await Task.Delay(1000);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
-                    // await Task.Delay(1500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    // await Task.Delay(1500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    // await Task.Delay(2000);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    // await Task.Delay(2500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "이름을 입력하세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
-
-                    userInfoToQuery = UserInfoType.Name;
-
-                    break;
-
-                case UserInfoType.Name:
-
-
-                    App.UserName = TextToSend;
-                    _messageRepository.AddLocalMessage(new MessageModel { Body = TextToSend, Sender = App.UserName, MessageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Outgoing, CreatedAt = DateTime.UtcNow });
-                    TextToSend = string.Empty;
-
-                    // TODO: name validation here
-                    // 여기서 1차로 서버에 이름을 조회
-                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
-
-                    // if name validation passed
-
-                    // await Task.Delay(1000);
-
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
-                    // await Task.Delay(600);
-
-                    Keyboard = Keyboard.Numeric;
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
-
-                    userInfoToQuery = UserInfoType.BirthDate;
-                    break;
-
-                case UserInfoType.BirthDate:
-
-                    // TODO: birth date and sex validation here
-                    // 형식 조회 등
-                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
-
-                    var numeric = TextToSend;
-                    TextToSend = string.Empty;
-
-                    // process gender
-                    string gender = numeric.Substring(6, 1);
-                    if (int.TryParse(gender, out var parsedGenderInt))
-                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
-                    else
-                        Debug.WriteLine("Wrong Gender format");
-
-                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
-
-                    // process date of birth
-                    string year = numeric.Substring(0, 2);
-                    string month = numeric.Substring(2, 2);
-                    string day = numeric.Substring(4, 2);
-
-                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
-
-                    if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
-                        Debug.WriteLine(parsedBirthdate);
-                    else
-                        Debug.WriteLine("Wrong DateTime format");
-
-
-                    //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
-                    //birthDate = DateTime.Parse($"{year}-{month}-{day}");
-                    //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
-
-                    birthDate = parsedBirthdate;
-
-                    _messageRepository.AddLocalMessage(new MessageModel { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
-
-                    // await Task.Delay(500);
-
-                    Keyboard = Keyboard.Chat;
-
-                    _messageRepository.AddLocalMessage(new MessageModel { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
-
-                    // Log in and get Token
-                    // TODO: Add user's Location data to validate ticket
-                    await _restService.LogInAsync(App.UserName, birthDate, genderType);
-
-                    if (App.IsLoggedIn)
-                    {
-                        // TODO: _messageRepository.LoadMessageAsync, _messagingService.ConnectAsync를 await WhenAll()로 처리한다. 
-
-                        _messageRepository.Messages.Clear();
-                        await _messageRepository.LoadMessagesAsync(reset: true).ConfigureAwait(false);
-
-                        Messages = _messageRepository.Messages;
-
-                        Debug.WriteLine("--------------------------LoadMessage Finished------------------------------");
-                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
-                        Debug.WriteLine("--------------------------Connect------------------------------");
-                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
-
-
-                        _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
-
-                    }
-
-                    break;
-            }
-        }
-        #endregion
-
-        #region Private Methods
-        private async Task SendMessageAsync()
-        {
-            if (string.IsNullOrEmpty(TextToSend))
-                return;
-
-            if (!App.IsLoggedIn)
-            {
-                await ExcuteLogInProcessAsync();
-                return;
-            }
-
-            var message = new MessageModel
-            {
-                RoomId = App.RoomId,
-                ServerId = -1,
-                Body = TextToSend,
-                Sender = App.UserName,
-                SenderId = App.UserId,
-                CreatedAt = DateTime.UtcNow,
-                ReceivedAt = DateTime.UtcNow,
-                MessageTypes = MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Text | MessageTypes.Outgoing
-            };
-
-            // reset text
-            TextToSend = string.Empty;
-            // view에 표시
-            await _messageRepository.AddMessageAsync(message);
-
-            try
-            {
-                // send to hub
-                var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
-                message.ServerId = serverId;
-
-                // local Db 저장
-                await _messageRepository.UpdateAsync(message);
-            }
-            catch (Exception ex)
-            {
-                _messageRepository.AddLocalMessage(new MessageModel { Body = $"vs.SendMessage:Send failed: {ex.Message}", Sender = Constants.System });
-            }
-        }
-
         private async Task<bool> CheckPhotosPermissionsAsync()
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
 
-            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            if (status == PermissionStatus.Granted)
                 return true;
             else
             {
@@ -660,21 +552,148 @@ namespace Ringer.ViewModels
         }
         #endregion
 
-        #region Public Properties
-        public bool IsBusy { get; set; }
-        public string TextToSend { get; set; }
-        public Keyboard Keyboard { get; set; }
-        public double NavBarHeight { get; set; }
-        public Thickness BottomPadding { get; set; }
+        #region Public Methods
+        public async Task ExcuteLogInProcessAsync()
+        {
+            if (App.IsLoggedIn)
+                return;
 
-        public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
-        public ObservableCollection<MessageModel> Messages { get; set; }
+            switch (userInfoToQuery)
+            {
+                case UserInfoType.None:
+
+                    // await Task.Delay(1000);
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
+                    // await Task.Delay(1500);
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    // await Task.Delay(1500);
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    // await Task.Delay(2000);
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    // await Task.Delay(2500);
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "이름을 입력하세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
+
+                    userInfoToQuery = UserInfoType.Name;
+
+                    break;
+
+                case UserInfoType.Name:
+
+
+                    App.UserName = TextToSend;
+                    Messages.Add(new MessageModel { Body = TextToSend, Sender = App.UserName, MessageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Outgoing, CreatedAt = DateTime.UtcNow });
+                    TextToSend = string.Empty;
+
+                    // TODO: name validation here
+                    // 여기서 1차로 서버에 이름을 조회
+                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
+
+                    // if name validation passed
+
+                    // await Task.Delay(1000);
+
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
+                    // await Task.Delay(600);
+
+                    Keyboard = Keyboard.Numeric;
+                    _messageRepository.AddLoginMessage(new MessageModel { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
+
+                    userInfoToQuery = UserInfoType.BirthDate;
+                    break;
+
+                case UserInfoType.BirthDate:
+
+                    // TODO: birth date and sex validation here
+                    // 형식 조회 등
+                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
+
+                    var numeric = TextToSend;
+                    TextToSend = string.Empty;
+
+                    // process gender
+                    string gender = numeric.Substring(6, 1);
+                    if (int.TryParse(gender, out var parsedGenderInt))
+                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
+                    else
+                        Debug.WriteLine("Wrong Gender format");
+
+                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    // process date of birth
+                    string year = numeric.Substring(0, 2);
+                    string month = numeric.Substring(2, 2);
+                    string day = numeric.Substring(4, 2);
+
+                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
+
+                    if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
+                        Debug.WriteLine(parsedBirthdate);
+                    else
+                        Debug.WriteLine("Wrong DateTime format");
+
+
+                    //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
+                    //birthDate = DateTime.Parse($"{year}-{month}-{day}");
+                    //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
+
+                    birthDate = parsedBirthdate;
+
+                    Messages.Add(new MessageModel { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
+
+                    // await Task.Delay(500);
+
+                    Keyboard = Keyboard.Chat;
+
+                    Messages.Add(new MessageModel { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
+
+                    // Log in and get Token
+                    // TODO: Add user's Location data to validate ticket
+                    await _restService.LogInAsync(App.UserName, birthDate, genderType);
+
+                    if (App.IsLoggedIn)
+                    {
+                        // TODO: _messageRepository.LoadMessageAsync, _messagingService.ConnectAsync를 await WhenAll()로 처리한다. 
+
+                        //_messageRepository.Messages.Clear();
+                        //await _messageRepository.LoadMessagesAsync(reset: true).ConfigureAwait(false);
+
+                        //Messages = _messageRepository.Messages;
+
+                        Debug.WriteLine("--------------------------LoadMessage Finished------------------------------");
+                        Debug.WriteLine("--------------------------LoadMessage------------------------------");
+                        Debug.WriteLine("--------------------------Connect------------------------------");
+                        Debug.WriteLine("--------------------------Connect Finished------------------------------");
+
+
+                        _messagingService.Init(Constants.HubUrl, App.Token);
+                        await _messagingService.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
+
+                    }
+
+                    break;
+            }
+        }
+        public async Task OnAppearingAsync()
+        {
+            if (Messages.Count > 0)
+                return;
+
+            List<MessageModel> messages = await _messageRepository.GetMessagesAsync(0, 50).ConfigureAwait(false);
+
+            foreach (MessageModel m in messages)
+                Messages.Add(m);
+
+            MessagingCenter.Send(this, "MessageAdded", messages.Last());
+        }
+        public async Task OnDisappearingAsync()
+        {
+            await Task.Delay(0);
+        }
         #endregion
 
         #region public Commands
         public ICommand SendMessageCommand { get; }
         public ICommand ResetConnectionCommand { get; }
-
         public ICommand TakingPhotoCommand { get; }
         public ICommand TakingVideoCommand { get; }
         public ICommand GalleryPhotoCommand { get; }

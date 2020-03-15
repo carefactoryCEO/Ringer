@@ -28,6 +28,26 @@ namespace Ringer.Views.Controls
                     _previousHeight = Height;
                 };
             }
+
+            Scrolled += RingerListView_Scrolled;
+            ItemAppearing += RingerListView_ItemAppearing;
+        }
+
+        int lastAppearedItemIndex = -1;
+
+        private void RingerListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
+        {
+            Debug.WriteLine($"{e.ItemIndex}");
+
+            if (e.ItemIndex == 0 && lastAppearedItemIndex > e.ItemIndex)
+                Debug.WriteLine("refresh!");
+
+            lastAppearedItemIndex = e.ItemIndex;
+        }
+
+        private void RingerListView_Scrolled(object sender, ScrolledEventArgs e)
+        {
+            //Debug.WriteLine($"height:{Height}, scrollY: {e.ScrollY}");
         }
 
         public RingerListView(ListViewCachingStrategy cachingStrategy) : base(cachingStrategy)

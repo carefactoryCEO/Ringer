@@ -184,7 +184,7 @@ namespace Ringer.ConsoleApp
         private static void Service_OnMessageReceived(object sender, MessageReceivedEventArgs e)
         {
 
-            if (e.SenderName == name)
+            if (e.SenderName == name || e.RoomId == currentRoomId)
                 return;
 
             Console.WriteLine($"{e.SenderName}: {e.Body}");

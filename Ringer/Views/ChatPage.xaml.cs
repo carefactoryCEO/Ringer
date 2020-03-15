@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Ringer.Models;
-using Ringer.Services;
 using Ringer.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -14,17 +13,22 @@ namespace Ringer.Views
     [QueryProperty("Room", "room")]
     public partial class ChatPage : ContentPage
     {
+        #region private fields
         private readonly ChatPageViewModel vm;
         private Thickness _insets;
         private string _room;
+        #endregion
 
+        #region constructor
         public ChatPage()
         {
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
         }
+        #endregion
 
+        #region public properties
         public string Room
         {
             get => _room;
@@ -34,7 +38,36 @@ namespace Ringer.Views
                 Debug.WriteLine(_room);
             }
         }
+        #endregion
 
+        #region override methods
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
+            {
+                // 0.2초간 기다린다
+                Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: true);
+                    return false;
+                });
+            });
+
+            await vm.ExcuteLogInProcessAsync();
+
+            await vm.OnAppearingAsync().ConfigureAwait(false);
+        }
+        protected override async void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            MessagingCenter.Unsubscribe<MessageRepository, MessageModel>(this, "MessageAdded");
+            MessagingCenter.Unsubscribe<ChatPageViewModel, string>(this, "ConnectionEvent");
+
+            await vm.OnDisappearingAsync().ConfigureAwait(false);
+        }
         protected override void OnSizeAllocated(double width, double height)
         {
             if (Device.RuntimePlatform == Device.iOS)
@@ -45,70 +78,27 @@ namespace Ringer.Views
 
             base.OnSizeAllocated(width, height);
         }
+        #endregion
 
+        #region private methods (include event handlers)
         private void OnListShouldBeScrolled(object sender, EventArgs e)
         {
             if (Device.RuntimePlatform == Device.iOS)
                 MessageFeed.ScrollToLast();
         }
-
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-
-            MessagingCenter.Subscribe<MessageRepository, MessageModel>(this, "MessageAdded", (sender, message) =>
-            {
-                // 0.2초간 기다린다
-                Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
-                {
-                    MessageFeed.ScrollToLast();
-                    return false;
-                });
-            });
-            MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
-            {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await DisplayAlert("reconnecting", message, "닫기");
-                });
-            });
-
-            await vm.ExcuteLogInProcessAsync();
-
-            await vm.OnAppearingAsync().ConfigureAwait(false);
-
-            MessageFeed.ScrollToLast();
-        }
-
-        protected override async void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            MessagingCenter.Unsubscribe<MessageRepository, MessageModel>(this, "MessageAdded");
-            MessagingCenter.Unsubscribe<ChatPageViewModel, string>(this, "ConnectionEvent");
-
-            await vm.OnDisappearingAsync().ConfigureAwait(false);
-        }
-
-        void Button_Clicked(object sender, EventArgs e)
+        private void Button_Clicked(object sender, EventArgs e)
         {
             chatInputBarView.IsVisible = false;
             datePicker.Focus();
         }
-
-        void datePicker_DateSelected(object sender, DateChangedEventArgs e)
+        private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
         {
             chatInputBarView.IsVisible = true;
         }
-
-        void datePicker_Unfocused(object sender, FocusEventArgs e)
-        {
-
-        }
-
-        async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        private async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
         {
             await Navigation.PopAsync();
         }
+        #endregion
     }
 }

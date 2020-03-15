@@ -15,7 +15,7 @@ namespace Ringer.Services
 {
     public interface IRESTService
     {
-        Task<List<PendingMessage>> PullPendingMessagesAsync();
+        Task<List<PendingMessage>> PullPendingMessagesAsync(int lastMessageId = 0);
         Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
     }
 
@@ -28,7 +28,7 @@ namespace Ringer.Services
             _client = new HttpClient();
         }
 
-        public async Task<List<PendingMessage>> PullPendingMessagesAsync()
+        public async Task<List<PendingMessage>> PullPendingMessagesAsync(int lastMessageId = 0)
         {
             if (App.IsLoggedIn)
                 _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
@@ -37,7 +37,7 @@ namespace Ringer.Services
 
             try
             {
-                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastnumber={App.LastServerMessageId}";
+                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastnumber={lastMessageId}";
                 var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)

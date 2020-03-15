@@ -81,14 +81,10 @@ namespace Ringer.HubServer.Hubs
 
             sw.Restart();
 
-            // sender를 제외한 접속 기기들은 기존대로 메시지를 보냄.
-            //await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, body, message.Id, UserId, message.CreatedAt);
-
             // 접속중인 디바이스는 일단 다 보낸다.
-            //await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, _userId, message.CreatedAt);
-            await Clients.GroupExcept(roomId, Context.ConnectionId).SendAsync("ReceiveMessage", user.Name, body, message.Id, UserId, message.CreatedAt);
+            await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, UserId, message.CreatedAt, roomId);
 
-            _logger.LogWarning($"Send to Connected Devices: {sw.ElapsedMilliseconds}millisecond");
+            _logger.LogWarning($"Send to Connected Devices: {sw.ElapsedMilliseconds} millisecond");
             _logger.LogWarning($"Message id: {message?.Id ?? -1}");
 
             // production에서만 푸시
@@ -166,7 +162,7 @@ namespace Ringer.HubServer.Hubs
                 }
 
 
-                // 접속한 Device의 Owner(User)가 속한 모든 방에 Device를 추가
+                // Owner(User)가 속한 모든 방에 접속한 device를 추가
                 User user = await _dbContext.Users
                     .Include(user => user.Enrollments)
                         .ThenInclude(enrollment => enrollment.Room)
@@ -186,7 +182,7 @@ namespace Ringer.HubServer.Hubs
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
+                //await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
             }
             finally
             {

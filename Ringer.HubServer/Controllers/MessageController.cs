@@ -34,10 +34,10 @@ namespace Ringer.HubServer.Controllers
         [Authorize]
         // GET: api/values
         [HttpGet("pending")]
-        public async Task<ActionResult<string>> GetPendings(string roomId, int lastNumber = 0)
+        public async Task<ActionResult<string>> GetPendings(string roomId, int lastId = 0)
         {
             var messages = await _dbContext.Messages
-                .Where(m => m.RoomId == roomId && m.Id > lastNumber)
+                .Where(m => m.RoomId == roomId && m.Id > lastId)
                 .Include(m => m.Sender)
                 .Select(m => new PendingMessage
                 {
@@ -61,7 +61,7 @@ namespace Ringer.HubServer.Controllers
         {
             var userProxy = _hubContext.Clients.User(userId);
 
-            await userProxy.SendAsync("ReceiveMessage", "hub", "call from report api", messageId++, 7, DateTime.UtcNow);
+            await userProxy.SendAsync("ReceiveMessage", "hub", "call from report api", messageId++, 7, DateTime.UtcNow, null);
 
             return Ok();
         }

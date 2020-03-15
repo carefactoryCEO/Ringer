@@ -101,11 +101,7 @@ namespace Ringer.HubServer.Controllers
             dbContext.Messages.Add(message);
             await dbContext.SaveChangesAsync();
 
-
-
-            // private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
-            // await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
-            await hubContext.Clients.Group(roomId).SendAsync("ReceiveMessage", name, body, message.Id, user.Id, message.CreatedAt);
+            await hubContext.Clients.Group(roomId).SendAsync("ReceiveMessage", name, body, message.Id, user.Id, message.CreatedAt, message.Id);
             return new Author { Id = 1, Name = "mike" };
         }
     }

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using Microsoft.AppCenter.Analytics;
 using Ringer.Types;
 
 namespace Ringer.Helpers
@@ -36,6 +39,17 @@ namespace Ringer.Helpers
             messageTypes |= (senderId == userId) ? MessageTypes.Outgoing : MessageTypes.Incomming;
 
             return messageTypes;
+        }
+
+
+        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
+        {
+            message = $"\n[{DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
+
+            Debug.WriteLine(message);
+
+            if (analyticsAlso)
+                Analytics.TrackEvent(message);
         }
     }
 }

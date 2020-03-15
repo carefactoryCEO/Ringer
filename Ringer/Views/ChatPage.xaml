@@ -99,7 +99,7 @@
 
         <DatePicker Grid.Row="1" x:Name="datePicker" HeightRequest="5" BackgroundColor="Bisque"
                     IsVisible="False"
-                    DateSelected="datePicker_DateSelected"
+                    DateSelected="DatePicker_DateSelected"
                     ios:DatePicker.UpdateMode="WhenFinished"/>
 
         <ContentView IsVisible="{Binding IsBusy}" 
