@@ -37,7 +37,7 @@ namespace Ringer.Services
 
             try
             {
-                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastnumber={lastMessageId}";
+                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastId={lastMessageId}";
                 var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
@@ -10,7 +9,6 @@ using Xamarin.Forms;
 using Ringer.Core;
 using Ringer.Core.EventArgs;
 using Ringer.Services;
-using Ringer.Types;
 using Ringer.Helpers;
 using Ringer.Models;
 
@@ -19,7 +17,6 @@ namespace Ringer
     public partial class App : Application
     {
         #region private members
-        private IMessageRepository _messageRepository;
         private IMessagingService _messagingService;
         #endregion
 
@@ -75,7 +72,6 @@ namespace Ringer
             DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
             _messagingService = DependencyService.Resolve<IMessagingService>();
-            _messageRepository = DependencyService.Resolve<IMessageRepository>();
 
             #region register Messaging service event handlers
             _messagingService.Connecting += Trace_ConnectionStatus;

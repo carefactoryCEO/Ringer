@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Ringer.Models;
 using Ringer.ViewModels;
 using Xamarin.Forms;
@@ -48,17 +49,30 @@ namespace Ringer.Views
             MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
             {
                 // 0.2초간 기다린다
-                Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+                //Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
+                Device.BeginInvokeOnMainThread(() =>
                 {
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: true);
-                    return false;
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
                 });
+            });
+
+
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageLoaded", (s, m) =>
+            {
+                Debug.WriteLine(m.Body);
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(m as object, position: ScrollToPosition.Start, animated: false);
+                });
+
+                MessageFeed.IsLoading = false;
             });
 
             await vm.ExcuteLogInProcessAsync();
 
             await vm.OnAppearingAsync().ConfigureAwait(false);
         }
+
         protected override async void OnDisappearing()
         {
             base.OnDisappearing();

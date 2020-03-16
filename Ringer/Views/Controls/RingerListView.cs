@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Windows.Input;
+using Ringer.Models;
 using Xamarin.Forms;
 
 namespace Ringer.Views.Controls
@@ -9,9 +12,10 @@ namespace Ringer.Views.Controls
     [DesignTimeVisible(true)]
     public class RingerListView : ListView
     {
+        int lastAppearedItemIndex = -1;
         private double _previousHeight;
 
-        public RingerListView() : this(ListViewCachingStrategy.RecycleElement)
+        public RingerListView() : this(ListViewCachingStrategy.RetainElement)
         {
             if (Device.RuntimePlatform == Device.Android)
             {
@@ -29,25 +33,37 @@ namespace Ringer.Views.Controls
                 };
             }
 
-            Scrolled += RingerListView_Scrolled;
             ItemAppearing += RingerListView_ItemAppearing;
         }
 
-        int lastAppearedItemIndex = -1;
+
+        public static readonly BindableProperty LoadCommandProperty =
+            BindableProperty.Create(nameof(LoadCommand), typeof(ICommand), typeof(RingerListView), default(ICommand));
+
+        public ICommand LoadCommand
+        {
+            get { return (ICommand)GetValue(LoadCommandProperty); }
+            set { SetValue(LoadCommandProperty, value); }
+        }
+
+        public static readonly BindableProperty IsLoadingProperty =
+            BindableProperty.Create(nameof(IsLoading), typeof(bool), typeof(RingerListView), default(bool));
+
+        public bool IsLoading
+        {
+            get { return (bool)GetValue(IsLoadingProperty); }
+            set { SetValue(IsLoadingProperty, value); }
+        }
 
         private void RingerListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
         {
-            Debug.WriteLine($"{e.ItemIndex}");
+            if (e.ItemIndex == 0 && lastAppearedItemIndex > e.ItemIndex && !IsLoading)
+            {
+                IsLoading = true;
+                LoadCommand?.Execute(e.Item);
+            }
 
-            if (e.ItemIndex == 0 && lastAppearedItemIndex > e.ItemIndex)
-                Debug.WriteLine("refresh!");
-
-            lastAppearedItemIndex = e.ItemIndex;
-        }
-
-        private void RingerListView_Scrolled(object sender, ScrolledEventArgs e)
-        {
-            //Debug.WriteLine($"height:{Height}, scrollY: {e.ScrollY}");
+            lastAppearedItemIndex = (IsLoading) ? -1 : e.ItemIndex;
         }
 
         public RingerListView(ListViewCachingStrategy cachingStrategy) : base(cachingStrategy)
@@ -73,7 +89,7 @@ namespace Ringer.Views.Controls
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine(ex.ToString());
+                    Debug.WriteLine(ex.ToString());
                 }
 
             });

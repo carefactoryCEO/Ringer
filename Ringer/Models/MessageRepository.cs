@@ -18,12 +18,9 @@ namespace Ringer.Models
 {
     public interface IMessageRepository
     {
-        Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50);
+        Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50, bool initial = false);
         Task AddMessageAsync(MessageModel message);
 
-        void AddLoginMessage(MessageModel message);
-        Task SaveToLocalDbAsync(MessageModel message);
-        Task UpdateAsync(MessageModel message);
         void ClearLocalDb();
 
         event EventHandler<MessageModel> MessageAdded;
@@ -111,11 +108,11 @@ namespace Ringer.Models
         }
         #endregion
 
-        public async Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50)
+        public async Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50, bool initial = false)
         {
             await PullMessages();
 
-            return await _localDbService.GetMessagesAsync(skip, take);
+            return await _localDbService.GetMessagesAsync(skip, take, initial);
         }
 
         private async Task PullMessages()
@@ -140,29 +137,18 @@ namespace Ringer.Models
             }
         }
 
-        public void AddLoginMessage(MessageModel message)
-        {
-            //Messages.Add(message);
-        }
-
-        public async Task UpdateAsync(MessageModel message)
-        {
-            if (message.ServerId > App.LastServerMessageId)
-                App.LastServerMessageId = message.ServerId;
-
-            await _localDbService.SaveMessageAsync(message, update: true);
-        }
         public async Task AddMessageAsync(MessageModel message)
         {
             if (message.ServerId != -1 && message.ServerId <= App.LastServerMessageId)
                 return;
 
+            // 직전 메시지 수정
+            await UpdateLastMessageAsync(message).ConfigureAwait(false);
             // 로컬 디비 저장
-            await ModifyLastMessageAsync(message).ConfigureAwait(false);
             await SaveToLocalDbAsync(message);
         }
 
-        public async Task SaveToLocalDbAsync(MessageModel message)
+        private async Task SaveToLocalDbAsync(MessageModel message)
         {
             if (message.ServerId != -1 && message.ServerId > App.LastServerMessageId)
                 App.LastServerMessageId = message.ServerId;
@@ -172,7 +158,7 @@ namespace Ringer.Models
             MessageAdded?.Invoke(this, addedMessage);
         }
 
-        private async Task ModifyLastMessageAsync(MessageModel message)
+        private async Task UpdateLastMessageAsync(MessageModel message)
         {
             MessageModel lastMessage =
                 await _localDbService.GetLastMessageAsync(App.RoomId).ConfigureAwait(false);
@@ -190,6 +176,7 @@ namespace Ringer.Models
                 }
             }
         }
+
         public void ClearLocalDb()
         {
             _localDbService.ResetMessagesAsync();

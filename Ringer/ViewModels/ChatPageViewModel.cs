@@ -29,9 +29,9 @@ namespace Ringer.ViewModels
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
-        private DateTime birthDate;
-        private UserInfoType userInfoToQuery;
-        private GenderType genderType;
+        private DateTime _birthDate;
+        private UserInfoType _userInfoToQuery;
+        private GenderType _genderType;
         #endregion
 
         #region Public Properties
@@ -42,67 +42,50 @@ namespace Ringer.ViewModels
         public Thickness BottomPadding { get; set; }
         public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
         public ObservableCollection<MessageModel> Messages { get; set; }
+        public bool IsLoading { get; set; }
         #endregion
 
         #region Constructor
         public ChatPageViewModel()
         {
+            Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
+
             Messages = new ObservableCollection<MessageModel>();
+            NavBarHeight = 0;
+            Keyboard = Keyboard.Chat;
 
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
-            userInfoToQuery = UserInfoType.None;
-
-            Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
+            _userInfoToQuery = UserInfoType.None;
 
             _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
 
-            _messageRepository.MessageAdded += (s, newMessage) =>
-            {
-                Messages.Add(newMessage);
-                MessagingCenter.Send(this, "MessageAdded", newMessage);
-            };
-            _messageRepository.MessageUpdated += (s, updatedMessage) =>
-            {
-                var targetMessage = Messages.LastOrDefault(t => t.Id == updatedMessage.Id);
-
-                targetMessage.MessageTypes = updatedMessage.MessageTypes;
-            };
-
-            //Messages = _messageRepository.Messages;
+            _messageRepository.MessageAdded += MessageRepository_MessageAdded;
+            _messageRepository.MessageUpdated += MessageRepository_MessageUpdated;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
             TakingVideoCommand = new Command(async () => await TakeVideoAsync());
             GalleryPhotoCommand = new Command(async () => await GalleryPhotoAsync());
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
+            ResetConnectionCommand = new Command(async () => await ResetConnection());
+            LoadCommand = new Command(message => LoadMore(message));
+        }
 
-            // Initialize the properties for binding
-            NavBarHeight = 0;
-            Keyboard = Keyboard.Chat;
-
-            //App.Token= null;
-            ResetConnectionCommand = new Command(async () =>
+        private void LoadMore(object message)
+        {
+            Device.BeginInvokeOnMainThread(async () =>
             {
-                // Reset Token
-                App.Token = null;
-                App.RoomId = null;
-                App.UserName = null;
-                App.LastServerMessageId = 0;
-                userInfoToQuery = UserInfoType.None;
+                var messages = await _messageRepository.GetMessagesAsync(skip: Messages.Count, take: Constants.MessageCount, initial: true);
 
-                // Disconnect Connection
-                await _messagingService.DisconnectAsync(App.RoomId, App.UserName);
+                foreach (var m in messages)
+                {
+                    Messages.Insert(messages.IndexOf(m), m);
+                    Debug.WriteLine($"{messages.IndexOf(m)}: {m.Body}");
+                }
 
-                // Clear Messages
-                //_messageRepository.Messages.Clear();
-
-                // reset local db's Message table
-                _messageRepository.ClearLocalDb();
-
-                // Go Back
-                await Shell.Current.Navigation.PopAsync();
+                MessagingCenter.Send(this, "MessageLoaded", messages.Last());
             });
         }
         #endregion
@@ -143,12 +126,43 @@ namespace Ringer.ViewModels
                 message.ServerId = serverId;
 
                 // local Db 저장
-                await _messageRepository.UpdateAsync(message);
+                //await _messageRepository.UpdateAsync(message);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"vs.SendMessage:Send failed: {ex.Message}");
             }
+        }
+        private async Task ResetConnection()
+        {
+            // Reset Token
+            App.Token = null;
+            App.RoomId = null;
+            App.UserName = null;
+            App.LastServerMessageId = 0;
+            _userInfoToQuery = UserInfoType.None;
+
+            // Disconnect Connection
+            await _messagingService.DisconnectAsync(App.RoomId, App.UserName);
+
+            Messages.Clear();
+
+            // reset local db's Message table
+            _messageRepository.ClearLocalDb();
+
+            // Go Back
+            await Shell.Current.Navigation.PopAsync();
+        }
+        private void MessageRepository_MessageUpdated(object sender, MessageModel updatedMessage)
+        {
+            var targetMessage = Messages.LastOrDefault(t => t.Id == updatedMessage.Id);
+
+            targetMessage.MessageTypes = updatedMessage.MessageTypes;
+        }
+        private void MessageRepository_MessageAdded(object sender, MessageModel newMessage)
+        {
+            Messages.Add(newMessage);
+            MessagingCenter.Send(this, "MessageAdded", newMessage);
         }
 
         private async Task TakePhotoAsync()
@@ -399,7 +413,7 @@ namespace Ringer.ViewModels
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
 
-            if (status == PermissionStatus.Granted)
+            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
                 return true;
             else
             {
@@ -558,22 +572,22 @@ namespace Ringer.ViewModels
             if (App.IsLoggedIn)
                 return;
 
-            switch (userInfoToQuery)
+            switch (_userInfoToQuery)
             {
                 case UserInfoType.None:
 
                     // await Task.Delay(1000);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
+                    Messages.Add(new MessageModel { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
                     // await Task.Delay(1500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    Messages.Add(new MessageModel { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
                     // await Task.Delay(1500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    Messages.Add(new MessageModel { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
                     // await Task.Delay(2000);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
+                    Messages.Add(new MessageModel { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
                     // await Task.Delay(2500);
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "이름을 입력하세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
+                    Messages.Add(new MessageModel { Body = "이름을 입력하세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
 
-                    userInfoToQuery = UserInfoType.Name;
+                    _userInfoToQuery = UserInfoType.Name;
 
                     break;
 
@@ -592,13 +606,13 @@ namespace Ringer.ViewModels
 
                     // await Task.Delay(1000);
 
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
+                    Messages.Add(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
                     // await Task.Delay(600);
 
                     Keyboard = Keyboard.Numeric;
-                    _messageRepository.AddLoginMessage(new MessageModel { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
+                    Messages.Add(new MessageModel { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
 
-                    userInfoToQuery = UserInfoType.BirthDate;
+                    _userInfoToQuery = UserInfoType.BirthDate;
                     break;
 
                 case UserInfoType.BirthDate:
@@ -617,7 +631,7 @@ namespace Ringer.ViewModels
                     else
                         Debug.WriteLine("Wrong Gender format");
 
-                    genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
+                    _genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
 
                     // process date of birth
                     string year = numeric.Substring(0, 2);
@@ -636,9 +650,9 @@ namespace Ringer.ViewModels
                     //birthDate = DateTime.Parse($"{year}-{month}-{day}");
                     //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
 
-                    birthDate = parsedBirthdate;
+                    _birthDate = parsedBirthdate;
 
-                    Messages.Add(new MessageModel { Body = $"{year}년 {month}월 {day}일 {genderType}", Sender = App.UserName });
+                    Messages.Add(new MessageModel { Body = $"{year}년 {month}월 {day}일 {_genderType}", Sender = App.UserName });
 
                     // await Task.Delay(500);
 
@@ -648,7 +662,7 @@ namespace Ringer.ViewModels
 
                     // Log in and get Token
                     // TODO: Add user's Location data to validate ticket
-                    await _restService.LogInAsync(App.UserName, birthDate, genderType);
+                    await _restService.LogInAsync(App.UserName, _birthDate, _genderType);
 
                     if (App.IsLoggedIn)
                     {
@@ -675,15 +689,15 @@ namespace Ringer.ViewModels
         }
         public async Task OnAppearingAsync()
         {
-            if (Messages.Count > 0)
-                return;
+            if (Messages.Count == 0)
+            {
+                List<MessageModel> messages = await _messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
 
-            List<MessageModel> messages = await _messageRepository.GetMessagesAsync(0, 50).ConfigureAwait(false);
+                foreach (MessageModel m in messages)
+                    Messages.Add(m);
 
-            foreach (MessageModel m in messages)
-                Messages.Add(m);
-
-            MessagingCenter.Send(this, "MessageAdded", messages.Last());
+                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
+            }
         }
         public async Task OnDisappearingAsync()
         {
@@ -698,6 +712,7 @@ namespace Ringer.ViewModels
         public ICommand TakingVideoCommand { get; }
         public ICommand GalleryPhotoCommand { get; }
         public ICommand GalleryVideoCommand { get; }
+        public ICommand LoadCommand { get; }
         #endregion
 
         #region Events

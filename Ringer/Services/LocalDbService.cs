@@ -16,7 +16,7 @@ namespace Ringer.Services
         Task<int> GetLocallySavedLastServerMessageIdAsync(string currentRoomId);
         Task<MessageModel> GetLastMessageAsync(string roomId);
         Task<MessageModel> GetLastMessageAsync(MessageModel message);
-        Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50);
+        Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50, bool initial = false);
         Task<MessageModel> GetSentMessageAsync(string roomId);
     }
 
@@ -53,7 +53,7 @@ namespace Ringer.Services
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50)
+        public async Task<List<MessageModel>> GetMessagesAsync(int skip = 0, int take = 50, bool initial = false)
         {
             List<MessageModel> messageModels =
                 await _database.Table<MessageModel>()
@@ -63,7 +63,8 @@ namespace Ringer.Services
                     .Take(take)
                     .ToListAsync();
 
-            messageModels.Sort((m1, m2) => m1.Id.CompareTo(m2.Id));
+            if (initial)
+                messageModels.Sort((m1, m2) => m1.Id.CompareTo(m2.Id));
 
             return messageModels;
         }

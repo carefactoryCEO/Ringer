@@ -36,6 +36,8 @@ namespace Ringer.HubServer.Controllers
         [HttpGet("pending")]
         public async Task<ActionResult<string>> GetPendings(string roomId, int lastId = 0)
         {
+            _logger.LogWarning($"room: {roomId}, lastId: {lastId}");
+
             var messages = await _dbContext.Messages
                 .Where(m => m.RoomId == roomId && m.Id > lastId)
                 .Include(m => m.Sender)
@@ -49,7 +51,7 @@ namespace Ringer.HubServer.Controllers
                 })
                 .ToListAsync();
 
-            var response = JsonSerializer.Serialize<List<PendingMessage>>(messages);
+            var response = JsonSerializer.Serialize(messages);
 
             return Ok(response);
         }
