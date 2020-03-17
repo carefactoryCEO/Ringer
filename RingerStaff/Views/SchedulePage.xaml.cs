@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Plugin.LocalNotification;
 using Plugin.SimpleAudioPlayer;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace RingerStaff.Views
@@ -23,8 +24,9 @@ namespace RingerStaff.Views
                 Title = "Test",
                 Description = "Test Description",
                 ReturningData = "Dummy data", // Returning data when tapped on notification.
-                //NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
-                Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
+                NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
+                //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
+                Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
             };
 
             NotificationCenter.Current.Show(notification);
@@ -36,6 +38,8 @@ namespace RingerStaff.Views
                 player.Load("filling_your_inbox.m4r");
                 player.Play();
             }
+
+            Vibration.Vibrate();
         }
     }
 }

@@ -93,9 +93,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Info.plist" />
     <Compile Include="Renderers\RingerListViewRenderer.cs" />
-    <None Include="filling_your_inbox.m4r" />
-    <None Include="good_things_happen.aiff" />
-    <None Include="good_things_happen.mp3" />
     <Compile Include="Renderers\InputBarViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -203,6 +200,9 @@
     <BundleResource Include="Resources\CameraButton%402x.png" />
     <BundleResource Include="Resources\CameraButton%403x.png" />
     <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
+    <BundleResource Include="Resources\good_things_happen.aiff" />
+    <BundleResource Include="Resources\good_things_happen.mp3" />
+    <BundleResource Include="Resources\filling_your_inbox.m4r" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -229,10 +229,10 @@
     <PackageReference Include="Xam.Plugin.Media">
       <Version>5.0.0-beta</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.5.0.356" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.396" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.1" />
     <PackageReference Include="Xamarin.Forms.Maps">
-      <Version>4.5.0.356</Version>
+      <Version>4.5.0.396</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Analytics">
       <Version>3.0.0</Version>

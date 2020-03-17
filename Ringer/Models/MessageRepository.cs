@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Ringer.Core;
 using Ringer.Core.Data;
@@ -11,7 +8,6 @@ using Ringer.Core.EventArgs;
 using Ringer.Helpers;
 using Ringer.Services;
 using Ringer.Types;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Ringer.Models
@@ -117,7 +113,8 @@ namespace Ringer.Models
 
         private async Task PullMessages()
         {
-            List<PendingMessage> pendingMessages = await _restService.PullPendingMessagesAsync(App.LastServerMessageId).ConfigureAwait(false); // App.LastMessageId보다 큰 것만 긁어옴.
+            // App.LastMessageId보다 큰 것만 긁어옴.
+            List<PendingMessage> pendingMessages = await _restService.PullPendingMessagesAsync(App.LastServerMessageId).ConfigureAwait(false);
 
             foreach (var pendingMessage in pendingMessages)
             {

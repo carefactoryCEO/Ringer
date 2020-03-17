@@ -32,6 +32,7 @@ using Android.App;
 // Add some common permissions, these can be removed if not needed
 [assembly: UsesPermission(Android.Manifest.Permission.Internet)]
 [assembly: UsesPermission(Android.Manifest.Permission.WriteExternalStorage)]
+[assembly: UsesPermission(Android.Manifest.Permission.Vibrate)]
 
 // Fix Clear text Http traffic not permitted
 [assembly: Application(UsesCleartextTraffic = true)]

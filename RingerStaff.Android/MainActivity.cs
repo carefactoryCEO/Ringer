@@ -27,7 +27,7 @@ namespace RingerStaff.Droid
 
             NotificationCenter.CreateNotificationChannel(new Plugin.LocalNotification.Platform.Droid.NotificationChannelRequest
             {
-                Sound = Resource.Raw.filling_your_inbox.ToString(),
+                //Sound = Resource.Raw.filling_your_inbox.ToString(),
                 Importance = NotificationImportance.Max
             });
             NotificationCenter.NotifyNotificationTapped(Intent);

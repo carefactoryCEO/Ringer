@@ -29,33 +29,63 @@ namespace Ringer.ViewModels
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
+        private UserInfoType _userInfoToQuery = UserInfoType.None;
         private DateTime _birthDate;
-        private UserInfoType _userInfoToQuery;
         private GenderType _genderType;
         #endregion
 
         #region Public Properties
+        public ObservableCollection<MessageModel> Messages { get; set; } = new ObservableCollection<MessageModel>();
         public bool IsBusy { get; set; }
         public string TextToSend { get; set; }
-        public Keyboard Keyboard { get; set; }
-        public double NavBarHeight { get; set; }
+        public Keyboard Keyboard { get; set; } = Keyboard.Chat;
+        public double NavBarHeight { get; set; } = 0;
         public Thickness BottomPadding { get; set; }
         public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
-        public ObservableCollection<MessageModel> Messages { get; set; }
         public bool IsLoading { get; set; }
         #endregion
 
+        public static async Task<ChatPageViewModel> BuildChatPageViewMode()
+        {
+            var messageRepository = DependencyService.Resolve<IMessageRepository>();
+
+            var oMessages = new ObservableCollection<MessageModel>();
+
+            if (App.IsLoggedIn)
+            {
+                List<MessageModel> messages = await messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
+
+                foreach (MessageModel m in messages)
+                    oMessages.Add(m);
+            }
+
+            return new ChatPageViewModel(oMessages);
+        }
+
+        public async Task LoadMessagesAsync()
+        {
+            if (Messages.Count == 0)
+            {
+                List<MessageModel> messages = await _messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
+
+                foreach (MessageModel m in messages)
+                    Messages.Add(m);
+
+                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
+            }
+        }
+
         #region Constructor
+        public ChatPageViewModel(ObservableCollection<MessageModel> messages) : this()
+        {
+            Messages = messages;
+
+            if (Messages.Count > 0)
+                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
+        }
         public ChatPageViewModel()
         {
-            Debug.WriteLine("---------------ChatPageViewModel Ctor called--------------------");
-
-            Messages = new ObservableCollection<MessageModel>();
-            NavBarHeight = 0;
-            Keyboard = Keyboard.Chat;
-
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
-            _userInfoToQuery = UserInfoType.None;
 
             _messagingService = DependencyService.Resolve<IMessagingService>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
@@ -71,8 +101,14 @@ namespace Ringer.ViewModels
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             ResetConnectionCommand = new Command(async () => await ResetConnection());
             LoadCommand = new Command(message => LoadMore(message));
+
+            if (Messages is null)
+                Messages = new ObservableCollection<MessageModel>();
         }
 
+        #endregion
+
+        #region Private Methods
         private void LoadMore(object message)
         {
             Device.BeginInvokeOnMainThread(async () =>
@@ -82,15 +118,14 @@ namespace Ringer.ViewModels
                 foreach (var m in messages)
                 {
                     Messages.Insert(messages.IndexOf(m), m);
-                    Debug.WriteLine($"{messages.IndexOf(m)}: {m.Body}");
                 }
 
-                MessagingCenter.Send(this, "MessageLoaded", messages.Last());
+                object target = (messages.Count > 0) ? messages.Last() : message;
+
+                MessagingCenter.Send(this, "MessageLoaded", target);
+
             });
         }
-        #endregion
-
-        #region Private Methods
         private async Task SendMessageAsync()
         {
             if (string.IsNullOrEmpty(TextToSend))
@@ -190,7 +225,8 @@ namespace Ringer.ViewModels
                         CustomPhotoSize = 50,
                         PhotoSize = PhotoSize.MaxWidthHeight,
                         MaxWidthHeight = 1000,
-                        DefaultCamera = CameraDevice.Rear
+                        DefaultCamera = CameraDevice.Rear,
+                        AllowCropping = false
                     });
 
                     if (mediaFile == null)
@@ -201,17 +237,10 @@ namespace Ringer.ViewModels
                     var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
                     BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
 
-                    // Upload to azure blob storage
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }).ConfigureAwait(false);
-                    // Send image message to server
-                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString()).ConfigureAwait(false);
-
-                    IsBusy = false;
-
                     var message = new MessageModel
                     {
                         RoomId = App.RoomId,
-                        ServerId = serverId,
+                        ServerId = -1,
                         Body = blobClient.Uri.ToString(),
                         Sender = App.UserName,
                         SenderId = App.UserId,
@@ -220,11 +249,21 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    // Display image message to view locally
-                    await _messageRepository.AddMessageAsync(message);
+                    await Task.WhenAll(new Task[]
+                    {
+                        // Upload to azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                        // Display image message to view locally
+                        _messageRepository.AddMessageAsync(message)
+                    });
+
 
                     mediaFile.Dispose();
 
+                    IsBusy = false;
+
+                    // Send image message to server
+                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -256,22 +295,15 @@ namespace Ringer.ViewModels
                     if (mediaFile == null)
                         return;
 
-                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
-                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-
                     IsBusy = true;
 
-                    // upload to azure blob storage
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }).ConfigureAwait(false);
-                    // send image message
-                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString());
-
-                    IsBusy = false;
+                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
 
                     var message = new MessageModel
                     {
                         RoomId = App.RoomId,
-                        ServerId = serverId,
+                        ServerId = -1,
                         Body = blobClient.Uri.ToString(),
                         Sender = App.UserName,
                         SenderId = App.UserId,
@@ -280,10 +312,21 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    // save message locally
-                    await _messageRepository.AddMessageAsync(message);
+                    await Task.WhenAll(new Task[]
+                    {
+                        // upload to azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                        // save message locally
+                        _messageRepository.AddMessageAsync(message)
+
+                    }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
+
+                    IsBusy = false;
+                    // send image message
+                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+
                 }
                 catch (Exception ex)
                 {
@@ -318,22 +361,14 @@ namespace Ringer.ViewModels
                     if (mediaFile == null)
                         return;
 
-                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
-                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-
                     IsBusy = true;
 
-                    // Upload to Azure blob storage
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }).ConfigureAwait(false);
-                    // Send Video message
-                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString()).ConfigureAwait(false);
-
-                    IsBusy = false;
-
+                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
                     var message = new MessageModel
                     {
                         RoomId = App.RoomId,
-                        ServerId = serverId,
+                        ServerId = -1,
                         Body = blobClient.Uri.ToString(),
                         Sender = App.UserName,
                         SenderId = App.UserId,
@@ -342,10 +377,20 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    // Save message locally
-                    await _messageRepository.AddMessageAsync(message);
+                    await Task.WhenAll(new Task[]
+                    {
+                        // Upload to Azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
+                        // Save message locally
+                        _messageRepository.AddMessageAsync(message)
+                    }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
+                    // Send Video message
+
+                    IsBusy = false;
+
+                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -373,22 +418,13 @@ namespace Ringer.ViewModels
                     if (mediaFile == null)
                         return;
 
+                    IsBusy = true;
                     var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
                     BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-
-                    IsBusy = true;
-
-                    // upload to azure blob storage
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }).ConfigureAwait(false);
-
-                    var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, blobClient.Uri.ToString());
-
-                    IsBusy = false;
-
                     var message = new MessageModel
                     {
                         RoomId = App.RoomId,
-                        ServerId = serverId,
+                        ServerId = -1,
                         Body = blobClient.Uri.ToString(),
                         Sender = App.UserName,
                         SenderId = App.UserId,
@@ -397,10 +433,21 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    // Save message locally
-                    await _messageRepository.AddMessageAsync(message);
+                    await Task.WhenAll(new Task[]
+                    {
+                        // upload to azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
+                        // Save message locally
+                        _messageRepository.AddMessageAsync(message)
+
+                    }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
+
+                    IsBusy = false;
+
+
+                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -686,22 +733,6 @@ namespace Ringer.ViewModels
 
                     break;
             }
-        }
-        public async Task OnAppearingAsync()
-        {
-            if (Messages.Count == 0)
-            {
-                List<MessageModel> messages = await _messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
-
-                foreach (MessageModel m in messages)
-                    Messages.Add(m);
-
-                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
-            }
-        }
-        public async Task OnDisappearingAsync()
-        {
-            await Task.Delay(0);
         }
         #endregion
 

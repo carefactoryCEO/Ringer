@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.ViewModels;
 using Xamarin.Forms;
@@ -15,7 +17,7 @@ namespace Ringer.Views
     public partial class ChatPage : ContentPage
     {
         #region private fields
-        private readonly ChatPageViewModel vm;
+        private ChatPageViewModel vm;
         private Thickness _insets;
         private string _room;
         #endregion
@@ -26,6 +28,24 @@ namespace Ringer.Views
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
+
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
+                });
+            });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
+                    MessageFeed.IsLoading = false;
+                });
+            });
+
         }
         #endregion
 
@@ -44,51 +64,28 @@ namespace Ringer.Views
         #region override methods
         protected override async void OnAppearing()
         {
-            base.OnAppearing();
-
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
-            {
-                // 0.2초간 기다린다
-                //Device.StartTimer(TimeSpan.FromMilliseconds(200), () =>
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
-                });
-            });
-
-
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageLoaded", (s, m) =>
-            {
-                Debug.WriteLine(m.Body);
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    MessageFeed.ScrollTo(m as object, position: ScrollToPosition.Start, animated: false);
-                });
-
-                MessageFeed.IsLoading = false;
-            });
+            //if (vm == null)
+            //    BindingContext = vm = await ChatPageViewModel.BuildChatPageViewMode();
 
             await vm.ExcuteLogInProcessAsync();
+            await vm.LoadMessagesAsync();
 
-            await vm.OnAppearingAsync().ConfigureAwait(false);
+            base.OnAppearing();
         }
-
-        protected override async void OnDisappearing()
+        protected override void OnDisappearing()
         {
             base.OnDisappearing();
-
-            MessagingCenter.Unsubscribe<MessageRepository, MessageModel>(this, "MessageAdded");
-            MessagingCenter.Unsubscribe<ChatPageViewModel, string>(this, "ConnectionEvent");
-
-            await vm.OnDisappearingAsync().ConfigureAwait(false);
         }
         protected override void OnSizeAllocated(double width, double height)
         {
             if (Device.RuntimePlatform == Device.iOS)
                 _insets = On<iOS>().SafeAreaInsets();
 
-            vm.NavBarHeight = _insets.Top + 44;
-            vm.BottomPadding = new Thickness(0, 0, 0, _insets.Bottom);
+            if (vm != null)
+            {
+                vm.NavBarHeight = _insets.Top + 44;
+                vm.BottomPadding = new Thickness(0, 0, 0, _insets.Bottom);
+            }
 
             base.OnSizeAllocated(width, height);
         }

@@ -26,7 +26,7 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Row 1 -->
+        <!-- Row 1: Input Bar -->
         <ImageButton x:Name="ActionsButton" Source="ActionsButton"
                      HorizontalOptions="Start"
                      VerticalOptions="End"
@@ -58,7 +58,7 @@
 
         </ImageButton>
 
-        <!-- Row 2 -->
+        <!-- Row 2: Action Grid -->
         <Grid ColumnSpacing="0" RowSpacing="20"
               Grid.Row="1" 
               Padding="20, 25"

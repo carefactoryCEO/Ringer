@@ -1,5 +1,6 @@
 ﻿using Ringer.iOS.Renderers;
 using Ringer.Views.Controls;
+using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
@@ -11,6 +12,8 @@ namespace Ringer.iOS.Renderers
         protected override void OnElementChanged(ElementChangedEventArgs<ListView> e)
         {
             base.OnElementChanged(e);
+
+            //((UITableViewController)ViewController).RefreshControl.TintColor = UIColor.White;
 
             if (e.NewElement != null)
             {
