@@ -1,48 +1,38 @@
-﻿using Microsoft.AspNetCore.SignalR.Client;
-using Ringer.Core.EventArgs;
-using System;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Client;
+using Ringer.Core;
+using Ringer.Core.EventArgs;
+using Ringer.Models;
 
-namespace Ringer.Core
+namespace Ringer.Services
 {
-    public interface IMessagingService
+    public interface IMessaging : IMessagingService
     {
-        bool IsConnected { get; } // stable
-        bool IsDisconnected { get; } // connect immediatly
-        bool IsConnecting { get; } // indicate activity
-        bool IsReconnecting { get; } // indicate activity
-        string ConnectionId { get; }
-
-        void Init(string url, string token);
-
-        Task ConnectAsync();
-        Task DisconnectAsync();
-        Task DisconnectAsync(string room, string user);
-        Task JoinRoomAsync(string room, string user);
-        Task LeaveRoomAsync(string room, string user);
-        Task<int> SendMessageToRoomAsync(string roomId, string sender, string body);
-
-        event EventHandler<ConnectionEventArgs> Connecting;
-        event EventHandler<ConnectionEventArgs> Connected;
-        event EventHandler<ConnectionEventArgs> ConnectionFailed;
-        event EventHandler<ConnectionEventArgs> Disconnecting;
-        event EventHandler<ConnectionEventArgs> Disconnected;
-        event EventHandler<ConnectionEventArgs> DisconnectionFailed;
-        event EventHandler<ConnectionEventArgs> Reconnecting;
-        event EventHandler<ConnectionEventArgs> Reconnected;
-        event EventHandler<ConnectionEventArgs> Closed;
-
-        event EventHandler<SignalREventArgs> SomeoneEntered;
-        event EventHandler<SignalREventArgs> SomeoneLeft;
-        event EventHandler<MessageReceivedEventArgs> MessageReceived;
+        HubConnection HubConnection { get; }
+        ObservableCollection<MessageModel> Messages { get; }
+        bool IsFetching { get; set; }
     }
 
-    public class MessagingService : IMessagingService
+    public class Messaging : IMessaging
     {
         #region private members
         public HubConnection _hubConnection;
         public string _hubUrl;
+        private ObservableCollection<MessageModel> _messages;
+        #endregion
+
+        #region public properties
+        public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
+        public bool IsDisconnected => _hubConnection?.State == HubConnectionState.Disconnected;
+        public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
+        public bool IsReconnecting => _hubConnection?.State == HubConnectionState.Reconnecting;
+        public string ConnectionId => _hubConnection?.ConnectionId;
+        public HubConnection HubConnection => _hubConnection;
+        public ObservableCollection<MessageModel> Messages => _messages;
+        public bool IsFetching { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
         #endregion
 
         #region Initializer
@@ -85,6 +75,8 @@ namespace Ringer.Core
                 })
                 .Build();
 
+            if (IsConnected)
+                _messages = new ObservableCollection<MessageModel>();
             // Handle Hub connection events
             _hubConnection.Closed += err =>
             {
@@ -118,13 +110,7 @@ namespace Ringer.Core
         }
         #endregion
 
-        #region public properties
-        public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
-        public bool IsDisconnected => _hubConnection?.State == HubConnectionState.Disconnected;
-        public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
-        public bool IsReconnecting => _hubConnection?.State == HubConnectionState.Reconnecting;
-        public string ConnectionId => _hubConnection?.ConnectionId;
-        #endregion
+
 
         #region Public Methods
         public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)

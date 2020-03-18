@@ -27,12 +27,15 @@
         </Grid.RowDefinitions>
 
         <!-- Row 1: Input Bar -->
+
+        <!-- Actions Button -->
         <ImageButton x:Name="ActionsButton" Source="ActionsButton"
                      HorizontalOptions="Start"
                      VerticalOptions="End"
                      Clicked="ActionsButton_Clicked"
                      Grid.Row="0"/>
 
+        <!-- Editor -->
         <controls:ExtendedEditorControl x:Name="RingerEditor"
                                Text="{Binding TextToSend}"
                                HeightRequest="{OnPlatform iOS=38}"
@@ -48,6 +51,7 @@
                                FontSize="{OnPlatform iOS=18, Android=16}"
                                Grid.Row="0"/>
 
+        <!-- Send Button -->
         <ImageButton Source="SendButton"
                      x:Name="SendButton"
                HorizontalOptions="End"

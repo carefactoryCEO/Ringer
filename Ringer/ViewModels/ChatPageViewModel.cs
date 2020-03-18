@@ -25,7 +25,7 @@ namespace Ringer.ViewModels
     class ChatPageViewModel : INotifyPropertyChanged
     {
         #region private members
-        private readonly IMessagingService _messagingService;
+        private readonly IMessaging _messaging;
         private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
@@ -45,7 +45,7 @@ namespace Ringer.ViewModels
         public bool IsLoading { get; set; }
         #endregion
 
-        public static async Task<ChatPageViewModel> BuildChatPageViewMode()
+        public static async Task<ChatPageViewModel> BuildChatPageViewModel()
         {
             var messageRepository = DependencyService.Resolve<IMessageRepository>();
 
@@ -53,7 +53,7 @@ namespace Ringer.ViewModels
 
             if (App.IsLoggedIn)
             {
-                List<MessageModel> messages = await messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
+                List<MessageModel> messages = await messageRepository.LoadRecentMessagesAsync(Constants.MessageCount);
 
                 foreach (MessageModel m in messages)
                     oMessages.Add(m);
@@ -66,13 +66,14 @@ namespace Ringer.ViewModels
         {
             if (Messages.Count == 0)
             {
-                List<MessageModel> messages = await _messageRepository.GetMessagesAsync(initial: true, take: Constants.MessageCount);
+                List<MessageModel> messages = await _messageRepository.LoadRecentMessagesAsync(Constants.MessageCount);
 
                 foreach (MessageModel m in messages)
                     Messages.Add(m);
-
-                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
             }
+
+            if (Messages.Count > 0)
+                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
         }
 
         #region Constructor
@@ -87,7 +88,7 @@ namespace Ringer.ViewModels
         {
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
 
-            _messagingService = DependencyService.Resolve<IMessagingService>();
+            _messaging = DependencyService.Resolve<IMessaging>();
             _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
 
@@ -102,8 +103,9 @@ namespace Ringer.ViewModels
             ResetConnectionCommand = new Command(async () => await ResetConnection());
             LoadCommand = new Command(message => LoadMore(message));
 
-            if (Messages is null)
-                Messages = new ObservableCollection<MessageModel>();
+            //if (Messages is null)
+            //    Messages = new ObservableCollection<MessageModel>();
+            Messages = App.Messages;
         }
 
         #endregion
@@ -113,7 +115,7 @@ namespace Ringer.ViewModels
         {
             Device.BeginInvokeOnMainThread(async () =>
             {
-                var messages = await _messageRepository.GetMessagesAsync(skip: Messages.Count, take: Constants.MessageCount, initial: true);
+                var messages = await _messageRepository.LoadMoreMessagesAsync(Constants.MessageCount, Messages.Count);
 
                 foreach (var m in messages)
                 {
@@ -151,22 +153,12 @@ namespace Ringer.ViewModels
 
             // reset text
             TextToSend = string.Empty;
-            // view에 표시
-            await _messageRepository.AddMessageAsync(message);
 
-            try
-            {
-                // send to hub
-                var serverId = await _messagingService.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
-                message.ServerId = serverId;
+            // 저장
+            await _messageRepository.AddMessageAsync(message).ConfigureAwait(false);
 
-                // local Db 저장
-                //await _messageRepository.UpdateAsync(message);
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"vs.SendMessage:Send failed: {ex.Message}");
-            }
+            // 전송
+            await _messaging.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
         }
         private async Task ResetConnection()
         {
@@ -178,7 +170,7 @@ namespace Ringer.ViewModels
             _userInfoToQuery = UserInfoType.None;
 
             // Disconnect Connection
-            await _messagingService.DisconnectAsync(App.RoomId, App.UserName);
+            await _messaging.DisconnectAsync(App.RoomId, App.UserName);
 
             Messages.Clear();
 
@@ -192,7 +184,11 @@ namespace Ringer.ViewModels
         {
             var targetMessage = Messages.LastOrDefault(t => t.Id == updatedMessage.Id);
 
-            targetMessage.MessageTypes = updatedMessage.MessageTypes;
+            if (targetMessage != null)
+            {
+                targetMessage.MessageTypes = updatedMessage.MessageTypes;
+                MessagingCenter.Send(this, "MessageAdded", targetMessage);
+            }
         }
         private void MessageRepository_MessageAdded(object sender, MessageModel newMessage)
         {
@@ -255,15 +251,14 @@ namespace Ringer.ViewModels
                         blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
                         // Display image message to view locally
                         _messageRepository.AddMessageAsync(message)
-                    });
-
+                    }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
 
                     IsBusy = false;
 
                     // Send image message to server
-                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -325,7 +320,7 @@ namespace Ringer.ViewModels
 
                     IsBusy = false;
                     // send image message
-                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
 
                 }
                 catch (Exception ex)
@@ -390,7 +385,7 @@ namespace Ringer.ViewModels
 
                     IsBusy = false;
 
-                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -447,7 +442,7 @@ namespace Ringer.ViewModels
                     IsBusy = false;
 
 
-                    await _messagingService.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -726,8 +721,8 @@ namespace Ringer.ViewModels
                         Debug.WriteLine("--------------------------Connect Finished------------------------------");
 
 
-                        _messagingService.Init(Constants.HubUrl, App.Token);
-                        await _messagingService.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
+                        _messaging.Init(Constants.HubUrl, App.Token);
+                        await _messaging.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
 
                     }
 

@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using Plugin.LocalNotification;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.ViewModels;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -64,13 +66,14 @@ namespace Ringer.Views
         #region override methods
         protected override async void OnAppearing()
         {
+            base.OnAppearing();
+
             //if (vm == null)
-            //    BindingContext = vm = await ChatPageViewModel.BuildChatPageViewMode();
+            //    BindingContext = vm = await ChatPageViewModel.BuildChatPageViewModel();
 
             await vm.ExcuteLogInProcessAsync();
             await vm.LoadMessagesAsync();
 
-            base.OnAppearing();
         }
         protected override void OnDisappearing()
         {
@@ -99,9 +102,43 @@ namespace Ringer.Views
         }
         private void Button_Clicked(object sender, EventArgs e)
         {
-            chatInputBarView.IsVisible = false;
-            datePicker.Focus();
+            // date picker
+            //chatInputBarView.IsVisible = false;
+            //datePicker.Focus();
+
+            // local notification
+            ShowLocalNotification();
         }
+
+        private int notificationId = -1;
+
+        private void ShowLocalNotification()
+        {
+            var notification = new NotificationRequest
+            {
+                BadgeNumber = 1,
+                NotificationId = ++notificationId,
+                Title = "Test",
+                Description = "Test Description",
+                ReturningData = "Dummy data", // Returning data when tapped on notification.
+                NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
+                //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
+                //Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
+            };
+
+            NotificationCenter.Current.Show(notification);
+
+            // TODO: iOS이고 CurrentRoom이 아니면 알람 사운드
+            //if (Device.RuntimePlatform == Device.iOS)
+            //{
+            //    var player = CrossSimpleAudioPlayer.Current;
+            //    player.Load("filling_your_inbox.m4r");
+            //    player.Play();
+            //}
+
+            Vibration.Vibrate();
+        }
+
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
         {
             chatInputBarView.IsVisible = true;

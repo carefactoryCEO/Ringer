@@ -11,13 +11,16 @@ using Ringer.Core.EventArgs;
 using Ringer.Services;
 using Ringer.Helpers;
 using Ringer.Models;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Plugin.LocalNotification;
 
 namespace Ringer
 {
     public partial class App : Application
     {
         #region private members
-        private IMessagingService _messagingService;
+        private readonly IMessaging _messaging;
         #endregion
 
         #region public static propertie
@@ -58,6 +61,7 @@ namespace Ringer
             get => Preferences.Get(nameof(RoomId), null);
             set => Preferences.Set(nameof(RoomId), value);
         }
+        public static ObservableCollection<MessageModel> Messages = new ObservableCollection<MessageModel>();
         #endregion
 
         #region Constructor
@@ -65,31 +69,43 @@ namespace Ringer
         {
             InitializeComponent();
 
+            // Local Notification
+            NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
+
+            // Main page
             MainPage = new AppShell();
 
-            DependencyService.Register<IMessagingService, MessagingService>();
+            // Services
+            DependencyService.Register<IMessaging, Messaging>();
             DependencyService.Register<ILocalDbService, LocalDbService>();
             DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
-            _messagingService = DependencyService.Resolve<IMessagingService>();
+
+            _messaging = DependencyService.Resolve<IMessaging>();
 
             #region register Messaging service event handlers
-            _messagingService.Connecting += Trace_ConnectionStatus;
-            _messagingService.Connected += Trace_ConnectionStatus;
-            _messagingService.ConnectionFailed += ConnectionFailed;
+            _messaging.Connecting += Trace_ConnectionStatus;
+            _messaging.Connected += Trace_ConnectionStatus;
+            _messaging.ConnectionFailed += ConnectionFailed;
 
-            _messagingService.Disconnecting += Trace_ConnectionStatus;
-            _messagingService.Disconnected += ConnectionFailed;
-            _messagingService.DisconnectionFailed += Trace_ConnectionStatus;
+            _messaging.Disconnecting += Trace_ConnectionStatus;
+            _messaging.Disconnected += ConnectionFailed;
+            _messaging.DisconnectionFailed += Trace_ConnectionStatus;
 
-            _messagingService.Closed += ConnectionFailed;
-            _messagingService.Reconnecting += Trace_ConnectionStatus;
-            _messagingService.Reconnected += Trace_ConnectionStatus;
+            _messaging.Closed += ConnectionFailed;
+            _messaging.Reconnecting += Trace_ConnectionStatus;
+            _messaging.Reconnected += Trace_ConnectionStatus;
 
             //_messagingService.SomeoneEntered += SomeoneEntered;
             //_messagingService.SomeoneLeft += SomeoneLeft;
             //_messagingService.MessageReceived += MessageReceived;
+
             #endregion
+        }
+
+        private void Current_NotificationTapped(NotificationTappedEventArgs e)
+        {
+            Debug.WriteLine($"noti data: {e.Data}");
         }
         #endregion
 
@@ -110,6 +126,8 @@ namespace Ringer
         #region Life Cycle Methods
         protected override async void OnStart()
         {
+            base.OnStart();
+
             if (DesignMode.IsDesignModeEnabled)
                 return;
 
@@ -179,13 +197,22 @@ namespace Ringer
             #region Connect and load messages
             if (IsLoggedIn)
             {
-                //await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
-
-                _messagingService.Init(Constants.HubUrl, Token);
-                await _messagingService.ConnectAsync().ConfigureAwait(false);//OnStart
+                _messaging.Init(Constants.HubUrl, Token);
+                await _messaging.ConnectAsync().ConfigureAwait(false);//OnStart
             }
             #endregion
-            base.OnStart();
+
+
+            //#region prepare messages
+            //if (IsLoggedIn)
+            //{
+            //    var messages = await _messageRepository.GetMessagesAsync();
+            //    foreach (var message in messages.OrderBy(m => m.Id))
+            //    {
+            //        Messages.Add(message);
+            //    }
+            //}
+            //#endregion
         }
         protected override void OnSleep()
         {
@@ -208,8 +235,8 @@ namespace Ringer
             {
                 //await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
 
-                if (!_messagingService.IsReconnecting)
-                    await _messagingService.ConnectAsync().ConfigureAwait(false);//OnResume
+                if (!_messaging.IsReconnecting)
+                    await _messaging.ConnectAsync().ConfigureAwait(false);//OnResume
 
             }
             //}

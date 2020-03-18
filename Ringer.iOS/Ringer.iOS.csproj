@@ -249,6 +249,9 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.1</Version>
     </PackageReference>
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>5.0.1</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
   <ItemGroup>

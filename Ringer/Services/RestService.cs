@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Ringer.Core.Data;
 using Ringer.Helpers;
 using Xamarin.Forms;
@@ -15,7 +16,7 @@ namespace Ringer.Services
 {
     public interface IRESTService
     {
-        Task<List<PendingMessage>> PullPendingMessagesAsync(int lastMessageId = 0);
+        Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
         Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
     }
 
@@ -28,28 +29,22 @@ namespace Ringer.Services
             _client = new HttpClient();
         }
 
-        public async Task<List<PendingMessage>> PullPendingMessagesAsync(int lastMessageId = 0)
+        public async Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token)
         {
-            if (App.IsLoggedIn)
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
-            else
-                return new List<PendingMessage>();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
 
             try
             {
-                string requestUri = $"{Constants.PendingUrl}?roomId={App.RoomId}&lastId={lastMessageId}";
+                string requestUri = $"{Constants.PendingUrl}?roomId={roomId}&lastId={lastMessageId}";
                 var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
                 if (!response.IsSuccessStatusCode)
-                    throw new HttpRequestException();
+                    throw new HttpRequestException("request failed");
 
-                // if token expired -> response.StatusCode
+                // TODO if token expired -> response.StatusCode
+
                 if (response.StatusCode == HttpStatusCode.Unauthorized)
-                {
-                    Debug.WriteLine(response.Headers.WwwAuthenticate.ToString());
-
-                    return new List<PendingMessage>();
-                }
+                    throw new HttpRequestException("unauthorized");
 
                 var responseString = await response.Content.ReadAsStringAsync();
                 var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
@@ -58,22 +53,13 @@ namespace Ringer.Services
             }
             catch (Exception ex)
             {
-                //Device.BeginInvokeOnMainThread(() =>
-                //{
-                //    Shell.Current.DisplayAlert("이럴수가", ex.Message, "닫기");
-                //});
-
-                return new List<PendingMessage>();
-            }
-            finally
-            {
-
+                Debug.WriteLine(ex.Message);
+                return null;
             }
         }
 
         public async Task LogInAsync(string name, DateTime birthDate, GenderType genderType)
         {
-
             LoginInfo loginInfo = new LoginInfo
             {
                 Name = name,
@@ -100,9 +86,9 @@ namespace Ringer.Services
             App.RoomId = loginResponse.roomId;
             App.UserId = loginResponse.userId;
 
-            Debug.WriteLine(App.Token);
-            Debug.WriteLine(App.RoomId);
-            Debug.WriteLine(App.UserId);
+            Utilities.Trace(App.Token);
+            Utilities.Trace(App.RoomId);
+            Utilities.Trace(App.UserId.ToString());
         }
     }
 }

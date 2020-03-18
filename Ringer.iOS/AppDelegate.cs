@@ -26,7 +26,9 @@ namespace Ringer.iOS
         //
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            // TODO check and remove Shell, Visual, CollectionView experimental
             global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
+
             global::Xamarin.Forms.Forms.Init();
 
             Xamarin.FormsMaps.Init();
@@ -34,6 +36,13 @@ namespace Ringer.iOS
             LoadApplication(new App());
 
             return base.FinishedLaunching(app, options);
+        }
+
+        public override void WillEnterForeground(UIApplication uiApplication)
+        {
+            Plugin.LocalNotification.NotificationCenter.ResetApplicationIconBadgeNumber(uiApplication);
+
+            base.WillEnterForeground(uiApplication);
         }
     }
 }

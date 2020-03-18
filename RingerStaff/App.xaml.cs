@@ -2,14 +2,14 @@
 using RingerStaff.Services;
 using Plugin.LocalNotification;
 using System.Diagnostics;
-using RingerStaff.Views;
-using System.Linq;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Push;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System;
 using Xamarin.Essentials;
+using System.Collections.ObjectModel;
+using RingerStaff.Models;
 
 namespace RingerStaff
 {
@@ -25,6 +25,7 @@ namespace RingerStaff
         }
         public static string DeviceId;
         public static string CurrentRoomId;
+        public static ObservableCollection<MessageModel> Messages = new ObservableCollection<MessageModel>();
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
 
@@ -112,7 +113,7 @@ namespace RingerStaff
 
             if (await Push.IsEnabledAsync())
             {
-                Guid? id = await AppCenter.GetInstallIdAsync();
+                Guid? id = await AppCenter.GetInstallIdAsync().ConfigureAwait(false);
                 // Set Device Id
                 DeviceId = id?.ToString();
 
@@ -125,7 +126,7 @@ namespace RingerStaff
             #region SignalR Connection
             if (IsLoggedIn)
             {
-                await RealTimeService.ConnectAsync(Huburl, Token);
+                await RealTimeService.ConnectAsync(Huburl, Token).ConfigureAwait(false);
             }
             #endregion
         }

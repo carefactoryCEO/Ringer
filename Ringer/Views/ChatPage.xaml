@@ -77,18 +77,11 @@
                    Padding="0,13"
                    Text="{Binding NavBarTitle}"/>
 
-            <!--<Button Style="{StaticResource NavBarButtonsStyle}"
-                    HorizontalOptions="CenterAndExpand"
-                    Command="{Binding OpenProfilePageCommand}"
-                    Text="{Binding NavBarTitle}"
-                    FontAttributes="Bold"/>-->
-
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
                     Command="{Binding OpenSessionsPageCommand}"
                     Clicked="Button_Clicked"
                     Text="Picker"/>
-            <!--<BoxView HorizontalOptions="End" BackgroundColor="Transparent" WidthRequest="70"/>-->
 
         </StackLayout>
 

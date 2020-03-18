@@ -14,10 +14,12 @@ namespace Ringer.Helpers
             return current - last < TimeSpan.FromMinutes(1) && current.Minute == last.Minute;
         }
 
-        public static MessageTypes SetMessageTypes(string body, int senderId, int userId)
+        public static MessageTypes GetMediaAndDirectionType(string body, int senderId, int userId)
         {
+            // set default
             MessageTypes messageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing;
 
+            // set media type
             if (body != null)
             {
                 string videoPattern = @"^https://ringerstoragekr.blob.core.windows.net/ringer/[\w-]+(?:\.mov|\.mp4)$";
@@ -36,6 +38,7 @@ namespace Ringer.Helpers
                 }
             }
 
+            // set direction
             messageTypes |= (senderId == userId) ? MessageTypes.Outgoing : MessageTypes.Incomming;
 
             return messageTypes;
