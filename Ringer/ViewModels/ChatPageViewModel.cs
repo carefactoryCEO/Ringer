@@ -26,7 +26,6 @@ namespace Ringer.ViewModels
     {
         #region private members
         private readonly IMessaging _messaging;
-        private readonly IMessageRepository _messageRepository;
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
         private UserInfoType _userInfoToQuery = UserInfoType.None;
@@ -35,7 +34,7 @@ namespace Ringer.ViewModels
         #endregion
 
         #region Public Properties
-        public ObservableCollection<MessageModel> Messages { get; set; } = new ObservableCollection<MessageModel>();
+        public ObservableCollection<MessageModel> Messages { get; set; }
         public bool IsBusy { get; set; }
         public string TextToSend { get; set; }
         public Keyboard Keyboard { get; set; } = Keyboard.Chat;
@@ -45,55 +44,16 @@ namespace Ringer.ViewModels
         public bool IsLoading { get; set; }
         #endregion
 
-        public static async Task<ChatPageViewModel> BuildChatPageViewModel()
-        {
-            var messageRepository = DependencyService.Resolve<IMessageRepository>();
-
-            var oMessages = new ObservableCollection<MessageModel>();
-
-            if (App.IsLoggedIn)
-            {
-                List<MessageModel> messages = await messageRepository.LoadRecentMessagesAsync(Constants.MessageCount);
-
-                foreach (MessageModel m in messages)
-                    oMessages.Add(m);
-            }
-
-            return new ChatPageViewModel(oMessages);
-        }
-
-        public async Task LoadMessagesAsync()
-        {
-            if (Messages.Count == 0)
-            {
-                List<MessageModel> messages = await _messageRepository.LoadRecentMessagesAsync(Constants.MessageCount);
-
-                foreach (MessageModel m in messages)
-                    Messages.Add(m);
-            }
-
-            if (Messages.Count > 0)
-                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
-        }
-
         #region Constructor
-        public ChatPageViewModel(ObservableCollection<MessageModel> messages) : this()
-        {
-            Messages = messages;
-
-            if (Messages.Count > 0)
-                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
-        }
         public ChatPageViewModel()
         {
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
 
             _messaging = DependencyService.Resolve<IMessaging>();
-            _messageRepository = DependencyService.Resolve<IMessageRepository>();
             _restService = DependencyService.Resolve<IRESTService>();
 
-            _messageRepository.MessageAdded += MessageRepository_MessageAdded;
-            _messageRepository.MessageUpdated += MessageRepository_MessageUpdated;
+            _messaging.MessageAdded += MessageRepository_MessageAdded;
+            _messaging.MessageUpdated += MessageRepository_MessageUpdated;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
@@ -101,32 +61,34 @@ namespace Ringer.ViewModels
             GalleryPhotoCommand = new Command(async () => await GalleryPhotoAsync());
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             ResetConnectionCommand = new Command(async () => await ResetConnection());
-            LoadCommand = new Command(message => LoadMore(message));
+            LoadBufferCommand = new Command(() => LoadBufferMessages());
 
-            //if (Messages is null)
-            //    Messages = new ObservableCollection<MessageModel>();
-            Messages = App.Messages;
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            _messaging.BufferMessages();
+
         }
-
         #endregion
 
         #region Private Methods
-        private void LoadMore(object message)
+        private void LoadBufferMessages()
         {
-            Device.BeginInvokeOnMainThread(async () =>
+            IsBusy = true;
+
+            if (Messages.Count == _messaging.Messages.Count)
             {
-                var messages = await _messageRepository.LoadMoreMessagesAsync(Constants.MessageCount, Messages.Count);
+                IsLoading = IsBusy = false;
+                return;
+            }
 
-                foreach (var m in messages)
-                {
-                    Messages.Insert(messages.IndexOf(m), m);
-                }
+            var target = Messages.Cast<object>().First();
 
-                object target = (messages.Count > 0) ? messages.Last() : message;
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            _messaging.BufferMessages();
 
-                MessagingCenter.Send(this, "MessageLoaded", target);
+            MessagingCenter.Send(this, "MessageLoaded", target);
 
-            });
+            IsBusy = false;
+            return;
         }
         private async Task SendMessageAsync()
         {
@@ -155,7 +117,7 @@ namespace Ringer.ViewModels
             TextToSend = string.Empty;
 
             // 저장
-            await _messageRepository.AddMessageAsync(message).ConfigureAwait(false);
+            await _messaging.AddMessageAsync(message).ConfigureAwait(false);
 
             // 전송
             await _messaging.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
@@ -175,7 +137,7 @@ namespace Ringer.ViewModels
             Messages.Clear();
 
             // reset local db's Message table
-            _messageRepository.ClearLocalDb();
+            _messaging.ClearLocalDb();
 
             // Go Back
             await Shell.Current.Navigation.PopAsync();
@@ -195,7 +157,7 @@ namespace Ringer.ViewModels
             Messages.Add(newMessage);
             MessagingCenter.Send(this, "MessageAdded", newMessage);
         }
-
+        #region camera actions
         private async Task TakePhotoAsync()
         {
             MessagingCenter.Send(this, "CameraActionCompleted", "completed");
@@ -247,10 +209,10 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                        // Upload to azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                        // Display image message to view locally
-                        _messageRepository.AddMessageAsync(message)
+                            // Upload to azure blob storage
+                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                            // Display image message to view locally
+                            _messaging.AddMessageAsync(message)
                     }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
@@ -309,10 +271,10 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                        // upload to azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                        // save message locally
-                        _messageRepository.AddMessageAsync(message)
+                            // upload to azure blob storage
+                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                            // save message locally
+                            _messaging.AddMessageAsync(message)
 
                     }).ConfigureAwait(false);
 
@@ -374,10 +336,10 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                        // Upload to Azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
-                        // Save message locally
-                        _messageRepository.AddMessageAsync(message)
+                            // Upload to Azure blob storage
+                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
+                            // Save message locally
+                            _messaging.AddMessageAsync(message)
                     }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
@@ -430,10 +392,10 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                        // upload to azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
-                        // Save message locally
-                        _messageRepository.AddMessageAsync(message)
+                            // upload to azure blob storage
+                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
+                            // Save message locally
+                            _messaging.AddMessageAsync(message)
 
                     }).ConfigureAwait(false);
 
@@ -450,7 +412,6 @@ namespace Ringer.ViewModels
                 }
             }
         }
-
         private async Task<bool> CheckPhotosPermissionsAsync()
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
@@ -582,7 +543,6 @@ namespace Ringer.ViewModels
 
             return false;
         }
-
         private bool AttachingPhotoPermitted() => true;
         private bool AttachingVideoPermitted() => true;
         private async Task<bool> TakingPhotoPermittedAsync()
@@ -606,6 +566,7 @@ namespace Ringer.ViewModels
             else
                 return false;
         }
+        #endregion
         #endregion
 
         #region Public Methods
@@ -720,14 +681,15 @@ namespace Ringer.ViewModels
                         Debug.WriteLine("--------------------------Connect------------------------------");
                         Debug.WriteLine("--------------------------Connect Finished------------------------------");
 
-
-                        _messaging.Init(Constants.HubUrl, App.Token);
-                        await _messaging.ConnectAsync().ConfigureAwait(false);//ExcuteLoginAsync 2초 정도 시간이 걸린다...
-
+                        App.ConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
                     }
 
                     break;
             }
+        }
+        public void ResetMessages()
+        {
+            _messaging.InitMessagesAsync();
         }
         #endregion
 
@@ -738,7 +700,7 @@ namespace Ringer.ViewModels
         public ICommand TakingVideoCommand { get; }
         public ICommand GalleryPhotoCommand { get; }
         public ICommand GalleryVideoCommand { get; }
-        public ICommand LoadCommand { get; }
+        public ICommand LoadBufferCommand { get; }
         #endregion
 
         #region Events

@@ -19,7 +19,7 @@ namespace Ringer.Views
     public partial class ChatPage : ContentPage
     {
         #region private fields
-        private ChatPageViewModel vm;
+        private readonly ChatPageViewModel vm;
         private Thickness _insets;
         private string _room;
         #endregion
@@ -30,24 +30,6 @@ namespace Ringer.Views
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
-
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
-            {
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
-                });
-            });
-
-            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
-            {
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
-                    MessageFeed.IsLoading = false;
-                });
-            });
-
         }
         #endregion
 
@@ -68,15 +50,35 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
-            //if (vm == null)
-            //    BindingContext = vm = await ChatPageViewModel.BuildChatPageViewModel();
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
+                });
+            });
+            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
+                    MessageFeed.IsLoading = false;
+
+                    Utilities.Trace(((MessageModel)message).Body);
+
+                });
+            });
 
             await vm.ExcuteLogInProcessAsync();
-            await vm.LoadMessagesAsync();
-
+            MessageFeed.ScrollToLast();
         }
         protected override void OnDisappearing()
         {
+            MessagingCenter.Unsubscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded");
+
+            MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
+
+            vm.ResetMessages();
             base.OnDisappearing();
         }
         protected override void OnSizeAllocated(double width, double height)

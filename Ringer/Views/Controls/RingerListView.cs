@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Input;
+using Ringer.Helpers;
 using Ringer.Models;
 using Xamarin.Forms;
 
@@ -34,8 +35,22 @@ namespace Ringer.Views.Controls
             }
 
             ItemAppearing += RingerListView_ItemAppearing;
+            //Scrolled += RingerListView_Scrolled;
         }
 
+        double prevScrollY;
+
+        private void RingerListView_Scrolled(object sender, ScrolledEventArgs e)
+        {
+            if (e.ScrollY <= 0d && e.ScrollY < prevScrollY && !IsLoading)
+            {
+                IsLoading = true;
+                LoadCommand?.Execute(null);
+            }
+
+            prevScrollY = e.ScrollY;
+            Utilities.Trace(e.ScrollY.ToString());
+        }
 
         public static readonly BindableProperty LoadCommandProperty =
             BindableProperty.Create(nameof(LoadCommand), typeof(ICommand), typeof(RingerListView), default(ICommand));
@@ -64,6 +79,7 @@ namespace Ringer.Views.Controls
             }
 
             lastAppearedItemIndex = (IsLoading) ? -1 : e.ItemIndex;
+            Utilities.Trace(e.ItemIndex.ToString());
         }
 
         public RingerListView(ListViewCachingStrategy cachingStrategy) : base(cachingStrategy)

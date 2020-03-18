@@ -7,7 +7,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Ringer.Core.Data;
 using Ringer.Helpers;
 using Xamarin.Forms;

@@ -6,13 +6,8 @@ using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using Ringer.Core;
-using Ringer.Core.EventArgs;
 using Ringer.Services;
 using Ringer.Helpers;
-using Ringer.Models;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Plugin.LocalNotification;
 
 namespace Ringer
@@ -24,29 +19,28 @@ namespace Ringer
         #endregion
 
         #region public static propertie
-        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().EndsWith("chatpage", StringComparison.CurrentCultureIgnoreCase);
-        public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && RoomId != null;
-        public static bool DeviceIsOn
-        {
-            get => Preferences.Get(nameof(DeviceIsOn), false);
-            set => Preferences.Set(nameof(DeviceIsOn), value);
-        }
+        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString()
+                                        .EndsWith("chatpage", StringComparison.CurrentCultureIgnoreCase);
+        public static bool IsLoggedIn => Token != null &&
+                                         DeviceId != null &&
+                                         UserName != null &&
+                                         RoomId != null;
         public static int LastServerMessageId
         {
             get => Preferences.Get(nameof(LastServerMessageId), 0);
             set => Preferences.Set(nameof(LastServerMessageId), value);
         }
-        public static string DeviceId // Appcenter에서 받음
+        public static string DeviceId
         {
             get => Preferences.Get(nameof(DeviceId), null);
             set => Preferences.Set(nameof(DeviceId), value);
         }
-        public static string Token // 로그인 후에 받음
+        public static string Token
         {
             get => Preferences.Get(nameof(Token), null);
             set => Preferences.Set(nameof(Token), value);
         }
-        public static string UserName // 로그인 과정 중에 받음
+        public static string UserName
         {
             get => Preferences.Get(nameof(UserName), null);
             set => Preferences.Set(nameof(UserName), value);
@@ -56,12 +50,16 @@ namespace Ringer
             get => Preferences.Get(nameof(UserId), -1);
             set => Preferences.Set(nameof(UserId), value);
         }
+        public static string ConnectionId
+        {
+            get => Preferences.Get(nameof(ConnectionId), null);
+            set => Preferences.Set(nameof(ConnectionId), value);
+        }
         public static string RoomId
         {
             get => Preferences.Get(nameof(RoomId), null);
             set => Preferences.Set(nameof(RoomId), value);
         }
-        public static ObservableCollection<MessageModel> Messages = new ObservableCollection<MessageModel>();
         #endregion
 
         #region Constructor
@@ -69,59 +67,32 @@ namespace Ringer
         {
             InitializeComponent();
 
-            // Local Notification
-            NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
-
-            // Main page
             MainPage = new AppShell();
 
             // Services
-            DependencyService.Register<IMessaging, Messaging>();
             DependencyService.Register<ILocalDbService, LocalDbService>();
-            DependencyService.Register<IMessageRepository, MessageRepository>();
             DependencyService.Register<IRESTService, RESTService>();
+            DependencyService.Register<IMessaging, Messaging>();
+            _messaging = DependencyService.Get<IMessaging>();
 
-            _messaging = DependencyService.Resolve<IMessaging>();
+            // Local Notification
+            NotificationCenter.Current.NotificationTapped += e => Utilities.Trace(e.Data);
 
-            #region register Messaging service event handlers
-            _messaging.Connecting += Trace_ConnectionStatus;
-            _messaging.Connected += Trace_ConnectionStatus;
-            _messaging.ConnectionFailed += ConnectionFailed;
+            // essaging event
+            _messaging.Connecting += (s, e) => Utilities.Trace(e.Message);
+            _messaging.Connected += (s, e) => Utilities.Trace(e.Message);
+            _messaging.ConnectionFailed += (s, e) => Utilities.Trace(e.Message);
 
-            _messaging.Disconnecting += Trace_ConnectionStatus;
-            _messaging.Disconnected += ConnectionFailed;
-            _messaging.DisconnectionFailed += Trace_ConnectionStatus;
+            _messaging.Disconnecting += (s, e) => Utilities.Trace(e.Message);
+            _messaging.Disconnected += (s, e) => Utilities.Trace(e.Message);
+            _messaging.DisconnectionFailed += (s, e) => Utilities.Trace(e.Message);
 
-            _messaging.Closed += ConnectionFailed;
-            _messaging.Reconnecting += Trace_ConnectionStatus;
-            _messaging.Reconnected += Trace_ConnectionStatus;
-
-            //_messagingService.SomeoneEntered += SomeoneEntered;
-            //_messagingService.SomeoneLeft += SomeoneLeft;
-            //_messagingService.MessageReceived += MessageReceived;
-
-            #endregion
-        }
-
-        private void Current_NotificationTapped(NotificationTappedEventArgs e)
-        {
-            Debug.WriteLine($"noti data: {e.Data}");
+            _messaging.Closed += (s, e) => Utilities.Trace(e.Message);
+            _messaging.Reconnecting += (s, e) => Utilities.Trace(e.Message);
+            _messaging.Reconnected += (s, e) => Utilities.Trace(e.Message);
         }
         #endregion
 
-        #region Connection handlers
-        private void ConnectionFailed(object sender, ConnectionEventArgs e)
-        {
-            Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
-            {
-                Shell.Current.DisplayAlert("이럴수가", e.Message, "닫기");
-            });
-        }
-        private void Trace_ConnectionStatus(object sender, ConnectionEventArgs e)
-        {
-            Utilities.Trace(e.Message);
-        }
-        #endregion
 
         #region Life Cycle Methods
         protected override async void OnStart()
@@ -130,7 +101,6 @@ namespace Ringer
 
             if (DesignMode.IsDesignModeEnabled)
                 return;
-
 
             #region AppCenter
             // Intercept Push Notification
@@ -191,29 +161,13 @@ namespace Ringer
             }
             #endregion
 
-            //await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
-
             #region Connect and load messages
             if (IsLoggedIn)
-            {
-                _messaging.Init(Constants.HubUrl, Token);
-                await _messaging.ConnectAsync().ConfigureAwait(false);//OnStart
-            }
+                ConnectionId = await _messaging.InitAsync(Constants.HubUrl, Token);
+
             #endregion
-
-
-            //#region prepare messages
-            //if (IsLoggedIn)
-            //{
-            //    var messages = await _messageRepository.GetMessagesAsync();
-            //    foreach (var message in messages.OrderBy(m => m.Id))
-            //    {
-            //        Messages.Add(message);
-            //    }
-            //}
-            //#endregion
         }
+
         protected override void OnSleep()
         {
             Debug.WriteLine($"{DateTime.Now.Millisecond}:OnSleep");
@@ -221,6 +175,8 @@ namespace Ringer
             //await _restService.ReportDeviceStatusDebouncedAsync(false, 1000);
             //_restService.ReportDeviceStatus(false);
             base.OnSleep();
+
+            Utilities.Trace(IsChatPage.ToString());
         }
         protected override async void OnResume()
         {
@@ -233,8 +189,6 @@ namespace Ringer
 
             if (IsLoggedIn)
             {
-                //await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
-
                 if (!_messaging.IsReconnecting)
                     await _messaging.ConnectAsync().ConfigureAwait(false);//OnResume
 
@@ -244,6 +198,9 @@ namespace Ringer
             //{
             //    Debug.WriteLine(ex.Message);
             //}
+
+
+            Utilities.Trace(IsChatPage.ToString());
         }
         #endregion
     }
