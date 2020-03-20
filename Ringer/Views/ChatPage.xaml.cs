@@ -1,10 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
 using Plugin.LocalNotification;
 using Ringer.Helpers;
 using Ringer.Models;
+using Ringer.Services;
 using Ringer.ViewModels;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -15,7 +17,7 @@ using Xamarin.Forms.Xaml;
 namespace Ringer.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
-    [QueryProperty("Room", "room")]
+    [QueryProperty("From", "from")]
     public partial class ChatPage : ContentPage
     {
         #region private fields
@@ -30,17 +32,29 @@ namespace Ringer.Views
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
+
+            MessageFeed.ItemAppearing += MessageFeed_ItemAppearing;
+
+        }
+
+        private void MessageFeed_ItemAppearing(object sender, ItemVisibilityEventArgs e) // e.Item, e.ItemIndex
+        {
+
         }
         #endregion
 
-        #region public properties
-        public string Room
+        #region Query properties
+        // Shell.Current.GoToAsync("//mappage/chatpage?from={from}");
+        public string From
         {
-            get => _room;
             set
             {
-                _room = value;
-                Debug.WriteLine(_room);
+                vm.IsBusy = value == Constants.PushNotificationString;
+                if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
+                {
+                    MessageFeed.ScrollToLast();
+                    TitleLabel.Focus();
+                }
             }
         }
         #endregion
@@ -50,7 +64,24 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
-            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
+            // 안드에서 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
+            if (!vm.Messages.Any())
+            {
+                var messaging = DependencyService.Resolve<IMessaging>();
+
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    vm.IsBusy = true;
+                    await Task.Delay(200);
+                    vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
+                    MessageFeed.ScrollToLast();
+                    vm.IsBusy = false;
+                });
+            }
+
+            App.IsChatPage = true;
+
+            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {
                 Device.BeginInvokeOnMainThread(() =>
                 {
@@ -62,10 +93,8 @@ namespace Ringer.Views
                 Device.BeginInvokeOnMainThread(() =>
                 {
                     MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
-                    MessageFeed.IsLoading = false;
 
                     Utilities.Trace(((MessageModel)message).Body);
-
                 });
             });
 
@@ -74,11 +103,14 @@ namespace Ringer.Views
         }
         protected override void OnDisappearing()
         {
-            MessagingCenter.Unsubscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded");
+            MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
 
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
 
             vm.ResetMessages();
+
+            App.IsChatPage = false;
+
             base.OnDisappearing();
         }
         protected override void OnSizeAllocated(double width, double height)
@@ -107,23 +139,33 @@ namespace Ringer.Views
             // date picker
             //chatInputBarView.IsVisible = false;
             //datePicker.Focus();
-
+            return;
             // local notification
-            ShowLocalNotification();
-        }
+            //Device.StartTimer(TimeSpan.FromSeconds(3), () =>
+            //{
+            //    if (App.IsOn && App.IsChatPage)
+            //    {
+            //        Xamarin.Forms.Application.Current.MainPage.DisplayAlert("chat", "chatting", "닫기");
+            //    }
+            //    else
+            //    {
+            //        ShowLocalNotification();
+            //    }
 
-        private int notificationId = -1;
+            //    return true;
+            //});
+        }
 
         private void ShowLocalNotification()
         {
             var notification = new NotificationRequest
             {
-                BadgeNumber = 1,
-                NotificationId = ++notificationId,
-                Title = "Test",
-                Description = "Test Description",
-                ReturningData = "Dummy data", // Returning data when tapped on notification.
-                NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
+                //BadgeNumber = 1,
+                NotificationId = ++App.LocalNotificationId,
+                Title = $"Test ##{App.LocalNotificationId}",
+                Description = $"Test Description ##{App.LocalNotificationId}",
+                ReturningData = "Dummy data ##{App.LocalNotificationId}", // Returning data when tapped on notification.
+                //NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
                 //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
                 //Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
             };

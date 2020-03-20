@@ -41,7 +41,6 @@ namespace Ringer.ViewModels
         public double NavBarHeight { get; set; } = 0;
         public Thickness BottomPadding { get; set; }
         public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
-        public bool IsLoading { get; set; }
         #endregion
 
         #region Constructor
@@ -54,6 +53,8 @@ namespace Ringer.ViewModels
 
             _messaging.MessageAdded += MessageRepository_MessageAdded;
             _messaging.MessageUpdated += MessageRepository_MessageUpdated;
+            _messaging.FetchingStateChanged += Messaging_FetchingStateChanged;
+            _messaging.MessagesFetched += _messaging_MessagesFetched;
 
             SendMessageCommand = new Command(async () => await SendMessageAsync());
             TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
@@ -62,10 +63,38 @@ namespace Ringer.ViewModels
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             ResetConnectionCommand = new Command(async () => await ResetConnection());
             LoadBufferCommand = new Command(() => LoadBufferMessages());
+            RefreshCommand = new Command(() =>
+            {
+                Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+            });
+
+            //if (!_messaging.Messages.Any())
+            //{
+            //    IsBusy = true;
+            //    Task.Delay(2000).Wait();
+            //    IsBusy = false;
+            //}
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
             _messaging.BufferMessages();
 
+        }
+
+        private void _messaging_MessagesFetched(object sender, MessageModel[] fetchedMessages)
+        {
+            if (fetchedMessages.Any())
+            {
+                foreach (var message in fetchedMessages)
+                    Messages.Add(message);
+
+                MessagingCenter.Send(this, "MessageAdded", (object)fetchedMessages.Last());
+            }
+        }
+
+        private void Messaging_FetchingStateChanged(object sender, FetchingState state)
+        {
+            IsBusy = (state == FetchingState.Fetching) ? true : false;
         }
         #endregion
 
@@ -76,19 +105,19 @@ namespace Ringer.ViewModels
 
             if (Messages.Count == _messaging.Messages.Count)
             {
-                IsLoading = IsBusy = false;
+                IsBusy = false;
                 return;
             }
 
             var target = Messages.Cast<object>().First();
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            _messaging.BufferMessages();
 
             MessagingCenter.Send(this, "MessageLoaded", target);
 
             IsBusy = false;
-            return;
+
+            _messaging.BufferMessages();
         }
         private async Task SendMessageAsync()
         {
@@ -120,7 +149,7 @@ namespace Ringer.ViewModels
             await _messaging.AddMessageAsync(message).ConfigureAwait(false);
 
             // 전송
-            await _messaging.SendMessageToRoomAsync(App.RoomId, App.UserName, message.Body).ConfigureAwait(false);
+            await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
         }
         private async Task ResetConnection()
         {
@@ -132,7 +161,7 @@ namespace Ringer.ViewModels
             _userInfoToQuery = UserInfoType.None;
 
             // Disconnect Connection
-            await _messaging.DisconnectAsync(App.RoomId, App.UserName);
+            await _messaging.DisconnectAsync();
 
             Messages.Clear();
 
@@ -149,19 +178,17 @@ namespace Ringer.ViewModels
             if (targetMessage != null)
             {
                 targetMessage.MessageTypes = updatedMessage.MessageTypes;
-                MessagingCenter.Send(this, "MessageAdded", targetMessage);
+                MessagingCenter.Send(this, "MessageAdded", (object)targetMessage);
             }
         }
         private void MessageRepository_MessageAdded(object sender, MessageModel newMessage)
         {
             Messages.Add(newMessage);
-            MessagingCenter.Send(this, "MessageAdded", newMessage);
+            MessagingCenter.Send(this, "MessageAdded", (object)newMessage);
         }
         #region camera actions
         private async Task TakePhotoAsync()
         {
-            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
-
             if (await TakingPhotoPermittedAsync())
             {
                 if (!CrossMedia.Current.IsTakePhotoSupported)
@@ -172,8 +199,9 @@ namespace Ringer.ViewModels
 
                 try
                 {
+                    App.IsCameraActivated = true;
                     // Taking picture
-                    MediaFile mediaFile = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
+                    using MediaFile mediaFile = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
                         Directory = "RingerPhoto",
                         SaveToAlbum = true,
@@ -215,7 +243,7 @@ namespace Ringer.ViewModels
                             _messaging.AddMessageAsync(message)
                     }).ConfigureAwait(false);
 
-                    mediaFile.Dispose();
+                    //mediaFile.Dispose();
 
                     IsBusy = false;
 
@@ -225,18 +253,22 @@ namespace Ringer.ViewModels
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
-
+                }
+                finally
+                {
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    App.IsCameraActivated = false;
                 }
             }
         }
         private async Task GalleryPhotoAsync()
         {
-            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
-
             if (AttachingPhotoPermitted())
             {
                 try
                 {
+                    App.IsCameraActivated = true;
+
                     if (!CrossMedia.Current.IsPickPhotoSupported)
                     {
                         await Shell.Current.DisplayAlert("사진 불러오기 실패", "사진 불러오기가 지원되지 않는 기기입니다. :(", "확인");
@@ -289,12 +321,15 @@ namespace Ringer.ViewModels
                 {
                     Debug.WriteLine(ex.Message);
                 }
+                finally
+                {
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    App.IsCameraActivated = false;
+                }
             }
         }
         private async Task TakeVideoAsync()
         {
-            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
-
             if (await TakingVideoPermittedAsync())
             {
                 if (!CrossMedia.Current.IsTakeVideoSupported)
@@ -305,6 +340,7 @@ namespace Ringer.ViewModels
 
                 try
                 {
+                    App.IsCameraActivated = true;
                     // Taking Video
                     MediaFile mediaFile = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
                     {
@@ -353,12 +389,15 @@ namespace Ringer.ViewModels
                 {
                     Debug.WriteLine(ex.Message);
                 }
+                finally
+                {
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    App.IsCameraActivated = false;
+                }
             }
         }
         private async Task GalleryVideoAsync()
         {
-            MessagingCenter.Send(this, "CameraActionCompleted", "completed");
-
             if (AttachingVideoPermitted())
             {
                 if (!CrossMedia.Current.IsPickVideoSupported)
@@ -370,6 +409,8 @@ namespace Ringer.ViewModels
 
                 try
                 {
+                    App.IsCameraActivated = true;
+
                     var mediaFile = await CrossMedia.Current.PickVideoAsync();
 
                     if (mediaFile == null)
@@ -409,6 +450,11 @@ namespace Ringer.ViewModels
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
+                }
+                finally
+                {
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    App.IsCameraActivated = false;
                 }
             }
         }
@@ -681,7 +727,7 @@ namespace Ringer.ViewModels
                         Debug.WriteLine("--------------------------Connect------------------------------");
                         Debug.WriteLine("--------------------------Connect Finished------------------------------");
 
-                        App.ConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
+                        App.LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
                     }
 
                     break;
@@ -701,6 +747,7 @@ namespace Ringer.ViewModels
         public ICommand GalleryPhotoCommand { get; }
         public ICommand GalleryVideoCommand { get; }
         public ICommand LoadBufferCommand { get; }
+        public ICommand RefreshCommand { get; }
         #endregion
 
         #region Events

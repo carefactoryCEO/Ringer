@@ -11,7 +11,6 @@
             </Style>
 
             <Style x:Key="InputBarStyle" TargetType="Grid">
-
                 <Setter Property="Padding" Value="0,2"/>
                 <Setter Property="ColumnSpacing" Value="0"/>
                 <Setter Property="RowSpacing" Value="0"/>
@@ -42,6 +41,7 @@
                                CornerRadius="19"
                                HasRoundedCorner="True"
                                Keyboard="{Binding Keyboard}"
+                               
                                IsExpandable="True"
                                AutoSize="Disabled"
                                HorizontalOptions="Fill"

@@ -16,6 +16,26 @@ namespace Ringer.Views.Controls
         int lastAppearedItemIndex = -1;
         private double _previousHeight;
 
+        #region Bindable Properties
+        public static readonly BindableProperty LoadCommandProperty =
+            BindableProperty.Create(nameof(LoadCommand), typeof(ICommand), typeof(RingerListView), default(ICommand));
+
+        public ICommand LoadCommand
+        {
+            get { return (ICommand)GetValue(LoadCommandProperty); }
+            set { SetValue(LoadCommandProperty, value); }
+        }
+
+        public static readonly BindableProperty IsLoadingProperty =
+            BindableProperty.Create(nameof(IsLoading), typeof(bool), typeof(RingerListView), default(bool));
+
+        public bool IsLoading
+        {
+            get { return (bool)GetValue(IsLoadingProperty); }
+            set { SetValue(IsLoadingProperty, value); }
+        }
+        #endregion
+
         public RingerListView() : this(ListViewCachingStrategy.RetainElement)
         {
             if (Device.RuntimePlatform == Device.Android)
@@ -35,51 +55,17 @@ namespace Ringer.Views.Controls
             }
 
             ItemAppearing += RingerListView_ItemAppearing;
-            //Scrolled += RingerListView_Scrolled;
-        }
-
-        double prevScrollY;
-
-        private void RingerListView_Scrolled(object sender, ScrolledEventArgs e)
-        {
-            if (e.ScrollY <= 0d && e.ScrollY < prevScrollY && !IsLoading)
-            {
-                IsLoading = true;
-                LoadCommand?.Execute(null);
-            }
-
-            prevScrollY = e.ScrollY;
-            Utilities.Trace(e.ScrollY.ToString());
-        }
-
-        public static readonly BindableProperty LoadCommandProperty =
-            BindableProperty.Create(nameof(LoadCommand), typeof(ICommand), typeof(RingerListView), default(ICommand));
-
-        public ICommand LoadCommand
-        {
-            get { return (ICommand)GetValue(LoadCommandProperty); }
-            set { SetValue(LoadCommandProperty, value); }
-        }
-
-        public static readonly BindableProperty IsLoadingProperty =
-            BindableProperty.Create(nameof(IsLoading), typeof(bool), typeof(RingerListView), default(bool));
-
-        public bool IsLoading
-        {
-            get { return (bool)GetValue(IsLoadingProperty); }
-            set { SetValue(IsLoadingProperty, value); }
         }
 
         private void RingerListView_ItemAppearing(object sender, ItemVisibilityEventArgs e)
         {
             if (e.ItemIndex == 0 && lastAppearedItemIndex > e.ItemIndex && !IsLoading)
-            {
-                IsLoading = true;
                 LoadCommand?.Execute(e.Item);
-            }
+
+            var direction = lastAppearedItemIndex > e.ItemIndex ? "upward" : "downward";
+            Utilities.Trace($"last index: {lastAppearedItemIndex}, index: {e.ItemIndex}, direction: {direction}");
 
             lastAppearedItemIndex = (IsLoading) ? -1 : e.ItemIndex;
-            Utilities.Trace(e.ItemIndex.ToString());
         }
 
         public RingerListView(ListViewCachingStrategy cachingStrategy) : base(cachingStrategy)

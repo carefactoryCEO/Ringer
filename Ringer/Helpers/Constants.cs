@@ -31,5 +31,13 @@ namespace Ringer.Helpers
 
         // Message
         public static readonly int MessageCount = 100;
+
+        public static readonly string DisconnectedString = "Disconnected";
+
+        public static readonly string PushNotificationString = "pushNotification";
+        public static readonly string LocalNotificationString = "LocalNotification";
+        public static readonly string ChatPageUriFromLocalNotification = $"//mappage/chatpage?from={LocalNotificationString}";
+        public static readonly string ChatPageUriFromPushNotification = $"//mappage/chatpage?from={PushNotificationString}";
+
     }
 }

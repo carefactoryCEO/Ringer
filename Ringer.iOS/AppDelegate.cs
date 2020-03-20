@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using Foundation;
-using Microsoft.AppCenter.Push;
 using UIKit;
+using UserNotifications;
 
 namespace Ringer.iOS
 {
@@ -30,6 +27,8 @@ namespace Ringer.iOS
             global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
 
             global::Xamarin.Forms.Forms.Init();
+
+            //UNUserNotificationCenter.Current.Delegate = new Plugin.LocalNotification.Platform.iOS.LocalNotificationDelegate();
 
             Xamarin.FormsMaps.Init();
 

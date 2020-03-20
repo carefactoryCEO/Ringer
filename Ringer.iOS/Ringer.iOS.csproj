@@ -55,8 +55,7 @@
     <MtouchArch>ARMv7, ARM64</MtouchArch>
     <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignEntitlements>
-    </CodesignEntitlements>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
     <OptimizePNGs>true</OptimizePNGs>
     <MtouchFastDev>true</MtouchFastDev>
@@ -64,9 +63,9 @@
     <MtouchI18n>cjk</MtouchI18n>
     <CodesignExtraArgs />
     <CodesignResourceRules />
-    <MtouchInterpreter>-all</MtouchInterpreter>
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
     <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
+    <MtouchInterpreter>-all</MtouchInterpreter>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -75,11 +74,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
-    <CodesignKey>iPhone Distribution</CodesignKey>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <CodesignKey>Apple Distribution: CareFactory Corp. (583LP97227)</CodesignKey>
+    <CodesignEntitlements>Info.plist</CodesignEntitlements>
     <MtouchExtraArgs>--optimize=experimental-xforms-product-type</MtouchExtraArgs>
     <MtouchI18n>cjk</MtouchI18n>
-    <CodesignProvision>Automatic:AdHoc</CodesignProvision>
+    <CodesignProvision>Ringer Adhoc Provisioning Profile</CodesignProvision>
     <MtouchFloat32>true</MtouchFloat32>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">

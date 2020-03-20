@@ -20,19 +20,21 @@ namespace Ringer.Services
     public class LocalDbService : ILocalDbService
     {
         private readonly SQLiteAsyncConnection _database;
+        private AsyncTableQuery<MessageModel> _messageTabel;
 
         public LocalDbService()
         {
-            Debug.WriteLine(Constants.DbPath);
+            Utilities.Trace(Constants.DbPath);
             _database = new SQLiteAsyncConnection(Constants.DbPath);
             _database.CreateTableAsync<MessageModel>().Wait();
+            _messageTabel = _database.Table<MessageModel>();
         }
 
         public async Task<List<MessageModel>> GetMessagesAsync(int take = 50, int skip = 0)
         {
             // 날짜의 역순으로 skip만큼 띄고, take만큼 선택
             List<MessageModel> messageModels =
-                await _database.Table<MessageModel>()
+                await _messageTabel
                     .Where(m => m.RoomId == App.RoomId)
                     .OrderByDescending(m => m.CreatedAt)
                     .Skip(skip)
@@ -44,18 +46,17 @@ namespace Ringer.Services
 
             return messageModels;
         }
-        public async Task<MessageModel> GetSentMessageAsync(string roomId)
+        public Task<MessageModel> GetSentMessageAsync(string roomId)
         {
-            return await _database.Table<MessageModel>()
-                .OrderByDescending(m => m.Id)
+            return _messageTabel
+                .OrderByDescending(m => m.CreatedAt)
                 .FirstOrDefaultAsync(m => m.RoomId == roomId && m.ServerId == -1);
         }
-        public async Task<MessageModel> GetLastMessageAsync(string roomId)
+        public Task<MessageModel> GetLastMessageAsync(string roomId)
         {
-            return await _database.Table<MessageModel>()
-                .Where(m => m.RoomId == roomId)
+            return _messageTabel
                 .OrderByDescending(m => m.CreatedAt)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(m => m.RoomId == roomId);
         }
         public async Task<MessageModel> SaveMessageAsync(MessageModel message)
         {

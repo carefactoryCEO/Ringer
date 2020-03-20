@@ -1,14 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.AppCenter.Analytics;
 using Ringer.Types;
+using Xamarin.Forms;
 
 namespace Ringer.Helpers
 {
     public class Utilities
     {
+        public static bool IsChatActive => App.IsChatPage && App.IsOn;
+
+        public static bool iOS => Device.RuntimePlatform == Device.iOS;
+        public static bool Android => Device.RuntimePlatform == Device.Android;
+        public static bool AndroidCameraActivated => Android && App.IsCameraActivated;
         public static bool InSameMinute(DateTime current, DateTime last)
         {
             return current - last < TimeSpan.FromMinutes(1) && current.Minute == last.Minute;
@@ -44,10 +51,9 @@ namespace Ringer.Helpers
             return messageTypes;
         }
 
-
-        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
+        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
-            message = $"\n[{DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
+            message = $"[{DateTime.UtcNow.ToString("MMddHHmmss")}]({Path.GetFileNameWithoutExtension(callerFilePath)}.{callerName}){message}";
 
             Debug.WriteLine(message);
 

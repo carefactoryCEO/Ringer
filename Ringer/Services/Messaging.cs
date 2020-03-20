@@ -5,12 +5,14 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
+using Plugin.LocalNotification;
 using Ringer.Core;
 using Ringer.Core.Data;
 using Ringer.Core.EventArgs;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Types;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Ringer.Services
@@ -28,6 +30,11 @@ namespace Ringer.Services
 
         event EventHandler<MessageModel> MessageAdded;
         event EventHandler<MessageModel> MessageUpdated;
+        event EventHandler<FetchingState> FetchingStateChanged;
+        event EventHandler<MessageModel[]> MessagesFetched;
+
+        Task FetchRemoteMessagesAsync();
+        Task EnsureConnected();
     }
 
     public class Messaging : IMessaging
@@ -57,6 +64,8 @@ namespace Ringer.Services
 
         public event EventHandler<MessageModel> MessageAdded;
         public event EventHandler<MessageModel> MessageUpdated;
+        public event EventHandler<FetchingState> FetchingStateChanged;
+        public event EventHandler<MessageModel[]> MessagesFetched;
         #endregion
 
         #region public properties
@@ -64,7 +73,7 @@ namespace Ringer.Services
         public bool IsDisconnected => _hubConnection?.State == HubConnectionState.Disconnected;
         public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
         public bool IsReconnecting => _hubConnection?.State == HubConnectionState.Reconnecting;
-        public string ConnectionId => _hubConnection?.ConnectionId;
+        public string ConnectionId => _hubConnection?.ConnectionId ?? Constants.DisconnectedString;
         public HubConnection HubConnection => _hubConnection;
         public ObservableCollection<MessageModel> Messages { get; }
         #endregion
@@ -139,12 +148,16 @@ namespace Ringer.Services
         {
             Init(url, token);
 
+            FetchingStateChanged?.Invoke(this, FetchingState.Fetching);
+
             await Task.WhenAll(new Task[]
             {
-                ConnectAsync(),
-                InitMessagesAsync()
+                InitMessagesAsync(),
+                ConnectAsync()
 
             }).ConfigureAwait(false);
+
+            FetchingStateChanged?.Invoke(this, FetchingState.Finished);
 
             return _hubConnection.ConnectionId;
         }
@@ -232,58 +245,54 @@ namespace Ringer.Services
             // 디비 저장
             return await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
         }
-        private async Task PullMessagesAsync()
+        private async Task<MessageModel[]> PullRemoteMessagesAsync()
         {
-            // App.LastMessageId보다 큰 것만 긁어옴.
-            List<PendingMessage> pendingMessages = await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token).ConfigureAwait(false);
-
-            if (pendingMessages.Count > 0)
-                App.LastServerMessageId = pendingMessages.Last().Id;
-            else
-                return;
-
-            // 임시 array
-            // Media Type and direction selected
-            var messages = pendingMessages
-                .OrderBy(p => p.CreatedAt)
-                .Select(p => new MessageModel
-                {
-                    ServerId = p.Id,
-                    Body = p.Body,
-                    Sender = p.SenderName,
-                    RoomId = App.RoomId,
-                    SenderId = p.SenderId,
-                    CreatedAt = p.CreatedAt,
-                    ReceivedAt = DateTime.UtcNow,
-                    MessageTypes = Utilities.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
-                }).ToArray();
-
-            MessageModel lastSavedMessage = await _localDbService.GetLastMessageAsync(App.RoomId);
-            MessageModel before;
-
-            // set display type(leading/trailing)
-            for (int i = 0; i < messages.Length; i++)
+            if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token).ConfigureAwait(false) is List<PendingMessage> pendingMessages && pendingMessages.Any())
             {
-                before = i > 0 ? messages[i - 1] : lastSavedMessage;
+                App.LastServerMessageId = pendingMessages.OrderByDescending(p => p.Id).FirstOrDefault()?.Id ?? App.LastServerMessageId;
 
-                if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                // MessageModel로 변환
+                MessageModel[] messages = pendingMessages
+                    .OrderBy(p => p.CreatedAt)
+                    .Select(p => new MessageModel
+                    {
+                        ServerId = p.Id,
+                        Body = p.Body,
+                        Sender = p.SenderName,
+                        RoomId = App.RoomId,
+                        SenderId = p.SenderId,
+                        CreatedAt = p.CreatedAt,
+                        ReceivedAt = DateTime.UtcNow,
+                        MessageTypes = Utilities.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
+                    }).ToArray();
+
+                // MessagesTypes 수정
+                MessageModel lastSavedMessage = await _localDbService.GetLastMessageAsync(App.RoomId);
+                MessageModel before;
+
+                // set display type(leading/trailing)
+                for (int i = 0; i < messages.Length; i++)
                 {
-                    // 메시지 타입 수정
-                    before.MessageTypes ^= MessageTypes.Trailing;
-                    messages[i].MessageTypes ^= MessageTypes.Leading;
+                    before = i > 0 ? messages[i - 1] : lastSavedMessage;
+
+                    if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                    {
+                        // 메시지 타입 수정
+                        before.MessageTypes ^= MessageTypes.Trailing;
+                        messages[i].MessageTypes ^= MessageTypes.Leading;
+                    }
                 }
 
+                await _localDbService.UpdateMessageAsync(lastSavedMessage);
+
+                return messages;
             }
 
-            await _localDbService.UpdateMessageAsync(lastSavedMessage);
-
-            foreach (var m in messages)
-            {
-                await _localDbService.SaveMessageAsync(m);
-                Debug.WriteLine($"server id:{m.ServerId}, message types: {m.MessageTypes}");
-            }
-
+            return null;
         }
+
+
+
         #endregion
 
         #region Public Methods
@@ -292,11 +301,37 @@ namespace Ringer.Services
             if (Messages.Any())
                 Messages.Clear();
 
-            await PullMessagesAsync();
+            // 서버에서 당겨와서 디비 저장
+            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
+            {
+                foreach (var message in messages)
+                {
+                    await _localDbService.SaveMessageAsync(message);
+                    Utilities.Trace($"server id:{message.ServerId}, message types: {message.MessageTypes}");
+                }
+            }
 
-            var messages = await _localDbService.GetMessagesAsync(Constants.MessageCount);
-            foreach (var m in messages)
+            // 디비에서 불러와서 메모리 로드
+            foreach (var m in await _localDbService.GetMessagesAsync(Constants.MessageCount))
                 Messages.Add(m);
+        }
+        public async Task FetchRemoteMessagesAsync()
+        {
+            FetchingStateChanged?.Invoke(this, FetchingState.Fetching);
+
+            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
+            {
+                foreach (var message in messages)
+                {
+                    await _localDbService.SaveMessageAsync(message);
+                    Messages.Add(message);
+                }
+
+                MessagesFetched?.Invoke(this, messages);
+            }
+
+            FetchingStateChanged?.Invoke(this, FetchingState.Finished);
+
         }
         public async void BufferMessages()
         {
@@ -318,11 +353,28 @@ namespace Ringer.Services
                 MessageAdded?.Invoke(this, addedMessage);
                 Messages.Add(addedMessage);
             }
+
+            if (!Utilities.IsChatActive && message.SenderId != App.UserId && !Utilities.AndroidCameraActivated)
+            {
+                var notification = new NotificationRequest
+                {
+                    //BadgeNumber = 1,
+                    NotificationId = ++App.LocalNotificationId,
+                    Title = $"(local){message.Sender}",
+                    Description = message.Body,
+                    ReturningData = $"server id: {message.ServerId}", // Returning data when tapped on notification.
+                    //NotifyTime = DateTime.Now.AddSeconds(0.2), // Used for Scheduling local notification, if not specified notification will show immediately.
+                    //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
+                    //Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
+                };
+
+                NotificationCenter.Current.Show(notification);
+                Vibration.Vibrate();
+            }
         }
         public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
         {
-            if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);//SendMessageToRoomAsync
+            await EnsureConnected();
 
             return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
         }
@@ -350,7 +402,6 @@ namespace Ringer.Services
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex.Message);
                 ConnectionFailed?.Invoke(this, new ConnectionEventArgs(ex.Message));
             }
         }
@@ -367,38 +418,34 @@ namespace Ringer.Services
                 if (IsConnected)
                     throw new InvalidOperationException("Disconnection faild");
 
-                Disconnected?.Invoke(this, new ConnectionEventArgs($"Disconnected\n{DateTime.UtcNow}"));
-                Debug.WriteLine($"Disconnection completed\n{DateTime.UtcNow}");
+                Disconnected?.Invoke(this, new ConnectionEventArgs($"Disconnection completed\n{DateTime.UtcNow}"));
 
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Disconnection Failed: " + ex.Message);
-                DisconnectionFailed?.Invoke(this, new ConnectionEventArgs("Disconnection Failed: " + ex.Message));
+                DisconnectionFailed?.Invoke(this, new ConnectionEventArgs(ex.Message));
             }
-        }
-        public async Task DisconnectAsync(string room, string user)
-        {
-            if (!IsConnected)
-                return;
-
-            await LeaveRoomAsync(room, user);
-            await DisconnectAsync();
         }
         public async Task JoinRoomAsync(string room, string user)
         {
-            if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);//JoinRoomAsync
+            await EnsureConnected();
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
-        public async Task LeaveRoomAsync(string room, string user)
+
+        public async Task EnsureConnected()
         {
             if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);//LeaveRoomAsync
+                await ConnectAsync().ConfigureAwait(false);
+        }
+
+        public async Task LeaveRoomAsync(string room, string user)
+        {
+            await EnsureConnected();
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
+
         #endregion
     }
 }

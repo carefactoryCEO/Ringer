@@ -20,7 +20,7 @@ namespace Ringer.Views.Partials
                     if (Height > _previousHeight)
                     {
                         Debug.WriteLine("--------------------Editor expanded-----------------------");
-                        NotifyListScroll();
+                        //NotifyListScroll();
                     }
 
                     _previousHeight = Height;
@@ -32,19 +32,12 @@ namespace Ringer.Views.Partials
                 Device.BeginInvokeOnMainThread(() =>
                 {
                     ActionsGrid.IsVisible = false;
-                    SendButton.IsEnabled = true;
-                    ActionsButton.IsEnabled = true;
+
+                    SendButton.IsEnabled = ActionsButton.IsEnabled = true;
                 });
             });
         }
         #endregion
-
-        protected override void OnBindingContextChanged()
-        {
-            base.OnBindingContextChanged();
-
-            vm = BindingContext as ChatPageViewModel;
-        }
 
         #region Custom Events
         public event EventHandler ListShouldBeScrolled;
@@ -55,7 +48,6 @@ namespace Ringer.Views.Partials
         public static BindableProperty PagePaddingProperty
             = BindableProperty.Create(nameof(PagePadding), typeof(Thickness), typeof(InputBarView));
         private double _previousHeight;
-        private ChatPageViewModel vm;
 
         public Thickness PagePadding
         {
@@ -67,15 +59,15 @@ namespace Ringer.Views.Partials
         void ActionsButton_Clicked(object sender, EventArgs e)
         {
             ActionsGrid.IsVisible = true;
-            SendButton.IsEnabled = false;
-            ActionsButton.IsEnabled = false;
+
+            SendButton.IsEnabled = ActionsButton.IsEnabled = false;
         }
 
         void RingerEditor_Focused(object sender, EventArgs e)
         {
             ActionsGrid.IsVisible = false;
-            SendButton.IsEnabled = true;
-            ActionsButton.IsEnabled = true;
+
+            SendButton.IsEnabled = ActionsButton.IsEnabled = true;
         }
 
         void SendButton_Tapped(object sender, EventArgs e)

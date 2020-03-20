@@ -18,7 +18,6 @@ namespace Ringer.Core
 
         Task ConnectAsync();
         Task DisconnectAsync();
-        Task DisconnectAsync(string room, string user);
         Task JoinRoomAsync(string room, string user);
         Task LeaveRoomAsync(string room, string user);
         Task<int> SendMessageToRoomAsync(string roomId, string sender, string body);
@@ -186,14 +185,6 @@ namespace Ringer.Core
                 Debug.WriteLine("Disconnection Failed: " + ex.Message);
                 DisconnectionFailed?.Invoke(this, new ConnectionEventArgs("Disconnection Failed: " + ex.Message));
             }
-        }
-        public async Task DisconnectAsync(string room, string user)
-        {
-            if (!IsConnected)
-                return;
-
-            await LeaveRoomAsync(room, user);
-            await DisconnectAsync();
         }
         public async Task JoinRoomAsync(string room, string user)
         {
