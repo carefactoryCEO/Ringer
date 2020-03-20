@@ -56,9 +56,7 @@ namespace RingerStaff.Services
             if (!IsConnected)
                 await ConnectAsync();
 
-            var id = await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", message.Body, roomId);
-
-            Debug.WriteLine(id);
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", message.Body, roomId);
 
         }
 

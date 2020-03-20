@@ -156,7 +156,7 @@ namespace Ringer
                         }
                     }
 
-                    //await Shell.Current.GoToAsync(Constants.ChatPageUriFromPushNotification);
+                    await Shell.Current.GoToAsync(Constants.ChatPageUriFromPushNotification);
                 };
             }
 
@@ -191,16 +191,18 @@ namespace Ringer
 
             LastConnectionId = _messaging.ConnectionId;
 
-            //if (Utilities.iOS)
-            //{
-            //    Xamarin.Forms.Device.StartTimer(TimeSpan.FromSeconds(2), () =>
-            //    {
-            //        if (!IsOn)
-            //            _messaging.DisconnectAsync();
+            if (Utilities.iOS)
+            {
+                _messaging.DisconnectAsync();
 
-            //        return false;
-            //    });
-            //}
+                //Xamarin.Forms.Device.StartTimer(TimeSpan.FromSeconds(2), () =>
+                //{
+                //    if (!IsOn)
+                //        _messaging.DisconnectAsync();
+
+                //    return false;
+                //});
+            }
 
             base.OnSleep();
         }

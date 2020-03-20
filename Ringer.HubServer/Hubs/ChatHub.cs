@@ -58,7 +58,7 @@ namespace Ringer.HubServer.Hubs
         #endregion
 
         #region Send Message to Room
-        public async Task<int> SendMessageToRoomAsyc(string body, string roomId)
+        public async Task SendMessageToRoomAsyc(string body, string roomId)
         {
             User user = await _dbContext.Users.FindAsync(UserId);
 
@@ -92,7 +92,7 @@ namespace Ringer.HubServer.Hubs
             if (_env.IsDevelopment())
             {
                 sw.Stop();
-                return message?.Id ?? -1;
+                return;
             }
 
             sw.Restart();
@@ -133,7 +133,7 @@ namespace Ringer.HubServer.Hubs
 
                 var pushService = new PushService(pushDic);
 
-                await pushService.Push(user.Name, body, customDataDic);
+                pushService.Push(user.Name, body, customDataDic);
 
                 foreach (var push in pushDic)
                     _logger.LogWarning($"Push message to [{push.Key}]({push.Value}) from {user.Name}");
@@ -141,8 +141,6 @@ namespace Ringer.HubServer.Hubs
 
             sw.Stop();
             _logger.LogWarning($"Push to unconnected Devices: {sw.ElapsedMilliseconds}");
-
-            return message?.Id ?? -1;
         }
         #endregion
 

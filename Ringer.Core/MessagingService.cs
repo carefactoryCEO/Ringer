@@ -20,7 +20,7 @@ namespace Ringer.Core
         Task DisconnectAsync();
         Task JoinRoomAsync(string room, string user);
         Task LeaveRoomAsync(string room, string user);
-        Task<int> SendMessageToRoomAsync(string roomId, string sender, string body);
+        Task SendMessageToRoomAsync(string roomId, string sender, string body);
 
         event EventHandler<ConnectionEventArgs> Connecting;
         event EventHandler<ConnectionEventArgs> Connected;
@@ -126,12 +126,12 @@ namespace Ringer.Core
         #endregion
 
         #region Public Methods
-        public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
+        public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             if (!IsConnected)
                 await ConnectAsync().ConfigureAwait(false);//SendMessageToRoomAsync
 
-            return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId);
 
             //Debug.WriteLine($"A message with {id} delivered to server");
         }

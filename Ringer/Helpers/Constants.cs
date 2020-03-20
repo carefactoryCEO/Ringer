@@ -35,7 +35,7 @@ namespace Ringer.Helpers
         public static readonly string DisconnectedString = "Disconnected";
 
         public static readonly string PushNotificationString = "pushNotification";
-        public static readonly string LocalNotificationString = "LocalNotification";
+        public static readonly string LocalNotificationString = "localNotification";
         public static readonly string ChatPageUriFromLocalNotification = $"//mappage/chatpage?from={LocalNotificationString}";
         public static readonly string ChatPageUriFromPushNotification = $"//mappage/chatpage?from={PushNotificationString}";
 

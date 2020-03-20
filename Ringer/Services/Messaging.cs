@@ -155,7 +155,7 @@ namespace Ringer.Services
                 InitMessagesAsync(),
                 ConnectAsync()
 
-            }).ConfigureAwait(false);
+            });
 
             FetchingStateChanged?.Invoke(this, FetchingState.Finished);
 
@@ -239,6 +239,8 @@ namespace Ringer.Services
         }
         private async Task<MessageModel> SaveToLocalDbAsync(MessageModel message)
         {
+            Utilities.Trace($"server id:{message.ServerId}, last id: {App.LastServerMessageId}, message types: {message.MessageTypes}");
+
             if (message.ServerId != -1 && message.ServerId > App.LastServerMessageId)
                 App.LastServerMessageId = message.ServerId;
 
@@ -247,7 +249,7 @@ namespace Ringer.Services
         }
         private async Task<MessageModel[]> PullRemoteMessagesAsync()
         {
-            if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token).ConfigureAwait(false) is List<PendingMessage> pendingMessages && pendingMessages.Any())
+            if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token) is List<PendingMessage> pendingMessages && pendingMessages.Any())
             {
                 App.LastServerMessageId = pendingMessages.OrderByDescending(p => p.Id).FirstOrDefault()?.Id ?? App.LastServerMessageId;
 
@@ -305,10 +307,7 @@ namespace Ringer.Services
             if (await PullRemoteMessagesAsync() is MessageModel[] messages)
             {
                 foreach (var message in messages)
-                {
-                    await _localDbService.SaveMessageAsync(message);
-                    Utilities.Trace($"server id:{message.ServerId}, message types: {message.MessageTypes}");
-                }
+                    await SaveToLocalDbAsync(message);
             }
 
             // 디비에서 불러와서 메모리 로드
@@ -323,7 +322,7 @@ namespace Ringer.Services
             {
                 foreach (var message in messages)
                 {
-                    await _localDbService.SaveMessageAsync(message);
+                    await SaveToLocalDbAsync(message);
                     Messages.Add(message);
                 }
 
@@ -372,11 +371,11 @@ namespace Ringer.Services
                 Vibration.Vibrate();
             }
         }
-        public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
+        public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             await EnsureConnected();
 
-            return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
         }
 
         public void ClearLocalDb()
