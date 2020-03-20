@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "430497239728",
+    "firebase_url": "https://ringerstaff-7c393.firebaseio.com",
+    "project_id": "ringerstaff-7c393",
+    "storage_bucket": "ringerstaff-7c393.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:430497239728:android:322bb0fa7c1b40fb39a175",
+        "android_client_info": {
+          "package_name": "kr.co.carefactory.ringerstaff"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "430497239728-f84b2s5e8emudhup6urs2ritr4cbq272.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeHtGnaIubL5G_4LUl05zqgkAUZWnvJio"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "430497239728-f84b2s5e8emudhup6urs2ritr4cbq272.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -65,9 +65,29 @@ export default {
     // get room list
     this.getRoomList();
 
+    this.$connection.onreconnecting(e => console.log(e));
+    /* eslint-disable */
+    this.$connection.onreconnected(e => {
+      let test = "";
+      console.log(e);
+      this.enterRoom(this.$currentRoomId);
+    });
+    /** eslint-enable */
+    this.$connection.onclose(e => {
+      console.log(e);
+    });
+
     // enter to send
     document.querySelector("#message-input").addEventListener("keypress", e => {
       if (e.keyCode == 13) this.sendMeessage();
+    });
+
+    document.querySelector("#message-input").addEventListener("focus", e => {
+      e.target.placeholder = "";
+    });
+
+    document.querySelector("#message-input").addEventListener("focusout", e => {
+      e.target.placeholder = "메시지";
     });
   },
   methods: {

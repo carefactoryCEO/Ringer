@@ -1,14 +1,11 @@
-﻿using System;
-
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.Runtime;
 using Android.Views;
-using Android.Widget;
 using Android.OS;
 using Android;
-using Plugin.CurrentActivity;
 using Microsoft.AppCenter.Push;
+using Plugin.LocalNotification;
 
 namespace Ringer.Droid
 {
@@ -22,32 +19,33 @@ namespace Ringer.Droid
 
             base.OnCreate(savedInstanceState);
 
-            // camera
-            CrossCurrentActivity.Current.Init(this, savedInstanceState);
-
+            // TODO check and remove Shell, Visual, CollectionView experimental
             global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
 
             // essentials
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
+            //FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
+            //FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
+
+
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
 
-            // for map
+            // Local Notification
+            NotificationCenter.CreateNotificationChannel(new Plugin.LocalNotification.Platform.Droid.NotificationChannelRequest
+            {
+                //Sound = Resource.Raw.filling_your_inbox.ToString(),
+                Importance = NotificationImportance.Max
+            });
+            NotificationCenter.NotifyNotificationTapped(Intent);
+
+            // Map
             Xamarin.FormsMaps.Init(this, savedInstanceState);
 
             // status bar color
             Window.SetStatusBarColor(Android.Graphics.Color.Rgb(56, 79, 129));
 
             LoadApplication(new App());
-        }
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
-        {
-            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-            // camera
-            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
         protected override void OnStart()
@@ -56,14 +54,25 @@ namespace Ringer.Droid
             {
                 RequestPermissions(new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation }, 1);
             }
-            base.OnStart();
 
+            base.OnStart();
         }
 
         protected override void OnNewIntent(Android.Content.Intent intent)
         {
-            base.OnNewIntent(intent);
             Push.CheckLaunchedFromNotification(this, intent);
+            NotificationCenter.NotifyNotificationTapped(intent);
+            base.OnNewIntent(intent);
+        }
+
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
+        {
+            Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            // camera
+            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 }

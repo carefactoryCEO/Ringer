@@ -4,10 +4,11 @@ using Android.Runtime;
 using Android.OS;
 using Plugin.LocalNotification;
 using Android.Content;
+using Android.Views;
 
 namespace RingerStaff.Droid
 {
-    [Activity(Label = "RingerStaff", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Label = "RingerStaff", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation, WindowSoftInputMode = SoftInput.AdjustNothing)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -19,20 +20,22 @@ namespace RingerStaff.Droid
 
             global::Xamarin.Forms.Forms.SetFlags("CollectionView_Experimental");
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
             FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
+
+            global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
 
             NotificationCenter.CreateNotificationChannel(new Plugin.LocalNotification.Platform.Droid.NotificationChannelRequest
             {
-                Sound = Resource.Raw.filling_your_inbox.ToString(),
+                //Sound = Resource.Raw.filling_your_inbox.ToString(),
                 Importance = NotificationImportance.Max
             });
+            NotificationCenter.NotifyNotificationTapped(Intent);
 
-            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
 
             LoadApplication(new App());
 
-            NotificationCenter.NotifyNotificationTapped(Intent);
 
         }
 

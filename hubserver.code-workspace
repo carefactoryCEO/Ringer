@@ -1,0 +1,14 @@
+{
+  "folders": [
+    {
+      "path": "Ringer.HubServer"
+    },
+    {
+      "path": "Ringer.HubServer.Frontend"
+    },
+    {
+      "path": "Ringer.Console"
+    }
+  ],
+  "settings": {}
+}

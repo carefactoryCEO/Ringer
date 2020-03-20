@@ -55,17 +55,16 @@
     <MtouchArch>ARMv7, ARM64</MtouchArch>
     <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignEntitlements>
-    </CodesignEntitlements>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
-    <DeviceSpecificBuild>true</DeviceSpecificBuild>
     <OptimizePNGs>true</OptimizePNGs>
     <MtouchFastDev>true</MtouchFastDev>
-    <MtouchEnableSGenConc>false</MtouchEnableSGenConc>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <MtouchI18n>cjk</MtouchI18n>
-    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
     <CodesignExtraArgs />
     <CodesignResourceRules />
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
     <MtouchInterpreter>-all</MtouchInterpreter>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
@@ -75,8 +74,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
-    <CodesignKey>iPhone Developer</CodesignKey>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <CodesignKey>Apple Distribution: CareFactory Corp. (583LP97227)</CodesignKey>
+    <CodesignEntitlements>Info.plist</CodesignEntitlements>
+    <MtouchExtraArgs>--optimize=experimental-xforms-product-type</MtouchExtraArgs>
+    <MtouchI18n>cjk</MtouchI18n>
+    <CodesignProvision>Ringer Adhoc Provisioning Profile</CodesignProvision>
+    <MtouchFloat32>true</MtouchFloat32>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <AppExtensionDebugBundleId />
@@ -84,12 +87,12 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
-    <Compile Include="Renderers\ChatInputBarViewRenderer.cs" />
     <Compile Include="Renderers\CustomEditorRenderer.cs" />
-    <Compile Include="Renderers\ExtendedListViewRenderer.cs" />
     <None Include="Entitlements.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Info.plist" />
+    <Compile Include="Renderers\RingerListViewRenderer.cs" />
+    <Compile Include="Renderers\InputBarViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
@@ -156,9 +159,6 @@
       <Visible>false</Visible>
     </ImageAsset>
     <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
-    <BundleResource Include="Resources\CameraButton.png" />
-    <BundleResource Include="Resources\CameraButton%402x.png" />
-    <BundleResource Include="Resources\CameraButton%403x.png" />
     <BundleResource Include="Resources\BackButton.png" />
     <BundleResource Include="Resources\BackButton%402x.png" />
     <BundleResource Include="Resources\BackButton%403x.png" />
@@ -171,6 +171,37 @@
     <BundleResource Include="Resources\StartChatButton.png" />
     <BundleResource Include="Resources\StartChatButton%402x.png" />
     <BundleResource Include="Resources\StartChatButton%403x.png" />
+    <BundleResource Include="Resources\FilmButton.png" />
+    <BundleResource Include="Resources\FilmButton%402x.png" />
+    <BundleResource Include="Resources\FilmButton%403x.png" />
+    <BundleResource Include="Resources\ImageButton.png" />
+    <BundleResource Include="Resources\ImageButton%402x.png" />
+    <BundleResource Include="Resources\ImageButton%403x.png" />
+    <BundleResource Include="Resources\InviteButton.png" />
+    <BundleResource Include="Resources\InviteButton%402x.png" />
+    <BundleResource Include="Resources\InviteButton%403x.png" />
+    <BundleResource Include="Resources\PhoneCallButton.png" />
+    <BundleResource Include="Resources\PhoneCallButton%402x.png" />
+    <BundleResource Include="Resources\PhoneCallButton%403x.png" />
+    <BundleResource Include="Resources\VideoButton.png" />
+    <BundleResource Include="Resources\VideoButton%402x.png" />
+    <BundleResource Include="Resources\VideoButton%403x.png" />
+    <BundleResource Include="Resources\VideoCallButton.png" />
+    <BundleResource Include="Resources\VideoCallButton%402x.png" />
+    <BundleResource Include="Resources\VideoCallButton%403x.png" />
+    <BundleResource Include="Resources\ActionsButton.png" />
+    <BundleResource Include="Resources\ActionsButton%402x.png" />
+    <BundleResource Include="Resources\ActionsButton%403x.png" />
+    <BundleResource Include="Resources\SendButton.png" />
+    <BundleResource Include="Resources\SendButton%402x.png" />
+    <BundleResource Include="Resources\SendButton%403x.png" />
+    <BundleResource Include="Resources\CameraButton.png" />
+    <BundleResource Include="Resources\CameraButton%402x.png" />
+    <BundleResource Include="Resources\CameraButton%403x.png" />
+    <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
+    <BundleResource Include="Resources\good_things_happen.aiff" />
+    <BundleResource Include="Resources\good_things_happen.mp3" />
+    <BundleResource Include="Resources\filling_your_inbox.m4r" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -186,7 +217,7 @@
       <Version>3.1.2</Version>
     </PackageReference>
     <PackageReference Include="Plugin.Permissions">
-      <Version>5.0.0-beta</Version>
+      <Version>6.0.0-beta</Version>
     </PackageReference>
     <PackageReference Include="PropertyChanged.Fody">
       <Version>3.2.6</Version>
@@ -195,12 +226,12 @@
       <Version>1.3.0</Version>
     </PackageReference>
     <PackageReference Include="Xam.Plugin.Media">
-      <Version>4.4.8-beta</Version>
+      <Version>5.0.0-beta</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.5.0.356" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.5.0" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.396" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.1" />
     <PackageReference Include="Xamarin.Forms.Maps">
-      <Version>4.5.0.356</Version>
+      <Version>4.5.0.396</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Analytics">
       <Version>3.0.0</Version>
@@ -216,6 +247,9 @@
     </PackageReference>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client">
       <Version>2.4.1</Version>
+    </PackageReference>
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>5.0.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />

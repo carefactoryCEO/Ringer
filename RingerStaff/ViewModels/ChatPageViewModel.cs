@@ -34,9 +34,49 @@ namespace RingerStaff.ViewModels
             OpenProfilePageCommand = new Command(async () => await ExcuteOpenProfilePageCommand());
 
             RealTimeService.MessageReceived += RealTimeService_MessageReceived;
+            RealTimeService.Reconnecting += RealTimeService_Reconnecting;
+            RealTimeService.Reconnected += RealTimeService_Reconnected;
+            RealTimeService.SomeoneEntered += RealTimeService_SomeoneEntered;
+            RealTimeService.SomeoneLeft += RealTimeService_SomeoneLeft;
+
         }
 
 
+        private void RealTimeService_SomeoneLeft(object sender, SignalREventArgs e)
+        {
+            MessageModel message = new MessageModel
+            {
+                Body = $"{e.Sender}가 나갔습니다.",
+                MessageTypes = MessageTypes.EntranceNotice | MessageTypes.Leading | MessageTypes.Trailing
+            };
+
+            Messages.Add(message);
+            MessagingCenter.Send(this, "MessageAdded", message);
+        }
+
+        private void RealTimeService_SomeoneEntered(object sender, SignalREventArgs e)
+        {
+            MessageModel message = new MessageModel
+            {
+                Body = $"{e.Sender}가 들어왔습니다.",
+                MessageTypes = MessageTypes.EntranceNotice | MessageTypes.Leading | MessageTypes.Trailing
+
+            };
+
+            Messages.Add(message);
+            MessagingCenter.Send(this, "MessageAdded", message);
+        }
+
+        private void RealTimeService_Reconnecting(object sender, ConnectionEventArgs e)
+        {
+            Debug.WriteLine(e.Message);
+            MessagingCenter.Send(this, "ConnectionEvent", e.Message);
+        }
+
+        private void RealTimeService_Reconnected(object sender, ConnectionEventArgs e)
+        {
+            Debug.WriteLine(e.Message);
+        }
 
         private void RealTimeService_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
@@ -99,12 +139,9 @@ namespace RingerStaff.ViewModels
                 }
             }
 
-
-
-
             Messages.Add(message);
             TextToSend = string.Empty;
-            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
+            MessagingCenter.Send(this, "MessageAdded", message);
 
             await RealTimeService.SendMessageAsync(message, App.CurrentRoomId);
         }
@@ -123,6 +160,12 @@ namespace RingerStaff.ViewModels
         internal async Task OnAppearingAsync()
         {
             await RealTimeService.EnterRoomAsync(App.CurrentRoomId, "staff");
+            await LoadMessagesAsync();
+        }
+
+        internal async Task OnDisappearingAsync()
+        {
+            await Task.Delay(0);
         }
 
         private Task ExcuteGoBackCommand()
@@ -140,9 +183,10 @@ namespace RingerStaff.ViewModels
             Messages.Clear();
 
             foreach (var messageModel in messageModels)
+            {
                 Messages.Add(messageModel);
-
-            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", messageModels.Last());
+                MessagingCenter.Send(this, "MessageAdded", messageModels.Last());
+            }
 
             IsBusy = false;
         }

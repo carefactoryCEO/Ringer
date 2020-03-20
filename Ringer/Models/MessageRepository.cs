@@ -1,144 +1,222 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Ringer.Core;
+using Ringer.Core.Data;
+using Ringer.Core.EventArgs;
+using Ringer.Helpers;
 using Ringer.Services;
+using Ringer.Types;
 using Xamarin.Forms;
 
 namespace Ringer.Models
 {
     public interface IMessageRepository
     {
-        ObservableCollection<Message> Messages { get; }
-
-        Task AddMessageAsync(Message message);
-
-        Task SaveToLocalDbAsync(Message message);
-
-        void AddLocalMessage(Message message);
-
-        Task LoadMessagesAsync(bool reset = false);
+        Task<List<MessageModel>> LoadRecentMessagesAsync(int take = 50);
+        Task<List<MessageModel>> LoadMoreMessagesAsync(int take, int skip);
+        Task AddMessageAsync(MessageModel message);
 
         void ClearLocalDb();
+
+        event EventHandler<MessageModel> MessageAdded;
+        event EventHandler<MessageModel> MessageUpdated;
     }
 
     public class MessageRepository : IMessageRepository
     {
+        #region private fields
         private readonly ILocalDbService _localDbService;
         private readonly IRESTService _restService;
+        private readonly IMessaging _messaging;
+        #endregion
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        #region public Events
+        public event EventHandler<MessageModel> MessageAdded;
+        public event EventHandler<MessageModel> MessageUpdated;
+        #endregion
 
+        #region ctor
         public MessageRepository()
         {
-            Messages = new ObservableCollection<Message>();
             _localDbService = DependencyService.Resolve<ILocalDbService>();
             _restService = DependencyService.Resolve<IRESTService>();
+            _messaging = DependencyService.Resolve<IMessaging>();
+
+            _messaging.SomeoneEntered += SomeoneEntered;
+            _messaging.SomeoneLeft += SomeoneLeft;
+            _messaging.MessageReceived += MessageReceived;
+
+            Debug.WriteLine(Constants.DbPath);
         }
+        #endregion
 
-        public ObservableCollection<Message> Messages { get; set; }
-
-        public void AddLocalMessage(Message message)
+        #region Messaging service event handlers
+        private async void MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            Messages.Insert(0, message);
-        }
-
-        double _totalMilliSeconds = 0;
-
-        public async Task SaveToLocalDbAsync(Message message)
-        {
-            if (message.ServerId <= App.LastServerMessageId)
-                return;
-
-            var sw = new Stopwatch();
-            sw.Start();
-
-            var result = await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
-
-            if (result > 0)
-                App.LastServerMessageId = message.ServerId;
-
-            sw.Stop();
-            Debug.WriteLine($"Save {message.Id} local db(ms): {sw.Elapsed.TotalMilliseconds}");
-            _totalMilliSeconds += sw.Elapsed.TotalMilliseconds;
-
-        }
-
-        public Task AddMessageAsync(Message message)
-        {
-            if (message.ServerId <= App.LastServerMessageId)
-                return Task.CompletedTask;
-
-            // 일단 표시
-            AddLocalMessage(message);
-
-            // 로컬 디비 저장
-            return SaveToLocalDbAsync(message);
-        }
-
-        public async Task LoadMessagesAsync(bool reset = false)
-        {
-            if (!App.IsLoggedIn)
-                return;
-
-            var stopwatch = new Stopwatch();
-
-            if (reset)
-                await Shell.Current.Navigation.PopToRootAsync();
-
-            // 서버에서 긁어와 로컬 디비에 저장
-            stopwatch.Start();
-            var pendingMessages = await _restService.PullPendingMessagesAsync().ConfigureAwait(false); // App.LastMessageId보다 큰 것만 긁어옴.
-            stopwatch.Stop();
-            Debug.WriteLine($"Pull pending Messages from server time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
-
-            var locallySavedLastServerMessageId = await _localDbService.GetLocallySavedLastServerMessageIdAsync(App.CurrentRoomId).ConfigureAwait(false);
-
-            _totalMilliSeconds = 0;
-
-            stopwatch.Restart();
-            foreach (var pendingMessage in pendingMessages)
+            // 내가 방금 보낸 건지 체크
+            if (e.SenderId == App.UserId)
             {
-                if (pendingMessage.Id <= locallySavedLastServerMessageId)
-                    continue;
-
-                await SaveToLocalDbAsync(new Message // App.LastMessageId보다 큰 것만 저 
+                if (await _localDbService.GetSentMessageAsync(App.RoomId) is MessageModel sentMessage)
                 {
-                    ServerId = pendingMessage.Id,
-                    Body = pendingMessage.SenderName == App.UserName ? pendingMessage.Body : pendingMessage.SenderName + ": " + pendingMessage.Body,
-                    Sender = pendingMessage.SenderName,
-                    RoomId = App.CurrentRoomId,
-                    SenderId = pendingMessage.SenderId,
-                    CreatedAt = pendingMessage.CreatedAt,
+                    App.LastServerMessageId = sentMessage.ServerId = e.MessageId;
+                    await _localDbService.UpdateMessageAsync(sentMessage);
+
+                    return;
+                }
+            }
+
+            var message = new MessageModel
+            {
+                ServerId = e.MessageId,
+                RoomId = App.RoomId,
+                Body = e.Body,
+                Sender = e.SenderName,
+                SenderId = e.SenderId,
+                CreatedAt = e.CreatedAt,
+                ReceivedAt = DateTime.UtcNow,
+                MessageTypes = Utilities.GetMediaAndDirectionType(e.Body, e.SenderId, App.UserId)
+            };
+
+            await AddMessageAsync(message);
+
+            Debug.WriteLine(App.RoomId);
+
+            Utilities.Trace(message.MessageTypes.ToString());
+        }
+        private async void SomeoneEntered(object sender, SignalREventArgs e)
+        {
+            if (e.Sender != App.UserName)
+                await AddMessageAsync(new MessageModel
+                {
+                    Body = $"{e.Sender} 님이 들어왔습니다.",
+                    Sender = Constants.System,
+                    MessageTypes = MessageTypes.EntranceNotice,
+                    CreatedAt = DateTime.UtcNow,
                     ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
-            }
-            stopwatch.Stop();
-            Debug.WriteLine($"Save to local DB time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
-            Debug.WriteLine($"Sum db insert time(ms) : {_totalMilliSeconds}");
 
-            //var tempMessages = new ObservableCollection<Message>();
+            Utilities.Trace(e.Message);
+        }
+        private async void SomeoneLeft(object sender, SignalREventArgs e)
+        {
+            if (e.Sender != App.UserName)
+                await AddMessageAsync(new MessageModel
+                {
+                    Body = $"{e.Sender} 님이 나갔습니다.",
+                    Sender = Constants.System,
+                    MessageTypes = MessageTypes.EntranceNotice,
+                    CreatedAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow
+                }).ConfigureAwait(false);
 
+            Utilities.Trace(e.Message);
+        }
+        #endregion
 
-            // 메모리 로드
-            stopwatch.Restart();
-            var localDbMessages = await _localDbService.GetMessagesAsync(true).ConfigureAwait(false); // 로컬 디비 전부 불러옴.
-            foreach (var message in localDbMessages)
+        public async Task<List<MessageModel>> LoadRecentMessagesAsync(int take)
+        {
+            await PullMessages();
+
+            return await _localDbService.GetMessagesAsync(take);
+        }
+
+        public Task<List<MessageModel>> LoadMoreMessagesAsync(int take, int skip)
+        {
+            return _localDbService.GetMessagesAsync(take, skip);
+        }
+
+        private async Task PullMessages()
+        {
+            // App.LastMessageId보다 큰 것만 긁어옴.
+            List<PendingMessage> pendingMessages = await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token).ConfigureAwait(false);
+
+            if (pendingMessages.Count > 0)
+                App.LastServerMessageId = pendingMessages.Last().Id;
+            else
+                return;
+
+            // 임시 array
+            // Media Type and direction selected
+            var messages = pendingMessages
+                .OrderBy(p => p.CreatedAt)
+                .Select(p => new MessageModel
+                {
+                    ServerId = p.Id,
+                    Body = p.Body,
+                    Sender = p.SenderName,
+                    RoomId = App.RoomId,
+                    SenderId = p.SenderId,
+                    CreatedAt = p.CreatedAt,
+                    ReceivedAt = DateTime.UtcNow,
+                    MessageTypes = Utilities.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
+                }).ToArray();
+
+            MessageModel lastSavedMessage = await _localDbService.GetLastMessageAsync(App.RoomId);
+            MessageModel before;
+
+            // set display type(leading/trailing)
+            for (int i = 0; i < messages.Length; i++)
             {
-                if (Messages.Count > 0 && Messages[0].Id == message.Id) // 메모리 로드된 메시지 중 Id 최대값이 추가하려는 메시지와 같으면 중단. 즉 추가하려는 메시지가 이미 로드된 메시지들보다 Id값보다 더 커야 추가. 즉 메모리에 있는 메시지보다 최신인 것만 추가한다는 얘기.
-                    break;
+                before = i > 0 ? messages[i - 1] : lastSavedMessage;
 
-                Debug.WriteLine($"Add to Messages collection. message id: {message.Id}");
-                Messages.Add(message);
+                if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                {
+                    // 메시지 타입 수정
+                    before.MessageTypes ^= MessageTypes.Trailing;
+                    messages[i].MessageTypes ^= MessageTypes.Leading;
+                }
+
             }
-            stopwatch.Stop();
-            Debug.WriteLine($"Add to Messages collection time(ms) : {stopwatch.Elapsed.TotalMilliseconds}");
 
-            if (reset)
-                await Shell.Current.GoToAsync($"//mappage/chatpage?room={App.CurrentRoomId}");
+            await _localDbService.UpdateMessageAsync(lastSavedMessage);
+
+            foreach (var m in messages)
+            {
+                await _localDbService.SaveMessageAsync(m);
+                Debug.WriteLine($"server id:{m.ServerId}, message types: {m.MessageTypes}");
+            }
+
+        }
+
+        public async Task AddMessageAsync(MessageModel message)
+        {
+            // 직전 메시지 저장, 뷰 업데이트
+            if (await UpdateLastMessageAsync(message).ConfigureAwait(false) is MessageModel updatedMessage)
+                MessageUpdated?.Invoke(this, updatedMessage);
+
+            // 메시지 저장, 뷰 추가, 스크롤
+            if (await SaveToLocalDbAsync(message).ConfigureAwait(false) is MessageModel addedMessage)
+                MessageAdded?.Invoke(this, addedMessage);
+        }
+
+        private async Task<MessageModel> UpdateLastMessageAsync(MessageModel message)
+        {
+            if (await _localDbService.GetLastMessageAsync(App.RoomId).ConfigureAwait(false) is MessageModel lastMessage)
+            {
+                if (lastMessage.SenderId == message.SenderId && Utilities.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+                {
+                    // 메시지 타입 수정
+                    lastMessage.MessageTypes ^= MessageTypes.Trailing;
+                    message.MessageTypes ^= MessageTypes.Leading;
+
+                    // 디비 저장
+                    return await _localDbService.UpdateMessageAsync(lastMessage).ConfigureAwait(false);
+                }
+            }
+
+            return null;
+        }
+
+        private async Task<MessageModel> SaveToLocalDbAsync(MessageModel message)
+        {
+            if (message.ServerId != -1 && message.ServerId > App.LastServerMessageId)
+                App.LastServerMessageId = message.ServerId;
+
+            // 디비 저장
+            return await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
         }
 
         public void ClearLocalDb()

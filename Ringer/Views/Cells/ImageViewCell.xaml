@@ -1,0 +1,143 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ViewCell xmlns="http://xamarin.com/schemas/2014/forms"
+          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+          xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          x:Class="Ringer.Views.Cells.ImageViewCell">
+
+    <Grid ColumnSpacing="0" RowSpacing="0"
+          d:HorizontalOptions="EndAndExpand"
+          HorizontalOptions="{Binding MessageTypes,
+                                Converter={StaticResource MessageTypesToLayoutOptionConverter},
+                                ConverterParameter='MainGrid'}"
+          d:Margin="25, 0, 15, 10"
+          Margin="{Binding MessageTypes,
+                        Converter={StaticResource MessageTypesToThicknessConverter}}">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+
+            <ColumnDefinition d:Width="70"
+                              Width="{Binding MessageTypes,
+                                            Converter={StaticResource MessageTypesToGridLengthConverter},
+                                            ConverterParameter='FirstColumn'}"/>
+
+            <ColumnDefinition Width="Auto"/>
+
+            <ColumnDefinition d:Width="0"
+                              Width="{Binding MessageTypes,
+                                            Converter={StaticResource MessageTypesToGridLengthConverter},
+                                            ConverterParameter='ThirdColumn'}"/>
+
+        </Grid.ColumnDefinitions>
+
+        <!-- 1st Column : Avatar -->
+        <Frame BackgroundColor="SkyBlue"
+                   HasShadow="False"
+                   CornerRadius="13"
+                   Margin="5"
+                   Padding="10"
+                   VerticalOptions="Start"
+                   d:IsVisible="False"
+                   IsVisible="{Binding MessageTypes,
+                                    Converter={StaticResource MessageTypesToBooleanConverter},
+                                    ConverterParameter='Avatar'}">
+            <Image>
+                <Image.Source>
+                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                    Glyph="{StaticResource IconAccount}"
+                                    Size="18" Color="Black"/>
+                </Image.Source>
+            </Image>
+        </Frame>
+
+        <!-- 2nd Column -->
+        <StackLayout Grid.Column="1" Spacing="0" VerticalOptions="End">
+
+            <!-- Sender -->
+            <Label d:Text="우도윤"
+                   Text="{Binding Sender}"
+                   TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="12"
+                   VerticalOptions="End"
+                   d:IsVisible="False"
+                   IsVisible="{Binding MessageTypes,
+                                        Converter={StaticResource MessageTypesToBooleanConverter},
+                                        ConverterParameter='Sender'}"/>
+
+            <!-- Body(Image) -->
+            <Frame Padding="0"
+                   BackgroundColor="Transparent"
+                   CornerRadius="11"
+                   HasShadow="False"
+                   IsClippedToBounds="True">
+                <Frame.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Image_Tapped"/>
+                </Frame.GestureRecognizers>
+
+                <Image Source="{Binding Body}"
+                       Aspect="AspectFill"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center"
+                       HeightRequest="240"
+                       WidthRequest="240"/>
+
+
+                <!--<ff:CachedImage Source="{Binding Body}"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center"
+                                FadeAnimationEnabled="True"
+                                DownsampleHeight="300"
+                                CacheDuration="50"
+                                RetryCount="3"
+                                RetryDelay="250"/>-->
+            </Frame>
+
+        </StackLayout>
+
+        <!-- 3rd Column : metadata -->
+        <StackLayout d:Grid.Column="0"
+                     Grid.Column="{Binding MessageTypes,
+                                        Converter={StaticResource MessageTypesToIntegerConverter}}"
+                     VerticalOptions="End"
+                     Spacing="0"
+                     Margin="3,0,3,1"
+                     d:Margin="3,0,3,1">
+
+            <!-- unread count -->
+            <Label TextColor="{StaticResource MessageOutgoingBackgroundColor}"
+                   FontSize="10"
+                   FontAttributes="Bold"
+                   d:Text="3"
+                   Text="{Binding UnreadCount}"
+                   d:HorizontalOptions="End"
+                   HorizontalOptions="{Binding MessageTypes,
+                                        Converter={StaticResource MessageTypesToLayoutOptionConverter},
+                                        ConverterParameter='Metadata'}"
+                   d:IsVisible="True"
+                   IsVisible="{Binding UnreadCount,
+                                        Converter={StaticResource IntegerToBooleanConverter}}"/>
+
+            <!-- timestamp -->
+            <Label TextColor="{StaticResource MessageMetadataColor}"
+                   FontSize="10"
+                   Text="{Binding CreatedAt,
+                                  Converter={StaticResource DateTimeToStringConverter}}"
+                   d:HorizontalOptions="End"
+                   HorizontalOptions="{Binding MessageTypes,
+                                        Converter={StaticResource MessageTypesToLayoutOptionConverter},
+                                        ConverterParameter='Metadata'}"
+
+                   d:IsVisible="True"
+                   IsVisible="{Binding MessageTypes,
+                                        Converter={StaticResource MessageTypesToBooleanConverter},
+                                        ConverterParameter='Timestamp'}"/>
+
+        </StackLayout>
+
+    </Grid>
+</ViewCell>

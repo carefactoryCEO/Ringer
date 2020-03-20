@@ -12,7 +12,15 @@ export default {
     await axios
       .post("/auth/staff-login", {
         email: "test@test.com",
-        password: "string"
+        password: "string",
+        devicetype: 2 // DeviceType.Web
+        /**
+         * iOS      = 0,
+         * Android  = 1,
+         * Web      = 2,
+         * Desktop  = 3,
+         * Console  = 4
+         */
       })
       .then(response => {
         this.token = response.data.token;
@@ -26,6 +34,7 @@ export default {
       .withUrl("/hubs/chat", {
         accessTokenFactory: () => this.getToken()
       })
+      .withAutomaticReconnect([0, 0, 1000, 1000, 1000, 2000, 2000])
       .configureLogging(LogLevel.Information)
       .build();
 

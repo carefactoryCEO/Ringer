@@ -52,7 +52,7 @@ namespace RingerStaff.ViewModels
 
         }
 
-        internal void SetCurrentRoomId(object roomModel)
+        internal void SetRoomId(object roomModel)
         {
             if (roomModel is RoomModel)
                 App.CurrentRoomId = ((RoomModel)roomModel).Id;
@@ -70,8 +70,6 @@ namespace RingerStaff.ViewModels
                     return false;
 
                 Rooms.Clear();
-
-                await Task.Delay(1000);
 
                 foreach (var roomModel in roomModels)
                     Rooms.Add(roomModel);

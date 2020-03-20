@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Xamarin.Forms;
+using Ringer.Services;
 
 namespace Ringer.ViewModels
 {
@@ -16,6 +17,7 @@ namespace Ringer.ViewModels
 
         public MapPageViewModel()
         {
+
             #region dummy information
             Infomations = new ObservableCollection<Infomation>
             {
@@ -101,6 +103,11 @@ namespace Ringer.ViewModels
 
             GoToChatPageCommand = new Command(async () =>
             {
+                //var messaging = DependencyService.Resolve<IMessaging>();
+
+                //if (!messaging.Messages.Any())
+                //    await messaging.InitMessagesAsync();
+
                 await Shell.Current.GoToAsync("chatpage?room=fromMap");
             });
         }

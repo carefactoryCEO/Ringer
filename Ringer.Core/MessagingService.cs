@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.SignalR.Client;
+﻿using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core.EventArgs;
 using System;
 using System.Diagnostics;
@@ -9,16 +8,16 @@ namespace Ringer.Core
 {
     public interface IMessagingService
     {
-        bool IsConnected { get; }
-        bool IsConnecting { get; }
-        bool IsDisconnected { get; }
-        bool IsReconnecting { get; }
+        bool IsConnected { get; } // stable
+        bool IsDisconnected { get; } // connect immediatly
+        bool IsConnecting { get; } // indicate activity
+        bool IsReconnecting { get; } // indicate activity
+        string ConnectionId { get; }
 
         void Init(string url, string token);
 
         Task ConnectAsync();
         Task DisconnectAsync();
-        Task DisconnectAsync(string room, string user);
         Task JoinRoomAsync(string room, string user);
         Task LeaveRoomAsync(string room, string user);
         Task<int> SendMessageToRoomAsync(string roomId, string sender, string body);
@@ -29,13 +28,13 @@ namespace Ringer.Core
         event EventHandler<ConnectionEventArgs> Disconnecting;
         event EventHandler<ConnectionEventArgs> Disconnected;
         event EventHandler<ConnectionEventArgs> DisconnectionFailed;
-        event EventHandler<ConnectionEventArgs> Closed;
         event EventHandler<ConnectionEventArgs> Reconnecting;
         event EventHandler<ConnectionEventArgs> Reconnected;
+        event EventHandler<ConnectionEventArgs> Closed;
+
         event EventHandler<SignalREventArgs> SomeoneEntered;
         event EventHandler<SignalREventArgs> SomeoneLeft;
         event EventHandler<MessageReceivedEventArgs> MessageReceived;
-
     }
 
     public class MessagingService : IMessagingService
@@ -103,7 +102,7 @@ namespace Ringer.Core
             };
 
             // Handle Hub messages
-            _hubConnection.On<string, string, int, int, DateTime>("ReceiveMessage", ReceiveMessage);
+            _hubConnection.On<string, string, int, int, DateTime, string>("ReceiveMessage", ReceiveMessage);
 
             _hubConnection.On<string>("Entered", user =>
             {
@@ -120,19 +119,26 @@ namespace Ringer.Core
 
         #region public properties
         public bool IsConnected => _hubConnection?.State == HubConnectionState.Connected;
-        public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
         public bool IsDisconnected => _hubConnection?.State == HubConnectionState.Disconnected;
+        public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
         public bool IsReconnecting => _hubConnection?.State == HubConnectionState.Reconnecting;
-
-
-        //public ObservableCollection<Message> Messages { get; set; } = new ObservableCollection<Message>();
-        public string ConnectionId => _hubConnection.ConnectionId;
+        public string ConnectionId => _hubConnection?.ConnectionId;
         #endregion
 
         #region Public Methods
-        public void ReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
+        public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
         {
-            MessageReceived?.Invoke(this, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt));
+            if (!IsConnected)
+                await ConnectAsync().ConfigureAwait(false);//SendMessageToRoomAsync
+
+            return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
+
+            //Debug.WriteLine($"A message with {id} delivered to server");
+        }
+        public void ReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt, string roomId = null)
+        {
+            MessageReceived?.Invoke(this, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt, roomId));
+
         }
 
         public async Task ConnectAsync()
@@ -157,7 +163,6 @@ namespace Ringer.Core
                 ConnectionFailed?.Invoke(this, new ConnectionEventArgs(ex.Message));
             }
         }
-
         public async Task DisconnectAsync()
         {
             if (!IsConnected)
@@ -181,16 +186,6 @@ namespace Ringer.Core
                 DisconnectionFailed?.Invoke(this, new ConnectionEventArgs("Disconnection Failed: " + ex.Message));
             }
         }
-
-        public async Task DisconnectAsync(string room, string user)
-        {
-            if (!IsConnected)
-                return;
-
-            await LeaveRoomAsync(room, user);
-            await DisconnectAsync();
-        }
-
         public async Task JoinRoomAsync(string room, string user)
         {
             if (!IsConnected)
@@ -198,23 +193,12 @@ namespace Ringer.Core
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
-
         public async Task LeaveRoomAsync(string room, string user)
         {
             if (!IsConnected)
                 await ConnectAsync().ConfigureAwait(false);//LeaveRoomAsync
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
-        }
-
-        public async Task<int> SendMessageToRoomAsync(string roomId, string sender, string body)
-        {
-            if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);//SendMessageToRoomAsync
-
-            return await _hubConnection.InvokeAsync<int>("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
-
-            //Debug.WriteLine($"A message with {id} delivered to server");
         }
         #endregion
 
