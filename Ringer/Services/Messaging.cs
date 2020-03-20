@@ -239,8 +239,6 @@ namespace Ringer.Services
         }
         private async Task<MessageModel> SaveToLocalDbAsync(MessageModel message)
         {
-            Utilities.Trace($"server id:{message.ServerId}, last id: {App.LastServerMessageId}, message types: {message.MessageTypes}");
-
             if (message.ServerId != -1 && message.ServerId > App.LastServerMessageId)
                 App.LastServerMessageId = message.ServerId;
 
@@ -251,8 +249,6 @@ namespace Ringer.Services
         {
             if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token) is List<PendingMessage> pendingMessages && pendingMessages.Any())
             {
-                App.LastServerMessageId = pendingMessages.OrderByDescending(p => p.Id).FirstOrDefault()?.Id ?? App.LastServerMessageId;
-
                 // MessageModel로 변환
                 MessageModel[] messages = pendingMessages
                     .OrderBy(p => p.CreatedAt)
@@ -301,13 +297,14 @@ namespace Ringer.Services
         public async Task InitMessagesAsync()
         {
             if (Messages.Any())
-                Messages.Clear();
+                return;
 
             // 서버에서 당겨와서 디비 저장
             if (await PullRemoteMessagesAsync() is MessageModel[] messages)
             {
                 foreach (var message in messages)
-                    await SaveToLocalDbAsync(message);
+                    if (message.ServerId > App.LastServerMessageId)
+                        await SaveToLocalDbAsync(message);
             }
 
             // 디비에서 불러와서 메모리 로드

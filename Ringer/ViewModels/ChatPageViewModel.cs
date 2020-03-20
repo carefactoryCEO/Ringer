@@ -74,6 +74,15 @@ namespace Ringer.ViewModels
             _messaging.BufferMessages();
         }
 
+        public async Task EnsureMessageLoaded()
+        {
+            if (Messages.Any())
+                return;
+
+            await _messaging.InitMessagesAsync();
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+        }
+
         private void _messaging_MessagesFetched(object sender, MessageModel[] fetchedMessages)
         {
             if (fetchedMessages.Any())

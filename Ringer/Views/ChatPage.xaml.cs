@@ -41,19 +41,23 @@ namespace Ringer.Views
 
         #region Query properties
         // Shell.Current.GoToAsync("//mappage/chatpage?from={from}");
-        public string From { get; set; }
-        //{
-        //    set
-        //    {
-        //        //vm.IsBusy = value == Constants.PushNotificationString;
-        //        //if (value == Constants.PushNotificationString)
-        //        //{
-        //        //    if (!vm.Messages.Any())
-        //        //        vm.ForceInitMesssages().Wait();
-        //        //    MessageFeed.ScrollToLast();
-        //        //}
-        //    }
-        //}
+        public string From //{ get; set; }
+        {
+            set
+            {
+                if (value == Constants.PushNotificationString)
+                {
+
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        vm.IsBusy = true;
+                        await vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
+                        vm.IsBusy = false;
+                    });
+
+                }
+            }
+        }
         #endregion
 
         #region override methods
@@ -63,20 +67,21 @@ namespace Ringer.Views
 
             App.IsChatPage = true;
 
-            //// 안드에서 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
-            //if (!vm.Messages.Any())
-            //{
-            //    var messaging = DependencyService.Resolve<IMessaging>();
+            //// 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
 
-            //    Device.BeginInvokeOnMainThread(async () =>
-            //    {
-            //        vm.IsBusy = true;
-            //        await Task.Delay(200);
-            //        vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
-            //        MessageFeed.ScrollToLast();
-            //        vm.IsBusy = false;
-            //    });
-            //}
+            //vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast()).Wait();
+
+            //var messaging = DependencyService.Resolve<IMessaging>();
+
+            //Device.BeginInvokeOnMainThread(async () =>
+            //{
+            //    vm.IsBusy = true;
+            //    await Task.Delay(200);
+            //    vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
+            //    MessageFeed.ScrollToLast();
+            //    vm.IsBusy = false;
+            //});
+
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {
