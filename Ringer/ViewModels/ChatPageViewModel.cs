@@ -69,16 +69,18 @@ namespace Ringer.ViewModels
                 MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
             });
 
-            //if (!_messaging.Messages.Any())
-            //{
-            //    IsBusy = true;
-            //    Task.Delay(2000).Wait();
-            //    IsBusy = false;
-            //}
-
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            _messaging.BufferMessages();
 
+            _messaging.BufferMessages();
+        }
+
+        public async Task EnsureMessageLoaded()
+        {
+            if (Messages.Any())
+                return;
+
+            await _messaging.InitMessagesAsync();
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
         }
 
         private void _messaging_MessagesFetched(object sender, MessageModel[] fetchedMessages)

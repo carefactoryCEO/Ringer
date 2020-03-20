@@ -145,7 +145,7 @@ namespace Ringer.ConsoleApp
                 else
                 {
                     if (currentRoomId != null)
-                        _ = await messagingService.SendMessageToRoomAsync(currentRoomId, name, text);
+                        await messagingService.SendMessageToRoomAsync(currentRoomId, name, text);
                     else
                         await ShowUsersAsync();
 

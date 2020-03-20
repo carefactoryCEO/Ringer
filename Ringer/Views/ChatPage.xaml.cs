@@ -1,14 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Plugin.LocalNotification;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
 using Ringer.ViewModels;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -34,7 +31,6 @@ namespace Ringer.Views
             BindingContext = vm = new ChatPageViewModel();
 
             MessageFeed.ItemAppearing += MessageFeed_ItemAppearing;
-
         }
 
         private void MessageFeed_ItemAppearing(object sender, ItemVisibilityEventArgs e) // e.Item, e.ItemIndex
@@ -45,15 +41,20 @@ namespace Ringer.Views
 
         #region Query properties
         // Shell.Current.GoToAsync("//mappage/chatpage?from={from}");
-        public string From
+        public string From //{ get; set; }
         {
             set
             {
-                vm.IsBusy = value == Constants.PushNotificationString;
-                if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
+                if (value == Constants.PushNotificationString)
                 {
-                    MessageFeed.ScrollToLast();
-                    TitleLabel.Focus();
+
+                    Device.BeginInvokeOnMainThread(async () =>
+                    {
+                        vm.IsBusy = true;
+                        await vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
+                        vm.IsBusy = false;
+                    });
+
                 }
             }
         }
@@ -64,22 +65,23 @@ namespace Ringer.Views
         {
             base.OnAppearing();
 
-            // 안드에서 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
-            if (!vm.Messages.Any())
-            {
-                var messaging = DependencyService.Resolve<IMessaging>();
-
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    vm.IsBusy = true;
-                    await Task.Delay(200);
-                    vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
-                    MessageFeed.ScrollToLast();
-                    vm.IsBusy = false;
-                });
-            }
-
             App.IsChatPage = true;
+
+            //// 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
+
+            //vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast()).Wait();
+
+            //var messaging = DependencyService.Resolve<IMessaging>();
+
+            //Device.BeginInvokeOnMainThread(async () =>
+            //{
+            //    vm.IsBusy = true;
+            //    await Task.Delay(200);
+            //    vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
+            //    MessageFeed.ScrollToLast();
+            //    vm.IsBusy = false;
+            //});
+
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {
@@ -139,7 +141,7 @@ namespace Ringer.Views
             // date picker
             //chatInputBarView.IsVisible = false;
             //datePicker.Focus();
-            return;
+            //return;
             // local notification
             //Device.StartTimer(TimeSpan.FromSeconds(3), () =>
             //{
@@ -154,33 +156,6 @@ namespace Ringer.Views
 
             //    return true;
             //});
-        }
-
-        private void ShowLocalNotification()
-        {
-            var notification = new NotificationRequest
-            {
-                //BadgeNumber = 1,
-                NotificationId = ++App.LocalNotificationId,
-                Title = $"Test ##{App.LocalNotificationId}",
-                Description = $"Test Description ##{App.LocalNotificationId}",
-                ReturningData = "Dummy data ##{App.LocalNotificationId}", // Returning data when tapped on notification.
-                //NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
-                //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
-                //Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
-            };
-
-            NotificationCenter.Current.Show(notification);
-
-            // TODO: iOS이고 CurrentRoom이 아니면 알람 사운드
-            //if (Device.RuntimePlatform == Device.iOS)
-            //{
-            //    var player = CrossSimpleAudioPlayer.Current;
-            //    player.Load("filling_your_inbox.m4r");
-            //    player.Play();
-            //}
-
-            Vibration.Vibrate();
         }
 
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
