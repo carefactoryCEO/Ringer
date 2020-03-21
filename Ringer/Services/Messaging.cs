@@ -22,7 +22,6 @@ namespace Ringer.Services
         ObservableCollection<MessageModel> Messages { get; }
 
         Task AddMessageAsync(MessageModel message);
-        void ClearLocalDb();
         Task<string> InitAsync(string url, string token);
         void BufferMessages();
         Task InitMessagesAsync();
@@ -34,6 +33,7 @@ namespace Ringer.Services
 
         Task FetchRemoteMessagesAsync();
         Task EnsureConnected();
+        Task Clear();
     }
 
     public class Messaging : IMessaging
@@ -278,7 +278,7 @@ namespace Ringer.Services
                 {
                     before = i > 0 ? messages[i - 1] : lastSavedMessage;
 
-                    if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                    if (before != null && before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
                     {
                         // 메시지 타입 수정
                         before.MessageTypes ^= MessageTypes.Trailing;
@@ -286,8 +286,11 @@ namespace Ringer.Services
                     }
                 }
 
-                await _localDbService.UpdateMessageAsync(lastSavedMessage);
-                MessageUpdated?.Invoke(this, lastSavedMessage);
+                if (lastSavedMessage != null)
+                {
+                    await _localDbService.UpdateMessageAsync(lastSavedMessage);
+                    MessageUpdated?.Invoke(this, lastSavedMessage);
+                }
 
                 return messages;
             }
@@ -439,9 +442,10 @@ namespace Ringer.Services
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
-        public void ClearLocalDb()
+        public async Task Clear()
         {
-            _localDbService.ResetMessagesAsync();
+            Messages.Clear();
+            await _localDbService.ResetMessagesAsync();
         }
         #endregion
     }

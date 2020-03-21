@@ -81,9 +81,9 @@
 
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
-                    Command="{Binding RefreshCommand}"
-                    Clicked="Button_Clicked"
-                    Text="Picker"/>
+                    Command="{Binding ResetCommand}"
+                    Clicked="Reset_Clicked"
+                    Text="Reset"/>
 
         </StackLayout>
 

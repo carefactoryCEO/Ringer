@@ -32,11 +32,13 @@
                      HorizontalOptions="Start"
                      VerticalOptions="End"
                      Clicked="ActionsButton_Clicked"
-                     Grid.Row="0"/>
+                     Grid.Row="0"
+                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"/>
 
         <!-- Editor -->
         <controls:ExtendedEditorControl x:Name="RingerEditor"
                                Text="{Binding TextToSend}"
+                               IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                                HeightRequest="{OnPlatform iOS=38}"
                                CornerRadius="19"
                                HasRoundedCorner="True"
@@ -53,12 +55,13 @@
 
         <!-- Send Button -->
         <ImageButton Source="SendButton"
+                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                      x:Name="SendButton"
-               HorizontalOptions="End"
-               VerticalOptions="End"
-               Command="{Binding SendMessageCommand}"
+                     HorizontalOptions="End"
+                     VerticalOptions="End"
+                     Command="{Binding SendMessageCommand}"
                      Clicked="SendButton_Tapped"
-               Grid.Row="0">
+                     Grid.Row="0">
 
         </ImageButton>
 

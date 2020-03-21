@@ -86,16 +86,16 @@ namespace Ringer.Views
                 });
             });
 
-            await vm.ExcuteLogInProcessAsync();
             MessageFeed.ScrollToLast();
+
+            await vm.LogInProcessAsync();
         }
         protected override void OnDisappearing()
         {
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
-
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
 
-            vm.ResetMessages();
+            vm.InitializeMessages();
 
             App.IsChatPage = false;
 
@@ -122,26 +122,16 @@ namespace Ringer.Views
             if (Device.RuntimePlatform == Device.iOS)
                 MessageFeed.ScrollToLast();
         }
+
+        private void Reset_Clicked(object sender, EventArgs e)
+        {
+
+        }
+
         private void Button_Clicked(object sender, EventArgs e)
         {
-            // date picker
-            //chatInputBarView.IsVisible = false;
-            //datePicker.Focus();
-            //return;
-            // local notification
-            //Device.StartTimer(TimeSpan.FromSeconds(3), () =>
-            //{
-            //    if (App.IsOn && App.IsChatPage)
-            //    {
-            //        Xamarin.Forms.Application.Current.MainPage.DisplayAlert("chat", "chatting", "닫기");
-            //    }
-            //    else
-            //    {
-            //        ShowLocalNotification();
-            //    }
-
-            //    return true;
-            //});
+            chatInputBarView.IsVisible = false;
+            datePicker.Focus();
         }
 
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
