@@ -3,6 +3,7 @@
           xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
           xmlns:d="http://xamarin.com/schemas/2014/forms/design"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
           mc:Ignorable="d"
           x:Class="Ringer.Views.Cells.ImageViewCell">
 
@@ -79,22 +80,17 @@
                     <TapGestureRecognizer Tapped="Image_Tapped"/>
                 </Frame.GestureRecognizers>
 
-                <Image Source="{Binding Body}"
-                       Aspect="AspectFill"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       HeightRequest="240"
-                       WidthRequest="240"/>
-
-
-                <!--<ff:CachedImage Source="{Binding Body}"
+                <ff:CachedImage x:Name="cachedImage"
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
                                 FadeAnimationEnabled="True"
-                                DownsampleHeight="300"
+                                DownsampleToViewSize="True"
+                                WidthRequest="240"
+                                HeightRequest="240"
+                                Aspect="AspectFill"
                                 CacheDuration="50"
                                 RetryCount="3"
-                                RetryDelay="250"/>-->
+                                RetryDelay="250"/>
             </Frame>
 
         </StackLayout>

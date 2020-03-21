@@ -16,7 +16,6 @@ namespace Ringer.Views
         #region private fields
         private readonly ChatPageViewModel vm;
         private Thickness _insets;
-        private string _room;
         #endregion
 
         #region constructor
@@ -49,6 +48,14 @@ namespace Ringer.Views
                             .ContinueWith(t => MessageFeed.ScrollToLast());
                         TitleLabel.Focus();
                         vm.IsBusy = false;
+                    });
+                }
+
+                if (value == Constants.LocalNotificationString)
+                {
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        MessageFeed.ScrollToLast();
                     });
                 }
             }

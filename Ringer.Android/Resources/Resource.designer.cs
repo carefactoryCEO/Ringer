@@ -15032,10 +15032,13 @@ namespace Ringer.Droid
 			public const int path_password_strike_through = 2131624026;
 			
 			// aapt resource value: 0x7F0E005B
-			public const int search_menu_title = 2131624027;
+			public const int project_id = 2131624027;
 			
 			// aapt resource value: 0x7F0E005C
-			public const int status_bar_notification_info_overflow = 2131624028;
+			public const int search_menu_title = 2131624028;
+			
+			// aapt resource value: 0x7F0E005D
+			public const int status_bar_notification_info_overflow = 2131624029;
 			
 			static String()
 			{

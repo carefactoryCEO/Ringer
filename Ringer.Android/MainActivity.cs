@@ -25,11 +25,10 @@ namespace Ringer.Droid
             // essentials
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
-            //FFImageLoading.Forms.Platform.CachedImageRenderer.Init(true);
-            //FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
-
-
             global::Xamarin.Forms.Forms.Init(this, savedInstanceState);
+
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init(enableFastRenderer: true);
+            //FFImageLoading.Forms.Platform.CachedImageRenderer.InitImageViewHandler();
 
             // Local Notification
             NotificationCenter.CreateNotificationChannel(new Plugin.LocalNotification.Platform.Droid.NotificationChannelRequest

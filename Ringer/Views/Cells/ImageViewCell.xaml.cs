@@ -14,6 +14,19 @@ namespace Ringer.Views.Cells
             InitializeComponent();
         }
 
+        protected override void OnBindingContextChanged()
+        {
+            cachedImage.Source = null;
+            var message = BindingContext as MessageModel;
+
+            if (message == null)
+                return;
+
+            cachedImage.Source = message.Body;
+
+            base.OnBindingContextChanged();
+        }
+
         async void Image_Tapped(object sender, EventArgs e)
         {
             var url = (BindingContext as MessageModel).Body;
