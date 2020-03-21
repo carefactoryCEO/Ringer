@@ -236,13 +236,18 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    await Task.WhenAll(new Task[]
-                    {
-                        // Upload to azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                        // Display image message to view locally
-                        _messaging.AddMessageAsync(message)
-                    });
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
+                    await _messaging.AddMessageAsync(message);
+
+                    //await Task.WhenAll(new Task[]
+                    //{
+                    //    // Upload to azure blob storage
+                    //    blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                    //    // Display image message to view locally
+                    //    _messaging.AddMessageAsync(message)
+                    //});
 
                     mediaFile.Dispose();
 
@@ -257,7 +262,7 @@ namespace Ringer.ViewModels
                 }
                 finally
                 {
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
                     App.IsCameraActivated = false;
                 }
             }
@@ -305,14 +310,10 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    await Task.WhenAll(new Task[]
-                    {
-                        // upload to azure blob storage
-                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                        // save message locally
-                        _messaging.AddMessageAsync(message)
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                    });
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
+                    await _messaging.AddMessageAsync(message);
 
                     mediaFile.Dispose();
 
@@ -327,7 +328,6 @@ namespace Ringer.ViewModels
                 }
                 finally
                 {
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
                     App.IsCameraActivated = false;
                 }
             }
@@ -374,12 +374,14 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
+                    await _messaging.AddMessageAsync(message);
+
                     await Task.WhenAll(new Task[]
                     {
-                            // Upload to Azure blob storage
-                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
-                            // Save message locally
-                            _messaging.AddMessageAsync(message)
+
                     }).ConfigureAwait(false);
 
                     mediaFile.Dispose();
@@ -395,7 +397,6 @@ namespace Ringer.ViewModels
                 }
                 finally
                 {
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
                     App.IsCameraActivated = false;
                 }
             }
@@ -435,19 +436,14 @@ namespace Ringer.ViewModels
                         MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
                     };
 
-                    await Task.WhenAll(new Task[]
-                    {
-                            // upload to azure blob storage
-                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" }),
-                            // Save message locally
-                            _messaging.AddMessageAsync(message)
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                    }).ConfigureAwait(false);
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
+                    await _messaging.AddMessageAsync(message);
 
                     mediaFile.Dispose();
 
                     IsBusy = false;
-
 
                     await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
                 }
@@ -457,7 +453,6 @@ namespace Ringer.ViewModels
                 }
                 finally
                 {
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
                     App.IsCameraActivated = false;
                 }
             }
