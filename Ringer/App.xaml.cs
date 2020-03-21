@@ -9,7 +9,6 @@ using Xamarin.Forms;
 using Ringer.Services;
 using Ringer.Helpers;
 using Plugin.LocalNotification;
-using System.Threading.Tasks;
 
 namespace Ringer
 {
@@ -192,24 +191,13 @@ namespace Ringer
             LastConnectionId = _messaging.ConnectionId;
 
             if (Utilities.iOS)
-            {
                 _messaging.DisconnectAsync();
-
-                //Xamarin.Forms.Device.StartTimer(TimeSpan.FromSeconds(2), () =>
-                //{
-                //    if (!IsOn)
-                //        _messaging.DisconnectAsync();
-
-                //    return false;
-                //});
-            }
 
             base.OnSleep();
         }
         protected override async void OnResume()
         {
             Utilities.Trace("------------OnResume------------");
-            Utilities.Trace($"Kept Connecting: {LastConnectionId == _messaging.ConnectionId} last connection id: {LastConnectionId}, current: {_messaging.ConnectionId}");
 
             base.OnResume();
 

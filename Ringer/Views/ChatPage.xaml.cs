@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
-using Ringer.Services;
 using Ringer.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
@@ -40,21 +36,20 @@ namespace Ringer.Views
         #endregion
 
         #region Query properties
-        // Shell.Current.GoToAsync("//mappage/chatpage?from={from}");
-        public string From //{ get; set; }
+        public string From
         {
             set
             {
                 if (value == Constants.PushNotificationString)
                 {
-
                     Device.BeginInvokeOnMainThread(async () =>
                     {
                         vm.IsBusy = true;
-                        await vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
+                        await vm.EnsureMessageLoaded()
+                            .ContinueWith(t => MessageFeed.ScrollToLast());
+                        TitleLabel.Focus();
                         vm.IsBusy = false;
                     });
-
                 }
             }
         }
@@ -66,22 +61,6 @@ namespace Ringer.Views
             base.OnAppearing();
 
             App.IsChatPage = true;
-
-            //// 메시지 로딩이 안 된 상태에서 빈 페이지가 뜨는 문제 해결
-
-            //vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast()).Wait();
-
-            //var messaging = DependencyService.Resolve<IMessaging>();
-
-            //Device.BeginInvokeOnMainThread(async () =>
-            //{
-            //    vm.IsBusy = true;
-            //    await Task.Delay(200);
-            //    vm.Messages = new ObservableCollection<MessageModel>(messaging.Messages.Take(Constants.MessageCount));
-            //    MessageFeed.ScrollToLast();
-            //    vm.IsBusy = false;
-            //});
-
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {

@@ -70,7 +70,6 @@ namespace Ringer.ViewModels
             });
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-
             _messaging.BufferMessages();
         }
 

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -288,9 +287,6 @@ namespace Ringer.Services
 
             return null;
         }
-
-
-
         #endregion
 
         #region Public Methods
@@ -336,7 +332,6 @@ namespace Ringer.Services
             foreach (var m in messages)
                 Messages.Insert(messages.IndexOf(m), m);
         }
-
         public async Task AddMessageAsync(MessageModel message)
         {
             // 직전 메시지 저장, 뷰 업데이트
@@ -374,12 +369,6 @@ namespace Ringer.Services
 
             await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", body, roomId).ConfigureAwait(false);
         }
-
-        public void ClearLocalDb()
-        {
-            _localDbService.ResetMessagesAsync();
-        }
-
         public async Task ConnectAsync()
         {
             if (IsConnected)
@@ -422,26 +411,27 @@ namespace Ringer.Services
                 DisconnectionFailed?.Invoke(this, new ConnectionEventArgs(ex.Message));
             }
         }
+        public async Task EnsureConnected()
+        {
+            if (!IsConnected)
+                await ConnectAsync().ConfigureAwait(false);
+        }
         public async Task JoinRoomAsync(string room, string user)
         {
             await EnsureConnected();
 
             await _hubConnection.SendAsync("AddToGroup", room, user);
         }
-
-        public async Task EnsureConnected()
-        {
-            if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);
-        }
-
         public async Task LeaveRoomAsync(string room, string user)
         {
             await EnsureConnected();
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
-
+        public void ClearLocalDb()
+        {
+            _localDbService.ResetMessagesAsync();
+        }
         #endregion
     }
 }
