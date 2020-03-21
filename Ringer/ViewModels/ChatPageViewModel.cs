@@ -238,13 +238,13 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                            // Upload to azure blob storage
-                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                            // Display image message to view locally
-                            _messaging.AddMessageAsync(message)
-                    }).ConfigureAwait(false);
+                        // Upload to azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                        // Display image message to view locally
+                        _messaging.AddMessageAsync(message)
+                    });
 
-                    //mediaFile.Dispose();
+                    mediaFile.Dispose();
 
                     IsBusy = false;
 
@@ -278,7 +278,10 @@ namespace Ringer.ViewModels
 
                     var mediaFile = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
                     {
-                        PhotoSize = PhotoSize.Medium
+                        CompressionQuality = 75,
+                        CustomPhotoSize = 50,
+                        PhotoSize = PhotoSize.MaxWidthHeight,
+                        MaxWidthHeight = 1000
                     });
 
 
@@ -304,12 +307,12 @@ namespace Ringer.ViewModels
 
                     await Task.WhenAll(new Task[]
                     {
-                            // upload to azure blob storage
-                            blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                            // save message locally
-                            _messaging.AddMessageAsync(message)
+                        // upload to azure blob storage
+                        blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
+                        // save message locally
+                        _messaging.AddMessageAsync(message)
 
-                    }).ConfigureAwait(false);
+                    });
 
                     mediaFile.Dispose();
 
@@ -350,7 +353,7 @@ namespace Ringer.ViewModels
                         Directory = "RingerVideo",
                         SaveToAlbum = true,
                         Quality = VideoQuality.Medium
-                    }); ;
+                    });
 
                     if (mediaFile == null)
                         return;

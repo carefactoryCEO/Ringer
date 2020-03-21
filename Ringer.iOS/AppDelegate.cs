@@ -28,7 +28,7 @@ namespace Ringer.iOS
 
             global::Xamarin.Forms.Forms.Init();
 
-            //UNUserNotificationCenter.Current.Delegate = new Plugin.LocalNotification.Platform.iOS.LocalNotificationDelegate();
+            FFImageLoading.Forms.Platform.CachedImageRenderer.Init();
 
             Xamarin.FormsMaps.Init();
 
