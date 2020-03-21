@@ -9,6 +9,7 @@ using Xamarin.Forms;
 using Ringer.Services;
 using Ringer.Helpers;
 using Plugin.LocalNotification;
+using System.Threading.Tasks;
 
 namespace Ringer
 {
@@ -205,11 +206,11 @@ namespace Ringer
 
             if (IsLoggedIn)
             {
-                await _messaging.EnsureConnected().ConfigureAwait(false);
-
-                if (LastConnectionId != _messaging.ConnectionId) // sleep 도중에 끊어져서 재연결했음 -> 그 사이 서버에 있었던 거 긁어와야지.
-                    await _messaging.FetchRemoteMessagesAsync();
-
+                await Task.WhenAll(new Task[]
+                {
+                    _messaging.EnsureConnected(),
+                    _messaging.FetchRemoteMessagesAsync()
+                });
             }
         }
         #endregion

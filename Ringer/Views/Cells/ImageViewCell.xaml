@@ -4,6 +4,7 @@
           xmlns:d="http://xamarin.com/schemas/2014/forms/design"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
           xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
+          xmlns:fftransformations="clr-namespace:FFImageLoading.Transformations;assembly=FFImageLoading.Transformations"
           mc:Ignorable="d"
           x:Class="Ringer.Views.Cells.ImageViewCell">
 
@@ -71,7 +72,33 @@
                                         ConverterParameter='Sender'}"/>
 
             <!-- Body(Image) -->
-            <Frame Padding="0"
+            <ff:CachedImage x:Name="cachedImage"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            LoadingPlaceholder="https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg"
+                            DownsampleToViewSize="True"
+                            FadeAnimationDuration="100"
+                            FadeAnimationEnabled="True"
+                            FadeAnimationForCachedImages="True"
+                            WidthRequest="240"
+                            HeightRequest="240"
+                            Aspect="AspectFill"
+                            CacheDuration="50"
+                            RetryCount="10"
+                            RetryDelay="250">
+                <ff:CachedImage.Transformations>
+                    <fftransformations:CornersTransformation
+                            CornersTransformType="TopLeftRounded,TopRightRounded,BottomLeftRounded,BottomRightRounded"
+                            TopLeftCornerSize="5"
+                            BottomLeftCornerSize="5"
+                            BottomRightCornerSize="5"
+                            TopRightCornerSize="5"/>
+                </ff:CachedImage.Transformations>
+                <ff:CachedImage.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="Image_Tapped"/>
+                </ff:CachedImage.GestureRecognizers>
+            </ff:CachedImage>
+            <!--<Frame Padding="0"
                    BackgroundColor="Transparent"
                    CornerRadius="11"
                    HasShadow="False"
@@ -80,18 +107,32 @@
                     <TapGestureRecognizer Tapped="Image_Tapped"/>
                 </Frame.GestureRecognizers>
 
+                <StackLayout Orientation="Horizontal">
+                <Image Source="{Binding Body}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           WidthRequest="240"
+                           HeightRequest="240"
+                           Aspect="AspectFill"/>
                 <ff:CachedImage x:Name="cachedImage"
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
-                                FadeAnimationEnabled="True"
-                                DownsampleToViewSize="True"
+                                LoadingPlaceholder="https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg"
                                 WidthRequest="240"
                                 HeightRequest="240"
                                 Aspect="AspectFill"
                                 CacheDuration="50"
-                                RetryCount="3"
-                                RetryDelay="250"/>
-            </Frame>
+                                RetryCount="10"
+                                RetryDelay="100">
+                    <ff:CachedImage.Transformations>
+                        <fftransformations:CornersTransformation
+                            CornersTransformType="BottomLeftCut,TopRightRounded"
+                            BottomLeftCornerSize="20"
+                            TopRightCornerSize="30"/>
+                    </ff:CachedImage.Transformations>
+                </ff:CachedImage>
+                </StackLayout>
+            </Frame>-->
 
         </StackLayout>
 

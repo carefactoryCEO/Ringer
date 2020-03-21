@@ -219,15 +219,15 @@ namespace Ringer.Services
 
             Utilities.Trace(e.Message);
         }
-        private async Task<MessageModel> UpdateLastMessageAsync(MessageModel message)
+        private async Task<MessageModel> UpdateLastMessageAsync(MessageModel currentMessage)
         {
             if (await _localDbService.GetLastMessageAsync(App.RoomId).ConfigureAwait(false) is MessageModel lastMessage)
             {
-                if (lastMessage.SenderId == message.SenderId && Utilities.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+                if (lastMessage.SenderId == currentMessage.SenderId && Utilities.InSameMinute(currentMessage.CreatedAt, lastMessage.CreatedAt))
                 {
                     // 메시지 타입 수정
                     lastMessage.MessageTypes ^= MessageTypes.Trailing;
-                    message.MessageTypes ^= MessageTypes.Leading;
+                    currentMessage.MessageTypes ^= MessageTypes.Leading;
 
                     // 디비 저장
                     return await _localDbService.UpdateMessageAsync(lastMessage).ConfigureAwait(false);
@@ -244,6 +244,12 @@ namespace Ringer.Services
             // 디비 저장
             return await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
         }
+
+        /// <summary>
+        /// 로컬 디비에 저장된 마지막 서버아이디보다 큰 것을 리모트 디비에서 긁어와
+        /// 메시지 타입을 수정, 로컬 디비에 저장한 후 메시지 배열을 리턴
+        /// </summary>
+        /// <returns>an array of MessageModel</returns>
         private async Task<MessageModel[]> PullRemoteMessagesAsync()
         {
             if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token) is List<PendingMessage> pendingMessages && pendingMessages.Any())
@@ -281,6 +287,7 @@ namespace Ringer.Services
                 }
 
                 await _localDbService.UpdateMessageAsync(lastSavedMessage);
+                MessageUpdated?.Invoke(this, lastSavedMessage);
 
                 return messages;
             }
@@ -290,48 +297,6 @@ namespace Ringer.Services
         #endregion
 
         #region Public Methods
-        public async Task InitMessagesAsync()
-        {
-            if (Messages.Any())
-                return;
-
-            // 서버에서 당겨와서 디비 저장
-            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
-            {
-                foreach (var message in messages)
-                    if (message.ServerId > App.LastServerMessageId)
-                        await SaveToLocalDbAsync(message);
-            }
-
-            // 디비에서 불러와서 메모리 로드
-            foreach (var m in await _localDbService.GetMessagesAsync(Constants.MessageCount))
-                Messages.Add(m);
-        }
-        public async Task FetchRemoteMessagesAsync()
-        {
-            FetchingStateChanged?.Invoke(this, FetchingState.Fetching);
-
-            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
-            {
-                foreach (var message in messages)
-                {
-                    await SaveToLocalDbAsync(message);
-                    Messages.Add(message);
-                }
-
-                MessagesFetched?.Invoke(this, messages);
-            }
-
-            FetchingStateChanged?.Invoke(this, FetchingState.Finished);
-
-        }
-        public async void BufferMessages()
-        {
-            var messages = await _localDbService.GetMessagesAsync(Constants.MessageCount, Messages.Count);
-
-            foreach (var m in messages)
-                Messages.Insert(messages.IndexOf(m), m);
-        }
         public async Task AddMessageAsync(MessageModel message)
         {
             // 직전 메시지 저장, 뷰 업데이트
@@ -363,6 +328,49 @@ namespace Ringer.Services
                 Vibration.Vibrate();
             }
         }
+        public async Task InitMessagesAsync()
+        {
+            if (Messages.Any())
+                return;
+
+            // 서버에서 당겨와서 디비 저장
+            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
+            {
+                foreach (var message in messages)
+                    if (message.ServerId > App.LastServerMessageId)
+                        await SaveToLocalDbAsync(message);
+            }
+
+            // 디비에서 불러와서 메모리 로드
+            foreach (var m in await _localDbService.GetMessagesAsync(Constants.MessageCount))
+                Messages.Add(m);
+        }
+        public async Task FetchRemoteMessagesAsync()
+        {
+            if (App.LastConnectionId == ConnectionId)
+                return;
+
+            if (await PullRemoteMessagesAsync() is MessageModel[] messages)
+            {
+                FetchingStateChanged?.Invoke(this, FetchingState.Fetching);
+
+                foreach (var message in messages)
+                {
+                    await SaveToLocalDbAsync(message);
+                    Messages.Add(message);
+                }
+                MessagesFetched?.Invoke(this, messages);
+                FetchingStateChanged?.Invoke(this, FetchingState.Finished);
+            }
+        }
+        public async void BufferMessages()
+        {
+            var messages = await _localDbService.GetMessagesAsync(Constants.MessageCount, Messages.Count);
+
+            foreach (var m in messages)
+                Messages.Insert(messages.IndexOf(m), m);
+        }
+
         public async Task SendMessageToRoomAsync(string roomId, string sender, string body)
         {
             await EnsureConnected();
@@ -413,9 +421,12 @@ namespace Ringer.Services
         }
         public async Task EnsureConnected()
         {
-            if (!IsConnected)
-                await ConnectAsync().ConfigureAwait(false);
+            if (IsConnected)
+                return;
+
+            await ConnectAsync().ConfigureAwait(false);
         }
+
         public async Task JoinRoomAsync(string room, string user)
         {
             await EnsureConnected();
