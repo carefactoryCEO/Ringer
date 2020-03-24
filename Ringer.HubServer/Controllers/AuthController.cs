@@ -33,7 +33,8 @@ namespace Ringer.HubServer.Controllers
         }
 
         [HttpGet("user/{id}")]
-        public async Task<ActionResult<User>> GetUserByIdAsync(int id){
+        public async Task<ActionResult<User>> GetUserByIdAsync(int id)
+        {
             var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == id).ConfigureAwait(false);
 
             if (user == null)
@@ -64,7 +65,7 @@ namespace Ringer.HubServer.Controllers
         }
 
         [HttpGet("people")]
-        public List<Person> People() 
+        public List<Person> People()
         {
             return new List<Person>
             {
@@ -160,6 +161,7 @@ namespace Ringer.HubServer.Controllers
         public async Task<ActionResult<string>> UserLoginAsync([FromBody]LoginInfo loginInfo)
         {
             var secretKey = _configuration["SecurityKey"];
+
             // TODO: Consumer인 경우 Ticket의 Travel 정보와 LoginInfo의 Location 정보를 대조
             User user = await _dbContext.Users
                 .Include(u => u.Devices)
@@ -172,9 +174,9 @@ namespace Ringer.HubServer.Controllers
 
             // DB에 정보 없음.
             if (user == null)
-                return NotFound("notFound");
+                return NotFound(new LoginResponse { success = false });
 
-            _logger.LogInformation($"user {user.Name} logged in.");
+            _logger.LogWarning($"user {user.Name} logged in.");
 
             string roomId = Guid.NewGuid().ToString();
 
@@ -218,7 +220,14 @@ namespace Ringer.HubServer.Controllers
             await _dbContext.SaveChangesAsync();
 
             var token = user.JwtToken(loginInfo, secretKey);
-            var response = new LoginResponse { token = token, roomId = roomId, userId = user.Id };
+            var response = new LoginResponse
+            {
+                token = token,
+                roomId = roomId,
+                userId = user.Id,
+                userName = user.Name,
+                success = true
+            };
 
             return Ok(response);
         }

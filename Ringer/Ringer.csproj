@@ -47,5 +47,6 @@
     <Folder Include="Views\Cells\" />
     <Folder Include="Types\" />
     <Folder Include="Converters\" />
+    <Folder Include="Extensions\" />
   </ItemGroup>
 </Project>

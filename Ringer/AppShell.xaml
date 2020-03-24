@@ -5,6 +5,7 @@
        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        mc:Ignorable="d"
        xmlns:local="clr-namespace:Ringer.Views"
+       BackgroundColor="Black"
        Title="Ringer"
        x:Class="Ringer.AppShell">
 

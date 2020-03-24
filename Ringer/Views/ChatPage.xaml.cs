@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.ViewModels;
@@ -9,8 +10,8 @@ using Xamarin.Forms.Xaml;
 
 namespace Ringer.Views
 {
-    [XamlCompilation(XamlCompilationOptions.Compile)]
     [QueryProperty("From", "from")]
+    [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ChatPage : ContentPage
     {
         #region private fields
@@ -24,13 +25,6 @@ namespace Ringer.Views
             InitializeComponent();
 
             BindingContext = vm = new ChatPageViewModel();
-
-            MessageFeed.ItemAppearing += MessageFeed_ItemAppearing;
-        }
-
-        private void MessageFeed_ItemAppearing(object sender, ItemVisibilityEventArgs e) // e.Item, e.ItemIndex
-        {
-
         }
         #endregion
 
@@ -39,23 +33,13 @@ namespace Ringer.Views
         {
             set
             {
-                if (value == Constants.PushNotificationString)
+                if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
                 {
                     Device.BeginInvokeOnMainThread(async () =>
                     {
-                        vm.IsBusy = true;
                         await vm.EnsureMessageLoaded()
                             .ContinueWith(t => MessageFeed.ScrollToLast());
                         TitleLabel.Focus();
-                        vm.IsBusy = false;
-                    });
-                }
-
-                if (value == Constants.LocalNotificationString)
-                {
-                    Device.BeginInvokeOnMainThread(() =>
-                    {
-                        MessageFeed.ScrollToLast();
                     });
                 }
             }
@@ -69,10 +53,22 @@ namespace Ringer.Views
 
             App.IsChatPage = true;
 
-            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
+            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "KeyboardShow", (sender, KeyboardShow) =>
             {
                 Device.BeginInvokeOnMainThread(() =>
                 {
+                    if (!KeyboardShow)
+                        Task.Run(() => TitleLabel.Focus()).ContinueWith(t => MessageFeed.ScrollToLast());
+
+                });
+            });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
+            {
+                Device.BeginInvokeOnMainThread(async () =>
+                {
+                    await Task.Delay(100);
+
                     MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
                 });
             });
@@ -82,20 +78,20 @@ namespace Ringer.Views
                 {
                     MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
 
-                    Utilities.Trace(((MessageModel)message).Body);
+                    Utility.Trace(((MessageModel)message).Body);
                 });
             });
 
-            await vm.ExcuteLogInProcessAsync();
             MessageFeed.ScrollToLast();
+
+            await vm.LogInProcessAsync();
         }
         protected override void OnDisappearing()
         {
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
-
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
 
-            vm.ResetMessages();
+            vm.InitializeMessages();
 
             App.IsChatPage = false;
 
@@ -122,35 +118,29 @@ namespace Ringer.Views
             if (Device.RuntimePlatform == Device.iOS)
                 MessageFeed.ScrollToLast();
         }
+        private void Reset_Clicked(object sender, EventArgs e)
+        {
+
+        }
         private void Button_Clicked(object sender, EventArgs e)
         {
-            // date picker
             //chatInputBarView.IsVisible = false;
             //datePicker.Focus();
-            //return;
-            // local notification
-            //Device.StartTimer(TimeSpan.FromSeconds(3), () =>
-            //{
-            //    if (App.IsOn && App.IsChatPage)
-            //    {
-            //        Xamarin.Forms.Application.Current.MainPage.DisplayAlert("chat", "chatting", "닫기");
-            //    }
-            //    else
-            //    {
-            //        ShowLocalNotification();
-            //    }
 
-            //    return true;
-            //});
+            //await Navigation.PushModalAsync(new MediaPage());
         }
-
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
         {
             chatInputBarView.IsVisible = true;
         }
-        private async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        private void TapGestureRecognizer_Tapped(object sender, EventArgs e)
         {
-            await Navigation.PopAsync();
+            Navigation.PopAsync();
+        }
+
+        void ChatInputBarView_KeyboardShuldBeShown(System.Object sender, bool e)
+        {
+            DisplayAlert($"{e}", "keyboard should be shown invoked", "close");
         }
         #endregion
     }

@@ -9,10 +9,9 @@ using Xamarin.Forms;
 
 namespace Ringer.Helpers
 {
-    public class Utilities
+    public class Utility
     {
         public static bool IsChatActive => App.IsChatPage && App.IsOn;
-
         public static bool iOS => Device.RuntimePlatform == Device.iOS;
         public static bool Android => Device.RuntimePlatform == Device.Android;
         public static bool AndroidCameraActivated => Android && App.IsCameraActivated;
@@ -20,7 +19,6 @@ namespace Ringer.Helpers
         {
             return current - last < TimeSpan.FromMinutes(1) && current.Minute == last.Minute;
         }
-
         public static MessageTypes GetMediaAndDirectionType(string body, int senderId, int userId)
         {
             // set default
@@ -50,7 +48,6 @@ namespace Ringer.Helpers
 
             return messageTypes;
         }
-
         public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
             message = $"[{DateTime.UtcNow.ToString("MMddHHmmss")}]({Path.GetFileNameWithoutExtension(callerFilePath)}.{callerName}){message}";

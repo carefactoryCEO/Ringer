@@ -20,7 +20,7 @@ namespace Ringer.Droid
             base.OnCreate(savedInstanceState);
 
             // TODO check and remove Shell, Visual, CollectionView experimental
-            global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
+            global::Xamarin.Forms.Forms.SetFlags("MediaElement_Experimental", "FastRenderers_Experimental");
 
             // essentials
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);

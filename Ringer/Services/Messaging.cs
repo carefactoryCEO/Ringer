@@ -22,7 +22,6 @@ namespace Ringer.Services
         ObservableCollection<MessageModel> Messages { get; }
 
         Task AddMessageAsync(MessageModel message);
-        void ClearLocalDb();
         Task<string> InitAsync(string url, string token);
         void BufferMessages();
         Task InitMessagesAsync();
@@ -34,6 +33,7 @@ namespace Ringer.Services
 
         Task FetchRemoteMessagesAsync();
         Task EnsureConnected();
+        Task Clear();
     }
 
     public class Messaging : IMessaging
@@ -107,7 +107,7 @@ namespace Ringer.Services
                         // verify access token here
                         // if not verified, refresh access token using refresh token
 
-                        Utilities.Trace($"connection token: {token}");
+                        Utility.Trace($"connection token: {token}");
 
                         return Task.FromResult(token);
                     };
@@ -145,6 +145,12 @@ namespace Ringer.Services
         }
         public async Task<string> InitAsync(string url, string token)
         {
+            if (_hubConnection != null)
+            {
+                await _hubConnection.DisposeAsync();
+                _hubConnection = null;
+            }
+
             Init(url, token);
 
             FetchingStateChanged?.Invoke(this, FetchingState.Fetching);
@@ -153,7 +159,6 @@ namespace Ringer.Services
             {
                 InitMessagesAsync(),
                 ConnectAsync()
-
             });
 
             FetchingStateChanged?.Invoke(this, FetchingState.Finished);
@@ -186,7 +191,7 @@ namespace Ringer.Services
                 SenderId = e.SenderId,
                 CreatedAt = e.CreatedAt,
                 ReceivedAt = DateTime.UtcNow,
-                MessageTypes = Utilities.GetMediaAndDirectionType(e.Body, e.SenderId, App.UserId)
+                MessageTypes = Utility.GetMediaAndDirectionType(e.Body, e.SenderId, App.UserId)
             };
 
             await AddMessageAsync(message);
@@ -203,7 +208,7 @@ namespace Ringer.Services
                     ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
 
-            Utilities.Trace(e.Message);
+            Utility.Trace(e.Message);
         }
         private async void OnSomeoneLeft(object sender, SignalREventArgs e)
         {
@@ -217,13 +222,13 @@ namespace Ringer.Services
                     ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
 
-            Utilities.Trace(e.Message);
+            Utility.Trace(e.Message);
         }
         private async Task<MessageModel> UpdateLastMessageAsync(MessageModel currentMessage)
         {
             if (await _localDbService.GetLastMessageAsync(App.RoomId).ConfigureAwait(false) is MessageModel lastMessage)
             {
-                if (lastMessage.SenderId == currentMessage.SenderId && Utilities.InSameMinute(currentMessage.CreatedAt, lastMessage.CreatedAt))
+                if (lastMessage.SenderId == currentMessage.SenderId && Utility.InSameMinute(currentMessage.CreatedAt, lastMessage.CreatedAt))
                 {
                     // 메시지 타입 수정
                     lastMessage.MessageTypes ^= MessageTypes.Trailing;
@@ -266,7 +271,7 @@ namespace Ringer.Services
                         SenderId = p.SenderId,
                         CreatedAt = p.CreatedAt,
                         ReceivedAt = DateTime.UtcNow,
-                        MessageTypes = Utilities.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
+                        MessageTypes = Utility.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
                     }).ToArray();
 
                 // MessagesTypes 수정
@@ -278,7 +283,7 @@ namespace Ringer.Services
                 {
                     before = i > 0 ? messages[i - 1] : lastSavedMessage;
 
-                    if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                    if (before != null && before.SenderId == messages[i].SenderId && Utility.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
                     {
                         // 메시지 타입 수정
                         before.MessageTypes ^= MessageTypes.Trailing;
@@ -286,8 +291,11 @@ namespace Ringer.Services
                     }
                 }
 
-                await _localDbService.UpdateMessageAsync(lastSavedMessage);
-                MessageUpdated?.Invoke(this, lastSavedMessage);
+                if (lastSavedMessage != null)
+                {
+                    await _localDbService.UpdateMessageAsync(lastSavedMessage);
+                    MessageUpdated?.Invoke(this, lastSavedMessage);
+                }
 
                 return messages;
             }
@@ -310,7 +318,7 @@ namespace Ringer.Services
                 Messages.Add(addedMessage);
             }
 
-            if (!Utilities.IsChatActive && message.SenderId != App.UserId && !Utilities.AndroidCameraActivated)
+            if (!Utility.IsChatActive && message.SenderId != App.UserId && !Utility.AndroidCameraActivated)
             {
                 var notification = new NotificationRequest
                 {
@@ -330,15 +338,18 @@ namespace Ringer.Services
         }
         public async Task InitMessagesAsync()
         {
-            if (Messages.Any())
-                return;
+            Messages.Clear();
 
             // 서버에서 당겨와서 디비 저장
             if (await PullRemoteMessagesAsync() is MessageModel[] messages)
             {
+                //foreach (var m in messages.TakeLast(Constants.MessageCount))
+                //    Messages.Add(m);
+
                 foreach (var message in messages)
-                    if (message.ServerId > App.LastServerMessageId)
-                        await SaveToLocalDbAsync(message);
+                {
+                    await SaveToLocalDbAsync(message);
+                }
             }
 
             // 디비에서 불러와서 메모리 로드
@@ -439,9 +450,10 @@ namespace Ringer.Services
 
             await _hubConnection.SendAsync("RemoveFromGroup", room, user);
         }
-        public void ClearLocalDb()
+        public async Task Clear()
         {
-            _localDbService.ResetMessagesAsync();
+            Messages.Clear();
+            await _localDbService.ResetMessagesAsync();
         }
         #endregion
     }

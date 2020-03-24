@@ -28,37 +28,41 @@
         <!-- Row 1: Input Bar -->
 
         <!-- Actions Button -->
-        <ImageButton x:Name="ActionsButton" Source="ActionsButton"
+        <ImageButton x:Name="ActionsButton"
+                     Source="ActionsButton"
+                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                      HorizontalOptions="Start"
                      VerticalOptions="End"
                      Clicked="ActionsButton_Clicked"
                      Grid.Row="0"/>
 
         <!-- Editor -->
-        <controls:ExtendedEditorControl x:Name="RingerEditor"
-                               Text="{Binding TextToSend}"
-                               HeightRequest="{OnPlatform iOS=38}"
-                               CornerRadius="19"
-                               HasRoundedCorner="True"
-                               Keyboard="{Binding Keyboard}"
-                               
-                               IsExpandable="True"
-                               AutoSize="Disabled"
-                               HorizontalOptions="Fill"
-                               Focused="RingerEditor_Focused"
-                               VerticalOptions="Center"
-                               Margin="{OnPlatform iOS='60,0,30,0', Android='60,0,32,0'}"
-                               FontSize="{OnPlatform iOS=18, Android=16}"
-                               Grid.Row="0"/>
+        <controls:ExtendedEditorControl
+            x:Name="RingerEditor"
+            Text="{Binding TextToSend}"
+            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+            HeightRequest="{OnPlatform iOS=38}"
+            CornerRadius="19"
+            HasRoundedCorner="True"
+            Keyboard="{Binding Keyboard}"
+            IsExpandable="True"
+            AutoSize="Disabled"
+            HorizontalOptions="Fill"
+            Focused="RingerEditor_Focused"
+            VerticalOptions="Center"
+            Margin="{OnPlatform iOS='60,0,30,0', Android='60,0,32,0'}"
+            FontSize="{OnPlatform iOS=18, Android=16}"
+            Grid.Row="0"/>
 
         <!-- Send Button -->
         <ImageButton Source="SendButton"
+                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
                      x:Name="SendButton"
-               HorizontalOptions="End"
-               VerticalOptions="End"
-               Command="{Binding SendMessageCommand}"
+                     HorizontalOptions="End"
+                     VerticalOptions="End"
+                     Command="{Binding SendMessageCommand}"
                      Clicked="SendButton_Tapped"
-               Grid.Row="0">
+                     Grid.Row="0">
 
         </ImageButton>
 

@@ -31,6 +31,7 @@ namespace Ringer.Helpers
 
         // Message
         public static readonly int MessageCount = 100;
+        public static readonly string ImagePlaceholder = "https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg";
 
         public static readonly string DisconnectedString = "Disconnected";
 
