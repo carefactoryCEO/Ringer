@@ -174,7 +174,7 @@ namespace Ringer.HubServer.Controllers
 
             // DB에 정보 없음.
             if (user == null)
-                return NotFound("notFound");
+                return NotFound(new LoginResponse { success = false });
 
             _logger.LogWarning($"user {user.Name} logged in.");
 
@@ -220,7 +220,14 @@ namespace Ringer.HubServer.Controllers
             await _dbContext.SaveChangesAsync();
 
             var token = user.JwtToken(loginInfo, secretKey);
-            var response = new LoginResponse { token = token, roomId = roomId, userId = user.Id };
+            var response = new LoginResponse
+            {
+                token = token,
+                roomId = roomId,
+                userId = user.Id,
+                userName = user.Name,
+                success = true
+            };
 
             return Ok(response);
         }

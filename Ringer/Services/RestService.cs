@@ -17,7 +17,7 @@ namespace Ringer.Services
     public interface IRESTService
     {
         Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
-        Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
+        Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType);
     }
 
     public class RESTService : IRESTService
@@ -58,7 +58,7 @@ namespace Ringer.Services
             }
         }
 
-        public async Task LogInAsync(string name, DateTime birthDate, GenderType genderType)
+        public async Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType)
         {
             LoginInfo loginInfo = new LoginInfo
             {
@@ -82,29 +82,25 @@ namespace Ringer.Services
             // 로그인 성공
             if (JsonSerializer.Deserialize<LoginResponse>(responseJson) is LoginResponse loginResponse)
             {
-                Analytics.TrackEvent("User Logged in", new Dictionary<string, string>
+                if (loginResponse.success)
                 {
-                    {"roomId", loginResponse.roomId},
-                    {"userId", loginResponse.userId.ToString()},
-                    {"userName", name}
-                });
+                    Analytics.TrackEvent("User Logged in", new Dictionary<string, string>
+                    {
+                        {"roomId", loginResponse.roomId},
+                        {"userId", loginResponse.userId.ToString()},
+                        {"userName", name}
+                    });
 
-                // TODO: token 발급되었는지 확인
-                // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
-                App.Token = loginResponse.token;
-                App.RoomId = loginResponse.roomId;
-                App.UserId = loginResponse.userId;
-                App.UserName = name;
+                    App.Token = loginResponse.token;
+                    App.RoomId = loginResponse.roomId;
+                    App.UserId = loginResponse.userId;
+                    App.UserName = name;
 
-                Utility.Trace(App.Token);
-                Utility.Trace(App.RoomId);
-                Utility.Trace(App.UserId.ToString());
-                Utility.Trace(App.UserName);
+                    return true;
+                }
             }
-            else // 로그인 실패
-            {
 
-            }
+            return false;
         }
     }
 }

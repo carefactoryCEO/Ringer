@@ -28,22 +28,21 @@ namespace Ringer.ViewModels
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
         private UserInfoType _userInfoToQuery = UserInfoType.None;
+        private string _name;
         #endregion
 
         #region Public Properties
+        public string TextToSend { get; set; } = string.Empty;
         public string NavBarTitle { get; set; } = App.IsLoggedIn ? App.UserName : "로그인";
         public string Title { get; set; } = "링거 상담실";
         public double NavBarHeight { get; set; } = 0;
         public Keyboard Keyboard { get; set; } = Keyboard.Chat;
         public Thickness BottomPadding { get; set; }
         public ObservableCollection<MessageModel> Messages { get; set; }
-
-        private string _name;
-
-        public string TextToSend { get; set; } = string.Empty;
         public bool IsBusy { get; set; }
         public bool KeyboardShouldBeShown { get; set; }
         public bool IsProcessingLogin { get; set; }
+        public bool Retrying { get; set; }
         #endregion
 
         #region Constructor
@@ -135,6 +134,8 @@ namespace Ringer.ViewModels
                 return;
             }
 
+            TextToSend = TextToSend.Trim();
+
             var message = new MessageModel
             {
                 RoomId = App.RoomId,
@@ -161,6 +162,7 @@ namespace Ringer.ViewModels
             App.LastServerMessageId = 0;
             _userInfoToQuery = UserInfoType.None;
             NavBarTitle = "로그인";
+            Retrying = false;
 
             await _messaging.Clear();
             await _messaging.DisconnectAsync();
@@ -608,49 +610,93 @@ namespace Ringer.ViewModels
             if (App.IsLoggedIn)
                 return;
 
+            TextToSend = TextToSend.RemoveWhiteSpaces();
+
+
+
+            //    else
+            //    {
+            //        await Task.Delay(2000);
+            //        Messages.Add(new MessageModel
+            //        {
+            //            Body = $"다시 입력하시려면 10초 안에 \"다시\"라고 입력하세요.",
+            //            Sender = Constants.System,
+            //            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Trailing,
+            //            CreatedAt = DateTime.UtcNow
+            //        });
+            //        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+            //        await Task.Delay(1000);
+            //        ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+
+            //        await Task.Delay(9000);
+
+            //        if (Retrying)
+            //            return;
+
+            //        Messages.Add(new MessageModel
+            //        {
+            //            Body = "곧 링거 서포트팀에서 다음 절차를 안내해드리겠습니다. 잠시만 기다리세요.",
+            //            Sender = Constants.System,
+            //            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+            //            CreatedAt = DateTime.UtcNow
+            //        });
+            //        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+            //        await Task.Delay(1000);
+            //        ChangeKeyboardStatus(show: false);
+            //    }
+
+            //    return;
+            //}
+
             switch (_userInfoToQuery)
             {
                 case UserInfoType.None:
                     {
-                        Messages.Clear();
-
-                        ChangeKeyboardStatus(show: false);
-
-                        await Task.Delay(1000);
-                        Messages.Add(new MessageModel
+                        if (!Retrying)
                         {
-                            Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            Messages.Clear();
 
-                        await Task.Delay(1500);
-                        Messages.Add(new MessageModel
-                        {
-                            Body = "정확한 상담을 위해 이름, 생년월일, 성별을 알려주세요.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            await Task.Delay(1000);
+                            ChangeKeyboardStatus(show: false);
 
-                        await Task.Delay(1500);
-                        Messages.Add(new MessageModel
-                        {
-                            Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 두 가지 질문에 답하는 형식으로 진행됩니다.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
-                        await Task.Delay(2000);
-                        Messages.Add(new MessageModel
-                        {
-                            Body = "그럼 입력을 시작하겠습니다.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            await Task.Delay(1500);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "정확한 상담을 위해 이름, 생년월일, 성별을 알려주세요.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            await Task.Delay(1500);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 두 가지 질문에 답하는 형식으로 진행됩니다.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            await Task.Delay(2000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "그럼 입력을 시작하겠습니다.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                        }
 
                         await Task.Delay(1500);
                         Messages.Add(new MessageModel
@@ -662,17 +708,16 @@ namespace Ringer.ViewModels
                         });
                         MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
-                        _userInfoToQuery = UserInfoType.Name;
-
                         await Task.Delay(1000);
-
                         ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+
+                        _userInfoToQuery = UserInfoType.Name;
 
                         break;
                     }
                 case UserInfoType.Name:
                     {
-                        _name = TextToSend?.Trim();
+                        _name = TextToSend;
                         TextToSend = string.Empty;
 
                         Messages.Add(new MessageModel
@@ -685,11 +730,7 @@ namespace Ringer.ViewModels
 
                         #region validate name input
 
-                        // 1. get rid of all white space
-                        _name = _name.RemoveWhiteSpaces();
-
-                        // 2. confirm _nameInput is written in korean.
-                        // 입력하신 _nameInput은 한글 이름이 아닌 것 같습니다. 다시 입력해주세요.
+                        // 이름 포맷 체크
                         if (!_name.IsKoreanOnly())
                         {
                             await Task.Delay(1000);
@@ -704,26 +745,25 @@ namespace Ringer.ViewModels
                             return;
                         }
 
-                        // 3. check if _nameInput exists in remote db.
-                        // 입력하신 _nameInput은 등록되어 있지 않습니다. 다시 입력하세요.
-                        // 상담을 취소하시려면 "종료"라고 입력하세요.
-
                         // 이름 체크 통과
 
                         #endregion
 
-                        await Task.Delay(1000);
-                        ChangeKeyboardStatus(show: false);
-
-                        await Task.Delay(1000);
-                        Messages.Add(new MessageModel
+                        if (!Retrying)
                         {
-                            Body = $"{_name}님 반갑습니다.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            await Task.Delay(1000);
+                            ChangeKeyboardStatus(show: false);
+
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = $"{_name}님 반갑습니다.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                        }
 
                         await Task.Delay(1000);
                         Messages.Add(new MessageModel
@@ -745,31 +785,33 @@ namespace Ringer.ViewModels
                         });
                         MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
-                        await Task.Delay(2000);
-                        Messages.Add(new MessageModel
+                        if (!Retrying)
                         {
-                            Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 9903202라고 입력하시면 됩니다.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                            await Task.Delay(2000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 9903202라고 입력하시면 됩니다.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
-                        await Task.Delay(1500);
-                        Messages.Add(new MessageModel
-                        {
-                            Body = "7자리 숫자를 입력하세요.",
-                            Sender = Constants.System,
-                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing,
-                            CreatedAt = DateTime.UtcNow
-                        });
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                        _userInfoToQuery = UserInfoType.BirthDate;
+                            await Task.Delay(1500);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "7자리 숫자를 입력하세요.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                        }
 
                         await Task.Delay(1500);
                         ChangeKeyboardStatus(show: true, keyboard: Keyboard.Numeric);
 
+                        _userInfoToQuery = UserInfoType.BirthDate;
 
                         break;
                     }
@@ -788,16 +830,13 @@ namespace Ringer.ViewModels
 
                         // validate numeric input
 
-                        // 1. get rid of all white space
-                        numericInput = numericInput.RemoveWhiteSpaces();
-
-                        // 2. confirm the input has exactly 7 numeric digit
+                        // confirm the input has exactly 7 numeric digit
                         if (!numericInput.IsSevenNumericDigit())
                         {
                             await Task.Delay(1000);
                             Messages.Add(new MessageModel
                             {
-                                Body = $"숫자 7개만 입력해 주셔야해요.",
+                                Body = $"숫자 7개만 입력하셔야 해요.",
                                 MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
                                 CreatedAt = DateTime.UtcNow
                             });
@@ -807,12 +846,12 @@ namespace Ringer.ViewModels
                         }
 
                         // 3. confirm birth date and sex format
-                        if (!numericInput.IsValidBirthDateAndSex(out int year, out int month, out int day, out GenderType gender))
+                        if (!numericInput.IsValidBirthDateAndSex(out var birthDate, out GenderType gender))
                         {
                             await Task.Delay(1000);
                             Messages.Add(new MessageModel
                             {
-                                Body = $"생년월일과 성별을 나타내는 정확한 숫자 7자리를 입력하셔야 해요.",
+                                Body = $"생년월일과 성별을 나타내는 숫자 7자리를 정확하게 입력하셔야 합니다.",
                                 MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
                                 CreatedAt = DateTime.UtcNow
                             });
@@ -824,20 +863,18 @@ namespace Ringer.ViewModels
                         // 생년월일, 성별 체크 통과
 
                         await Task.Delay(1000);
-
                         ChangeKeyboardStatus(show: false);
 
-                        DateTime birthDate = new DateTime(year, month, day);
-
+                        //DateTime birthDate = new DateTime(year, month, day);
                         string genderString = gender == GenderType.Female ? "여자" : "남자";
 
                         await Task.Delay(1000);
                         Messages.Add(new MessageModel
                         {
-                            Body = $"생일이 {year}년 {month}월 {day}일인 {genderString} {_name}님으로 조회합니다.",
+                            Body = $"생일이 {birthDate.Year}년 {birthDate.Month}월 {birthDate.Day}일인 {genderString} {_name}님으로 조회합니다.",
                             Sender = App.UserName,
-                            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
-                            CreatedAt = DateTime.Now
+                            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading,
+                            CreatedAt = DateTime.UtcNow
                         });
                         MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
@@ -847,13 +884,11 @@ namespace Ringer.ViewModels
                             Body = "잠시만 기다려주세요.",
                             Sender = Constants.System,
                             MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Trailing,
-                            CreatedAt = DateTime.Now
+                            CreatedAt = DateTime.UtcNow
                         });
                         MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
 
-                        await _restService.LogInAsync(_name, birthDate, gender);
-
-                        if (App.IsLoggedIn)
+                        if (await _restService.LogInAsync(_name, birthDate, gender))
                         {
                             await Task.Delay(1000);
                             IsProcessingLogin = false;
@@ -866,10 +901,88 @@ namespace Ringer.ViewModels
 
                             if (Messages.Any())
                                 MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-                        }
 
-                        await Task.Delay(1000);
-                        ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+                            await Task.Delay(1000);
+                            ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+                        }
+                        else
+                        {
+                            Retrying = false;
+
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "입력하신 정보는 링거에 등록되지 않은 정보입니다. 잘못 입력하셨나요?",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            await Task.Delay(2000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = $"다시 입력하시려면 15초 안에 \"다시\"라고 입력하세요.",
+                                Sender = Constants.System,
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Trailing,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            await Task.Delay(1000);
+                            ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+
+                            _userInfoToQuery = UserInfoType.Retry;
+
+                            // 최종 실패
+                            await Task.Delay(15000);
+
+                            if (!Retrying)
+                            {
+                                Messages.Add(new MessageModel
+                                {
+                                    Body = "곧 링거 서포트팀에서 다음 절차를 안내해드리겠습니다. 잠시만 기다리세요.",
+                                    Sender = Constants.System,
+                                    MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+                                    CreatedAt = DateTime.UtcNow
+                                });
+                                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                                ChangeKeyboardStatus(show: false);
+                            }
+                        }
+                        break;
+                    }
+                case UserInfoType.Retry:
+                    {
+                        var retryString = TextToSend;
+                        TextToSend = string.Empty;
+
+                        Messages.Add(new MessageModel
+                        {
+                            Body = retryString,
+                            MessageTypes = MessageTypes.Text | MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        if (retryString == "다시")
+                        {
+                            Retrying = true;
+
+                            await Task.Delay(1500);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = "다시 시도하겠습니다. 차분히 입력해주세요.",
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            _userInfoToQuery = UserInfoType.None;
+
+                            LogInProcessAsync();
+
+                        }
 
                         break;
                     }
