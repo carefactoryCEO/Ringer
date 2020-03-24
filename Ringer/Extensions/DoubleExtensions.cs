@@ -32,12 +32,16 @@ namespace Ringer.Extensions
             return self.Length == 7 && Regex.IsMatch(self, @"^\d+$");
         }
 
-        public static bool IsValidBirthDateAndSex(this string self, out int year, out int month, out int day, out GenderType gender)
+        //public static bool IsValidBirthDateAndSex(this string self, out int year, out int month, out int day, out GenderType gender)
+        public static bool IsValidBirthDateAndSex(this string self, out DateTime birthDate, out GenderType gender)
         {
-            year = -1;
-            month = -1;
-            day = -1;
-            gender = GenderType.Female;
+            birthDate = default;
+            gender = default;
+
+            int yearInt;
+            int monthInt;
+            int dayInt;
+
 
             if (int.TryParse(self.Substring(6, 1), out int parsedSex) && parsedSex > 0 && parsedSex < 5)
                 gender = parsedSex % 2 == 0 ? GenderType.Female : GenderType.Male;
@@ -45,12 +49,12 @@ namespace Ringer.Extensions
                 return false;
 
             if (int.TryParse(self.Substring(0, 2), out int parsedYear))
-                year = (parsedSex > 2) ? parsedYear + 2000 : parsedYear + 1900;
+                yearInt = (parsedSex > 2) ? parsedYear + 2000 : parsedYear + 1900;
             else
                 return false;
 
             if (int.TryParse(self.Substring(2, 2), out int parsedMonth) && parsedMonth > 0 && parsedMonth < 13)
-                month = parsedMonth;
+                monthInt = parsedMonth;
             else
                 return false;
 
@@ -68,13 +72,20 @@ namespace Ringer.Extensions
                     if (parsedDay > 29)
                         return false;
 
-                day = parsedDay;
+                dayInt = parsedDay;
+
+                birthDate = new DateTime(yearInt, monthInt, dayInt);
+
+                if (birthDate >= DateTime.UtcNow)
+                    return false;
+
+                if (birthDate.AddYears(140) < DateTime.UtcNow) // 140살 이상
+                    return false;
+
+                return true;
             }
-            else
-                return false;
 
-
-            return true;
+            return false;
         }
     }
 }
