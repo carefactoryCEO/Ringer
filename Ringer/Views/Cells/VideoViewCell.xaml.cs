@@ -19,7 +19,13 @@ namespace Ringer.Views.Cells
         async void Video_Clicked(object sender, EventArgs e)
         {
             var video = (BindingContext as MessageModel).Body;
-            await Browser.OpenAsync(video, BrowserLaunchMode.SystemPreferred);
+            //await Browser.OpenAsync(video, new BrowserLaunchOptions
+            //{
+            //    LaunchMode = BrowserLaunchMode.SystemPreferred,
+            //    TitleMode = BrowserTitleMode.Hide
+            //});
+
+            await Shell.Current.Navigation.PushAsync(new VideoPlayerPage(video));
         }
     }
 }

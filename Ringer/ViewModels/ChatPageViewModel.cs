@@ -12,6 +12,7 @@ using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
 using Ringer.Core.Data;
+using Ringer.Extensions;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
@@ -27,18 +28,22 @@ namespace Ringer.ViewModels
         private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
         private UserInfoType _userInfoToQuery = UserInfoType.None;
-        private DateTime _birthDate;
-        private GenderType _genderType;
         #endregion
 
         #region Public Properties
-        public string NavBarTitle => App.IsLoggedIn ? App.UserName : "링거 상담실";
+        public string NavBarTitle { get; set; } = App.IsLoggedIn ? App.UserName : "로그인";
+        public string Title { get; set; } = "링거 상담실";
         public double NavBarHeight { get; set; } = 0;
         public Keyboard Keyboard { get; set; } = Keyboard.Chat;
         public Thickness BottomPadding { get; set; }
         public ObservableCollection<MessageModel> Messages { get; set; }
-        public string TextToSend { get; set; }
+
+        private string _name;
+
+        public string TextToSend { get; set; } = string.Empty;
         public bool IsBusy { get; set; }
+        public bool KeyboardShouldBeShown { get; set; }
+        public bool IsProcessingLogin { get; set; }
         #endregion
 
         #region Constructor
@@ -155,6 +160,7 @@ namespace Ringer.ViewModels
             App.UserName = null;
             App.LastServerMessageId = 0;
             _userInfoToQuery = UserInfoType.None;
+            NavBarTitle = "로그인";
 
             await _messaging.Clear();
             await _messaging.DisconnectAsync();
@@ -321,12 +327,13 @@ namespace Ringer.ViewModels
                     // Taking Video
                     MediaFile mediaFile = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
                     {
+                        DesiredSize = 10 * 1024 * 1024, // android 10MB
                         DesiredLength = TimeSpan.FromMinutes(2.0d),
                         DefaultCamera = CameraDevice.Rear,
                         Directory = "RingerVideo",
                         SaveToAlbum = true,
                         Quality = VideoQuality.Medium
-                    });
+                    }); ;
 
                     if (mediaFile == null)
                         return;
@@ -590,11 +597,11 @@ namespace Ringer.ViewModels
         #region Public Methods
         public async Task EnsureMessageLoaded()
         {
-            if (Messages.Any())
-                return;
-
+            IsBusy = true;
             await _messaging.InitMessagesAsync();
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+            IsBusy = false;
         }
         public async Task LogInProcessAsync()
         {
@@ -604,128 +611,281 @@ namespace Ringer.ViewModels
             switch (_userInfoToQuery)
             {
                 case UserInfoType.None:
-
-                    Messages.Clear();
-
-                    await Task.Delay(1000);
-                    Messages.Add(new MessageModel { Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
-                    await Task.Delay(1500);
-                    Messages.Add(new MessageModel { Body = "정확한 상담을 위해 이름, 나이, 성별을 알려주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    await Task.Delay(1500);
-                    Messages.Add(new MessageModel { Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 세 가지 질문에 답하는 형식으로 진행됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    await Task.Delay(2000);
-                    Messages.Add(new MessageModel { Body = "그럼 정보 입력을 시작하겠습니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text });
-                    await Task.Delay(2500);
-                    Messages.Add(new MessageModel { Body = "이름을 입력하세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
-
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                    _userInfoToQuery = UserInfoType.Name;
-
-                    break;
-
-                case UserInfoType.Name:
-
-                    App.UserName = TextToSend;
-
-                    Messages.Add(new MessageModel { Body = TextToSend, Sender = App.UserName, MessageTypes = MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Outgoing, CreatedAt = DateTime.UtcNow });
-
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                    TextToSend = string.Empty;
-
-                    // TODO: name validation here
-                    // 여기서 1차로 서버에 이름을 조회
-                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
-
-                    // if name validation passed
-
-                    Keyboard = Keyboard.Numeric;
-
-                    await Task.Delay(1000);
-                    Messages.Add(new MessageModel { Body = "생년월일 6자리와, 주민등록번호 뒷자리 1개를 입력해주세요.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading });
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-
-                    await Task.Delay(600);
-                    Messages.Add(new MessageModel { Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 993202라고 입력하시면 됩니다.", Sender = Constants.System, MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing, CreatedAt = DateTime.UtcNow });
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                    _userInfoToQuery = UserInfoType.BirthDate;
-                    break;
-
-                case UserInfoType.BirthDate:
-
-                    // TODO: birth date and sex validation here
-                    // 형식 조회 등
-                    // 신모벙은 가입되지 않은 이름입니다. 다시 한 번 이름을 입력하세요.
-
-                    var numeric = TextToSend;
-                    TextToSend = string.Empty;
-
-                    // process gender
-                    string gender = numeric.Substring(6, 1);
-                    if (int.TryParse(gender, out var parsedGenderInt))
-                        Debug.WriteLine(parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male);
-                    else
-                        Debug.WriteLine("Wrong Gender format");
-
-                    _genderType = parsedGenderInt % 2 == 0 ? GenderType.Female : GenderType.Male;
-
-                    // process date of birth
-                    string year = numeric.Substring(0, 2);
-                    string month = numeric.Substring(2, 2);
-                    string day = numeric.Substring(4, 2);
-
-                    year = (parsedGenderInt < 3) ? "19" + year : "20" + year;
-
-                    if (DateTime.TryParse($"{year}-{month}-{day}", out var parsedBirthdate))
-                        Debug.WriteLine(parsedBirthdate);
-                    else
-                        Debug.WriteLine("Wrong DateTime format");
-
-
-                    //year = (int.Parse(gender) < 3) ? "19" + year : "20" + year;
-                    //birthDate = DateTime.Parse($"{year}-{month}-{day}");
-                    //genderType = int.Parse(gender) % 2 == 0 ? GenderType.Female : GenderType.Male;
-
-                    _birthDate = parsedBirthdate;
-
-                    Messages.Add(new MessageModel
                     {
-                        Body = $"{year}년 {month}월 {day}일 {_genderType}",
-                        Sender = App.UserName,
-                        MessageTypes = MessageTypes.Text | MessageTypes.Outgoing,
-                        CreatedAt = DateTime.Now
-                    });
+                        Messages.Clear();
 
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                        ChangeKeyboardStatus(show: false);
 
-                    await Task.Delay(500);
-
-                    Keyboard = Keyboard.Chat;
-
-                    Messages.Add(new MessageModel { Body = "조회 중입니다. 잠시만 기다려주세요.", Sender = Constants.System });
-
-                    MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                    // Log in and get Token
-                    // TODO: Add user's Location data to validate ticket
-                    await _restService.LogInAsync(App.UserName, _birthDate, _genderType);
-
-                    if (App.IsLoggedIn)
-                    {
-                        App.LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
-
-                        Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-                        _messaging.BufferMessages();
-
+                        await Task.Delay(1000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "안녕하세요? 건강한 여행의 동반자 링거입니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading
+                        });
                         MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-                    }
 
-                    break;
+                        await Task.Delay(1500);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "정확한 상담을 위해 이름, 생년월일, 성별을 알려주세요.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1500);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 두 가지 질문에 답하는 형식으로 진행됩니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(2000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "그럼 입력을 시작하겠습니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1500);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "이름을 입력하세요.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        _userInfoToQuery = UserInfoType.Name;
+
+                        await Task.Delay(1000);
+
+                        ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+
+                        break;
+                    }
+                case UserInfoType.Name:
+                    {
+                        _name = TextToSend?.Trim();
+                        TextToSend = string.Empty;
+
+                        Messages.Add(new MessageModel
+                        {
+                            Body = _name,
+                            MessageTypes = MessageTypes.Text | MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        #region validate name input
+
+                        // 1. get rid of all white space
+                        _name = _name.RemoveWhiteSpaces();
+
+                        // 2. confirm _nameInput is written in korean.
+                        // 입력하신 _nameInput은 한글 이름이 아닌 것 같습니다. 다시 입력해주세요.
+                        if (!_name.IsKoreanOnly())
+                        {
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = $"입력하신 \"{_name}\"은 한글 이름이 아닌 것 같습니다. 다시 입력해주세요.",
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            return;
+                        }
+
+                        // 3. check if _nameInput exists in remote db.
+                        // 입력하신 _nameInput은 등록되어 있지 않습니다. 다시 입력하세요.
+                        // 상담을 취소하시려면 "종료"라고 입력하세요.
+
+                        // 이름 체크 통과
+
+                        #endregion
+
+                        await Task.Delay(1000);
+                        ChangeKeyboardStatus(show: false);
+
+                        await Task.Delay(1000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = $"{_name}님 반갑습니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Leading,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "생년월일 6자리와 성별 번호 1자리를 연속해서 입력해주세요.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1500);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = $"성별 번호는\n2000년 이전에 태어난\n  남자는 1, 여자는 2\n2000년 이후에 태어난\n  남자는 3, 여자는 4\n입니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(2000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "예를 들어 1999년 3월 20일에 태어난 여자라면 9903202라고 입력하시면 됩니다.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1500);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "7자리 숫자를 입력하세요.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Incomming | MessageTypes.Text | MessageTypes.Trailing,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        _userInfoToQuery = UserInfoType.BirthDate;
+
+                        await Task.Delay(1500);
+                        ChangeKeyboardStatus(show: true, keyboard: Keyboard.Numeric);
+
+
+                        break;
+                    }
+                case UserInfoType.BirthDate:
+                    {
+                        string numericInput = TextToSend;
+                        TextToSend = string.Empty;
+
+                        Messages.Add(new MessageModel
+                        {
+                            Body = numericInput,
+                            MessageTypes = MessageTypes.Text | MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing,
+                            CreatedAt = DateTime.UtcNow
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        // validate numeric input
+
+                        // 1. get rid of all white space
+                        numericInput = numericInput.RemoveWhiteSpaces();
+
+                        // 2. confirm the input has exactly 7 numeric digit
+                        if (!numericInput.IsSevenNumericDigit())
+                        {
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = $"숫자 7개만 입력해 주셔야해요.",
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            return;
+                        }
+
+                        // 3. confirm birth date and sex format
+                        if (!numericInput.IsValidBirthDateAndSex(out int year, out int month, out int day, out GenderType gender))
+                        {
+                            await Task.Delay(1000);
+                            Messages.Add(new MessageModel
+                            {
+                                Body = $"생년월일과 성별을 나타내는 정확한 숫자 7자리를 입력하셔야 해요.",
+                                MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+                                CreatedAt = DateTime.UtcNow
+                            });
+                            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                            return;
+                        }
+
+                        // 생년월일, 성별 체크 통과
+
+                        await Task.Delay(1000);
+
+                        ChangeKeyboardStatus(show: false);
+
+                        DateTime birthDate = new DateTime(year, month, day);
+
+                        string genderString = gender == GenderType.Female ? "여자" : "남자";
+
+                        await Task.Delay(1000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = $"생일이 {year}년 {month}월 {day}일인 {genderString} {_name}님으로 조회합니다.",
+                            Sender = App.UserName,
+                            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing,
+                            CreatedAt = DateTime.Now
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await Task.Delay(1000);
+                        Messages.Add(new MessageModel
+                        {
+                            Body = "잠시만 기다려주세요.",
+                            Sender = Constants.System,
+                            MessageTypes = MessageTypes.Text | MessageTypes.Incomming | MessageTypes.Trailing,
+                            CreatedAt = DateTime.Now
+                        });
+                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+
+                        await _restService.LogInAsync(_name, birthDate, gender);
+
+                        if (App.IsLoggedIn)
+                        {
+                            await Task.Delay(1000);
+                            IsProcessingLogin = false;
+
+                            App.LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
+                            NavBarTitle = App.UserName;
+
+                            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+                            _messaging.BufferMessages();
+
+                            if (Messages.Any())
+                                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+                        }
+
+                        await Task.Delay(1000);
+                        ChangeKeyboardStatus(show: true, keyboard: Keyboard.Chat);
+
+                        break;
+                    }
             }
         }
+
+        private void ChangeKeyboardStatus(bool show, Keyboard keyboard = default)
+        {
+            IsProcessingLogin = !show;
+            IsBusy = !show;
+            MessagingCenter.Send(this, "KeyboardShow", show);
+
+            if (show)
+                Keyboard = keyboard;
+        }
+
         public void InitializeMessages()
         {
             _messaging.InitMessagesAsync();

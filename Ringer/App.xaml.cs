@@ -89,24 +89,24 @@ namespace Ringer
             NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
 
             // essaging event
-            _messaging.Connecting += (s, e) => Utilities.Trace(e.Message);
-            _messaging.Connected += (s, e) => Utilities.Trace(e.Message);
-            _messaging.ConnectionFailed += (s, e) => Utilities.Trace(e.Message, true);
+            _messaging.Connecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Connected += (s, e) => Utility.Trace(e.Message);
+            _messaging.ConnectionFailed += (s, e) => Utility.Trace(e.Message, true);
 
-            _messaging.Disconnecting += (s, e) => Utilities.Trace(e.Message);
-            _messaging.Disconnected += (s, e) => Utilities.Trace(e.Message);
-            _messaging.DisconnectionFailed += (s, e) => Utilities.Trace(e.Message, true);
+            _messaging.Disconnecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Disconnected += (s, e) => Utility.Trace(e.Message);
+            _messaging.DisconnectionFailed += (s, e) => Utility.Trace(e.Message, true);
 
-            _messaging.Reconnecting += (s, e) => Utilities.Trace(e.Message);
-            _messaging.Reconnected += (s, e) => Utilities.Trace(e.Message);
-            _messaging.Closed += (s, e) => Utilities.Trace(e.Message, true);
+            _messaging.Reconnecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Reconnected += (s, e) => Utility.Trace(e.Message);
+            _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
         }
         #endregion
 
         #region private methods
         private void Current_NotificationTapped(NotificationTappedEventArgs e)
         {
-            Utilities.Trace($"------local: {e.Data}");
+            Utility.Trace($"------local: {e.Data}");
 
             Shell.Current.GoToAsync(Constants.ChatPageUriFromLocalNotification);
         }
@@ -135,7 +135,7 @@ namespace Ringer
                     {
                         foreach (var key in e.CustomData.Keys)
                         {
-                            Utilities.Trace($"------(push){key}: {e.CustomData[key]}");
+                            Utility.Trace($"------(push){key}: {e.CustomData[key]}");
                             switch (key)
                             {
                                 case "room":
@@ -185,20 +185,20 @@ namespace Ringer
         }
         protected override void OnSleep()
         {
-            Utilities.Trace("-------------OnSleep-------------");
+            Utility.Trace("-------------OnSleep-------------");
 
             IsOn = false;
 
             LastConnectionId = _messaging.ConnectionId;
 
-            if (Utilities.iOS)
+            if (Utility.iOS)
                 _messaging.DisconnectAsync();
 
             base.OnSleep();
         }
         protected override async void OnResume()
         {
-            Utilities.Trace("------------OnResume------------");
+            Utility.Trace("------------OnResume------------");
 
             base.OnResume();
 

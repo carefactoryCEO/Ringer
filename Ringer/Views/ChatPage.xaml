@@ -8,6 +8,7 @@
              x:Class="Ringer.Views.ChatPage"
              Title="{Binding Title}"
              x:Name="ChatContentPage"
+             Shell.BackgroundColor="Black"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled">
@@ -78,6 +79,7 @@
                    Padding="0,13"
                    x:Name="TitleLabel"
                    Text="{Binding NavBarTitle}"/>
+            <!--<Button Text="Video" Clicked="Button_Clicked"/>-->
 
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
@@ -89,9 +91,9 @@
 
         <!-- Input Bar -->
         <partials:InputBarView x:Name="chatInputBarView"
-                                Grid.Row="1"
-                                ListShouldBeScrolled="OnListShouldBeScrolled"
-                                PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
+                               Grid.Row="1"
+                               ListShouldBeScrolled="OnListShouldBeScrolled"
+                               PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
         <!-- Date Picker -->
         <DatePicker Grid.Row="1"
                     x:Name="datePicker"
@@ -102,7 +104,8 @@
                     ios:DatePicker.UpdateMode="WhenFinished"/>
 
         <!-- Activity Indicator -->
-        <ContentView IsVisible="{Binding IsBusy}" 
+        <ContentView Opacity="{Binding IsProcessingLogin, Converter={StaticResource BooleanToOpacityConverter}}"
+                     IsVisible="{Binding IsBusy}"
                      Grid.RowSpan="2"
                      BackgroundColor="#7000">
             <ActivityIndicator IsEnabled="{Binding IsBusy}"

@@ -7,6 +7,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.AppCenter.Analytics;
 using Ringer.Core.Data;
 using Ringer.Helpers;
 using Xamarin.Forms;
@@ -72,22 +73,38 @@ namespace Ringer.Services
 
             HttpResponseMessage response = await _client.PostAsync(Constants.LoginUrl, new StringContent(loginInfoJson, Encoding.UTF8, "application/json"));
 
-            // 로그인 실패
+            // 전송 실패
             if (response.StatusCode != HttpStatusCode.OK)
                 Debug.WriteLine(await response.Content.ReadAsStringAsync());
 
             var responseJson = await response.Content.ReadAsStringAsync();
-            var loginResponse = JsonSerializer.Deserialize<LoginResponse>(responseJson);
 
-            // TODO: token 발급되었는지 확인
-            // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
-            App.Token = loginResponse.token;
-            App.RoomId = loginResponse.roomId;
-            App.UserId = loginResponse.userId;
+            // 로그인 성공
+            if (JsonSerializer.Deserialize<LoginResponse>(responseJson) is LoginResponse loginResponse)
+            {
+                Analytics.TrackEvent("User Logged in", new Dictionary<string, string>
+                {
+                    {"roomId", loginResponse.roomId},
+                    {"userId", loginResponse.userId.ToString()},
+                    {"userName", name}
+                });
 
-            Utilities.Trace(App.Token);
-            Utilities.Trace(App.RoomId);
-            Utilities.Trace(App.UserId.ToString());
+                // TODO: token 발급되었는지 확인
+                // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
+                App.Token = loginResponse.token;
+                App.RoomId = loginResponse.roomId;
+                App.UserId = loginResponse.userId;
+                App.UserName = name;
+
+                Utility.Trace(App.Token);
+                Utility.Trace(App.RoomId);
+                Utility.Trace(App.UserId.ToString());
+                Utility.Trace(App.UserName);
+            }
+            else // 로그인 실패
+            {
+
+            }
         }
     }
 }
