@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Ringer.ViewModels;
 using Ringer.Views.Controls;
 using Xamarin.Forms;
@@ -39,13 +40,16 @@ namespace Ringer.Views.Partials
                 });
             });
 
-            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "KeyboardShow", (sender, KeyboardShow) =>
+            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", async (sender, showing) =>
             {
-                Device.BeginInvokeOnMainThread(() =>
+                if (!showing)
+                    RingerEditor.Unfocus();
+
+                if (showing)
                 {
-                    if (KeyboardShow)
-                        RingerEditor.Focus();
-                });
+                    await Task.Delay(100);
+                    RingerEditor.Focus();
+                }
             });
         }
 
