@@ -214,7 +214,7 @@ namespace RingerStaff.Converters
         {
             var dateTime = (DateTime)value;
 
-            return dateTime.ToString("tt h:mm");
+            return dateTime.ToLocalTime().ToString("tt h:mm");
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

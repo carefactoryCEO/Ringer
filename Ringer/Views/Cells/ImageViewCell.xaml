@@ -48,13 +48,8 @@
                    IsVisible="{Binding MessageTypes,
                                     Converter={StaticResource MessageTypesToBooleanConverter},
                                     ConverterParameter='Avatar'}">
-            <Image>
-                <Image.Source>
-                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
-                                    Glyph="{StaticResource IconAccount}"
-                                    Size="18" Color="Black"/>
-                </Image.Source>
-            </Image>
+            <Image Source="StartChatButton"/>
+
         </Frame>
 
         <!-- 2nd Column -->
