@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
-using Ringer.HubServer.Models;
 
 namespace Ringer.HubServer.Data
 {
@@ -18,24 +17,21 @@ namespace Ringer.HubServer.Data
         public DbSet<Message> Messages { get; set; }
         public DbSet<Device> Devices { get; set; }
         public DbSet<Room> Rooms { get; set; }
-        public DbSet<Consulate> Consulates {get; set;}
+        public DbSet<Consulate> Consulates { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             // User
-            modelBuilder
-                .Entity<User>()
+            modelBuilder.Entity<User>()
                 .Property(p => p.Gender)
                 .HasConversion(new EnumToStringConverter<GenderType>());
 
-            modelBuilder
-                .Entity<User>()
+            modelBuilder.Entity<User>()
                 .Property(p => p.UserType)
                 .HasDefaultValue(UserType.Consumer)
                 .HasConversion(new EnumToStringConverter<UserType>());
 
-            modelBuilder
-                .Entity<User>()
+            modelBuilder.Entity<User>()
                 .ToTable("User")
                 .HasData
                 (
@@ -50,23 +46,25 @@ namespace Ringer.HubServer.Data
             modelBuilder.Entity<Message>().ToTable("Message");
 
             // Device
-            modelBuilder
-                .Entity<Device>()
+            modelBuilder.Entity<Device>()
                 .Property(d => d.DeviceType)
                 .HasConversion(new EnumToStringConverter<DeviceType>());
 
             modelBuilder.Entity<Device>().ToTable("Device");
 
             // Room
-            modelBuilder
-                .Entity<Room>()
+            modelBuilder.Entity<Room>()
                 .ToTable("Room");
 
             // Consulate
-            modelBuilder
-                .Entity<Consulate>()
+            modelBuilder.Entity<Consulate>()
+                .HasIndex(c => new { c.CountryCode, c.CountryCodeiOS, c.CountryCodeAndroid });
+
+            modelBuilder.Entity<Consulate>()
                 .ToTable("Consulate");
 
+            modelBuilder.Entity<Consulate>()
+                .Ignore(c => c.Distance);
         }
     }
 }

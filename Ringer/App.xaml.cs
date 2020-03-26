@@ -17,6 +17,7 @@ namespace Ringer
     {
         #region private members
         private readonly IMessaging _messaging;
+        private readonly ILocationService _location;
         #endregion
 
         #region public static propertie
@@ -83,7 +84,9 @@ namespace Ringer
             DependencyService.Register<ILocalDbService, LocalDbService>();
             DependencyService.Register<IRESTService, RESTService>();
             DependencyService.Register<IMessaging, Messaging>();
+            DependencyService.Register<ILocationService, LocationService>();
             _messaging = DependencyService.Get<IMessaging>();
+            _location = DependencyService.Get<ILocationService>();
 
             // Local Notification
             NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
@@ -182,6 +185,7 @@ namespace Ringer
             if (IsLoggedIn)
                 LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, Token);
             #endregion
+
         }
         protected override void OnSleep()
         {
@@ -212,6 +216,7 @@ namespace Ringer
                     _messaging.FetchRemoteMessagesAsync()
                 });
             }
+
         }
         #endregion
     }

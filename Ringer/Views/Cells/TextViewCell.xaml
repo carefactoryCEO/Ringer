@@ -37,22 +37,22 @@
         </Grid.ColumnDefinitions>
 
         <!-- 1st Column : Avatar -->
-        <Frame BackgroundColor="SkyBlue"
+        <Frame BackgroundColor="#8DD7FD"
                    HasShadow="False"
-                   CornerRadius="13"
+                   CornerRadius="8"
                    Margin="5"
-                   Padding="10"
+                   Padding="1"
                    VerticalOptions="Start"
                    d:IsVisible="False"
                    IsVisible="{Binding MessageTypes,
                                     Converter={StaticResource MessageTypesToBooleanConverter},
                                     ConverterParameter='Avatar'}">
-            <Image>
-                <Image.Source>
+            <Image Source="StartChatButton">
+                <!--<Image.Source>
                     <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
                                     Glyph="{StaticResource IconAccount}"
                                     Size="18" Color="Black"/>
-                </Image.Source>
+                </Image.Source>-->
             </Image>
         </Frame>
 

@@ -9,8 +9,8 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AppCenter.Analytics;
 using Ringer.Core.Data;
+using Ringer.Core.Models;
 using Ringer.Helpers;
-using Xamarin.Forms;
 
 namespace Ringer.Services
 {
@@ -18,6 +18,8 @@ namespace Ringer.Services
     {
         Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
         Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType);
+        Task<List<Consulate>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
+        Task SetCountryCodeAsync(int id, string countryCode);
     }
 
     public class RESTService : IRESTService
@@ -66,7 +68,7 @@ namespace Ringer.Services
                 BirthDate = birthDate,
                 Gender = genderType,
                 DeviceId = App.DeviceId,
-                DeviceType = Device.RuntimePlatform == Device.iOS ? DeviceType.iOS : DeviceType.Android
+                DeviceType = Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS ? DeviceType.iOS : DeviceType.Android
             };
 
             var loginInfoJson = JsonSerializer.Serialize(loginInfo);
@@ -101,6 +103,32 @@ namespace Ringer.Services
             }
 
             return false;
+        }
+
+        public async Task<List<Consulate>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity)
+        {
+            var url = Constants.ConsulateUrl;
+
+            if (lat > double.NegativeInfinity && lon > double.NegativeInfinity)
+                url += $"/{lat}/{lon}";
+
+            var response = await _client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException("request failed");
+
+            var consultesJson = await response.Content.ReadAsStringAsync();
+            var consulateList = JsonSerializer.Deserialize<List<Consulate>>(consultesJson, options: new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return consulateList;
+        }
+
+        public Task SetCountryCodeAsync(int id, string countryCode)
+        {
+            return _client.GetAsync(Constants.InformationUrl + $"/set-countrycode/{id}/{countryCode}");
         }
     }
 }

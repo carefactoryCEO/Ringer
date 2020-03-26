@@ -84,6 +84,8 @@
 
             <!-- Messages Feed -->
             <Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>
+            <!--<Color x:Key="MessagesFeedBackgroundColor">#DCDEDC</Color>-->
+            <!--#DCDEDC-->
 
             <!-- ChatInputBarView -->
 
