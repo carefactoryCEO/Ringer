@@ -53,25 +53,17 @@ namespace Ringer.Views
 
             App.IsChatPage = true;
 
-            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "KeyboardShow", (sender, KeyboardShow) =>
+            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", (sender, showing) =>
             {
-                Device.BeginInvokeOnMainThread(() =>
-                {
-                    if (!KeyboardShow)
-                        Task.Run(() => TitleLabel.Focus()).ContinueWith(t => MessageFeed.ScrollToLast());
-
-                });
+                chatInputBarView.IsVisible = showing;
+                MessageFeed.ScrollToLast();
             });
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await Task.Delay(100);
-
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
-                });
+                MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: true);
             });
+
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
             {
                 Device.BeginInvokeOnMainThread(() =>
@@ -88,6 +80,7 @@ namespace Ringer.Views
         }
         protected override void OnDisappearing()
         {
+            MessagingCenter.Unsubscribe<ChatPageViewModel, bool>(this, "HideKeyboard");
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
 

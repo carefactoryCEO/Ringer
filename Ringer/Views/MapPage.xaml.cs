@@ -45,13 +45,11 @@ namespace Ringer.Views
                 });
             }
         }
-
         private void MapCurrentButton_Clicked(object sender, EventArgs e)
         {
             MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
         }
-
-        void ConsulateCollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void ConsulateCollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var consulate = e.CurrentSelection.FirstOrDefault() as Consulate;
 

@@ -41,7 +41,6 @@
         </Style>
     </ContentPage.Resources>
 
-
     <ContentPage.Content>
         <AbsoluteLayout>
 
@@ -68,19 +67,17 @@
                             Margin="0,0"
                             BackgroundColor="#DCDEDC"
                             ItemsSource="{Binding Consulates}">
+
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical"
-                                       ItemSpacing="15"/>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="15"/>
                 </CollectionView.ItemsLayout>
+
+                <!--Header-->
                 <CollectionView.Header>
-                    <ContentView BackgroundColor="#DCDEDC"
-                                 Padding="{OnPlatform iOS='15', Android='15,15,15,0'}">
-                        <Frame HasShadow="False"
-                               Padding="20" 
-                               CornerRadius="8">
+                    <ContentView BackgroundColor="#DCDEDC" Padding="{OnPlatform iOS='15', Android='15,15,15,0'}">
+                        <Frame HasShadow="False" Padding="20" CornerRadius="8">
                             <StackLayout Spacing="0">
-                                <Label Text="현재 위치"
-                                       FontSize="20" TextColor="#1680CE"/>
+                                <Label Text="현재 위치" FontSize="20" TextColor="#1680CE"/>
                                 <BoxView BackgroundColor="Gray" HeightRequest="1.4" Margin="0,6,0,8"/>
                                 <Label Text="{Binding CurrentAddress}" TextColor="#424242"/>
                             </StackLayout>
@@ -90,20 +87,22 @@
                         </Frame>
                     </ContentView>
                 </CollectionView.Header>
+
+                <!--Footer-->
                 <CollectionView.Footer>
-                    <StackLayout BackgroundColor="#DCDEDC"
-                                 Padding="{OnPlatform iOS='15', Android='15,0,15,0'}">
-                        <Frame HasShadow="False"
-                               Padding="20" 
-                               CornerRadius="8">
+                    <StackLayout BackgroundColor="#DCDEDC" Padding="{OnPlatform iOS='15', Android='15,0,15,0'}">
+
+                        <Frame HasShadow="False" Padding="20" CornerRadius="8">
                             <StackLayout Spacing="0">
-                                <Label Text="링거 서포트팀"
-                                       FontSize="20" TextColor="#1680CE"/>
+
+                                <Label Text="링거 서포트팀" FontSize="20" TextColor="#1680CE"/>
+
                                 <BoxView BackgroundColor="Gray" HeightRequest="1.4" Margin="0,6,0,8"/>
-                                <Label Text="불편 사항, 접속 장애 등 링거와 긴급히 연락해야 할 때 아래의 연락처를 이용하세요."
-                                       TextColor="#424242"/>
+
+                                <Label Text="불편 사항, 접속 장애 등 링거와 긴급히 연락해야 할 때 아래의 연락처를 이용하세요." TextColor="#424242"/>
 
                                 <StackLayout Spacing="5" HorizontalOptions="EndAndExpand" Margin="0,10,0,0">
+
                                     <Label FontSize="15" TextColor="#1680CE">
                                         <Label.FormattedText>
                                             <FormattedString>
@@ -116,6 +115,7 @@
                                             <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding RingerPhoneNumber}"/>
                                         </Label.GestureRecognizers>
                                     </Label>
+
                                     <Label FontSize="15" TextColor="#DF708A">
                                         <Label.FormattedText>
                                             <FormattedString>
@@ -128,25 +128,27 @@
                                             <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding RingerEmergencyPhoneNumber}"/>
                                         </Label.GestureRecognizers>
                                     </Label>
+
                                 </StackLayout>
                             </StackLayout>
                         </Frame>
+
                         <Label Text="건강한 여행, 링거"
                                TextColor="LightSlateGray"
                                FontSize="Large"
                                FontAttributes="Bold"
                                HorizontalOptions="Center"
                                Margin="0,40,0,40"/>
+
                     </StackLayout>
                 </CollectionView.Footer>
+
+                <!--Item Template-->
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <ContentView BackgroundColor="#DCDEDC"
-                                     Padding="15,0">
+                        <ContentView BackgroundColor="#DCDEDC" Padding="15,0">
 
-                            <Frame HasShadow="False"
-                                   Padding="20"
-                                   CornerRadius="8">
+                            <Frame HasShadow="False" Padding="20" CornerRadius="8">
                                 <StackLayout>
 
                                     <StackLayout Spacing="3">
@@ -182,6 +184,7 @@
                                                 HeightRequest="24"
                                                 FontSize="{OnPlatform Android='11'}"
                                                 TextColor="White"/>
+
                                         <Button Text="홈페이지"
                                                 Command="{Binding BindingContext.OpenSiteCommand, Source={x:Reference mapPage}}"
                                                 CommandParameter="{Binding .}"
@@ -190,6 +193,7 @@
                                                 FontSize="{OnPlatform Android='11'}"
                                                 HeightRequest="24"
                                                 TextColor="White"/>
+
                                         <Button Text="지도 열기"
                                                 Command="{Binding BindingContext.OpenMapCommand, Source={x:Reference mapPage}}"
                                                 CommandParameter="{Binding .}"
@@ -198,15 +202,14 @@
                                                 FontSize="{OnPlatform Android='11'}"
                                                 HeightRequest="24"
                                                 TextColor="White"/>
+
                                     </StackLayout>
 
-                                    <StackLayout Spacing="5"
-                                                 HorizontalOptions="EndAndExpand"
-                                                 Margin="0,5,0,0">
+                                    <StackLayout Spacing="5" HorizontalOptions="EndAndExpand" Margin="0,5,0,0">
+
                                         <Label FontSize="15" TextColor="#1680CE">
                                             <Label.FormattedText>
                                                 <FormattedString>
-                                                    <!--<Span Text="{StaticResource Phone}" FontFamily="{StaticResource MaterialFontFamily}" TextColor="SkyBlue"/>-->
                                                     <Span Text=" 대표번호 "/>
                                                     <Span Text="{Binding PhoneNumber}"/>
                                                 </FormattedString>
@@ -215,10 +218,10 @@
                                                 <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding PhoneNumber}"/>
                                             </Label.GestureRecognizers>
                                         </Label>
+
                                         <Label FontSize="15" TextColor="#DF708A">
                                             <Label.FormattedText>
                                                 <FormattedString>
-                                                    <!--<Span Text="{StaticResource Phone}" FontFamily="{StaticResource MaterialFontFamily}"/>-->
                                                     <Span Text=" 긴급번호 "/>
                                                     <Span Text="{Binding EmergencyPhoneNumber}"/>
                                                 </FormattedString>
@@ -227,6 +230,7 @@
                                                 <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding EmergencyPhoneNumber}"/>
                                             </Label.GestureRecognizers>
                                         </Label>
+
                                     </StackLayout>
 
                                 </StackLayout>
@@ -242,8 +246,7 @@
                     AbsoluteLayout.LayoutBounds=".95,.95,50,50"
                     Command="{Binding GoToChatPageCommand}"
                     WidthRequest="80" HeightRequest="80"
-                    BackgroundColor="Transparent"
-                    />
+                    BackgroundColor="Transparent"/>
 
         </AbsoluteLayout>
     </ContentPage.Content>
