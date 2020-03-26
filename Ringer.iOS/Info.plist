@@ -21,8 +21,6 @@
 	<string>Ringer</string>
 	<key>CFBundleVersion</key>
 	<string>1.0.1</string>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>CFBundleName</key>
 	<string>Ringer</string>
 	<key>XSAppIconAssets</key>
@@ -70,5 +68,7 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>UILaunchStoryboardName</key>
+	<string>RingerLaunchScreen</string>
 </dict>
 </plist>

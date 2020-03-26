@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.AppCenter.Analytics;
+using Ringer.Core.Models;
 using Ringer.Types;
 using Xamarin.Forms;
 
@@ -12,8 +13,8 @@ namespace Ringer.Helpers
     public class Utility
     {
         public static bool IsChatActive => App.IsChatPage && App.IsOn;
-        public static bool iOS => Device.RuntimePlatform == Device.iOS;
-        public static bool Android => Device.RuntimePlatform == Device.Android;
+        public static bool iOS => Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS;
+        public static bool Android => Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android;
         public static bool AndroidCameraActivated => Android && App.IsCameraActivated;
         public static bool InSameMinute(DateTime current, DateTime last)
         {
@@ -56,6 +57,11 @@ namespace Ringer.Helpers
 
             if (analyticsAlso)
                 Analytics.TrackEvent(message);
+        }
+
+        internal static void Trace(Consulate currentSelection)
+        {
+            throw new NotImplementedException();
         }
     }
 }
