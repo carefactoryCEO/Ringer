@@ -24,7 +24,8 @@ namespace Ringer.iOS
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
             // TODO check and remove Shell, Visual, CollectionView experimental
-            global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental");
+            //global::Xamarin.Forms.Forms.SetFlags("Shell_Experimental", "Visual_Experimental", "CollectionView_Experimental", "FastRenderers_Experimental", "MediaElement_Experimental");
+            global::Xamarin.Forms.Forms.SetFlags("MediaElement_Experimental");
 
             global::Xamarin.Forms.Forms.Init();
 

@@ -48,7 +48,6 @@ namespace RingerStaff.ViewModels
             {
                 Items.Insert(0, new Item { Description = "Added Item", Text = $"{i}" });
             }
-            //await Task.Delay(1000);
 
             IsRefreshing = false;
 

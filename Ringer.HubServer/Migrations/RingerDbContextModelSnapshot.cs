@@ -15,7 +15,7 @@ namespace Ringer.HubServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.1")
+                .HasAnnotation("ProductVersion", "3.1.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
@@ -163,7 +163,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 2, 28, 16, 59, 17, 148, DateTimeKind.Utc).AddTicks(3200),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6100),
                             Gender = "Male",
                             Name = "Admin",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -173,7 +173,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 2, 28, 16, 59, 17, 148, DateTimeKind.Utc).AddTicks(3980),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6950),
                             Gender = "Male",
                             Name = "신모범",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -183,7 +183,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 2, 28, 16, 59, 17, 148, DateTimeKind.Utc).AddTicks(3990),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6970),
                             Gender = "Female",
                             Name = "김은미",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -193,7 +193,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 2, 28, 16, 59, 17, 148, DateTimeKind.Utc).AddTicks(4000),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6970),
                             Gender = "Male",
                             Name = "김순용",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -203,7 +203,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 2, 28, 16, 59, 17, 148, DateTimeKind.Utc).AddTicks(4000),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6980),
                             Gender = "Female",
                             Name = "함주희",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -226,6 +226,15 @@ namespace Ringer.HubServer.Migrations
 
                     b.Property<string>("Country")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CountryCodeAndroid")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CountryCodeiOS")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -255,6 +264,8 @@ namespace Ringer.HubServer.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CountryCode", "CountryCodeiOS", "CountryCodeAndroid");
 
                     b.ToTable("Consulate");
                 });

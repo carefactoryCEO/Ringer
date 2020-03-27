@@ -14,6 +14,8 @@ namespace Ringer.Helpers
         public static readonly string HubUrl = BaseUrl + "/hubs/chat";
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
         public static readonly string ReportUrl = BaseUrl + "/auth/report";
+        public static readonly string InformationUrl = BaseUrl + "/information";
+        public static readonly string ConsulateUrl = InformationUrl + "/consulates";
         public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");
         public static readonly string System = "링거";
 
@@ -31,6 +33,7 @@ namespace Ringer.Helpers
 
         // Message
         public static readonly int MessageCount = 100;
+        public static readonly string ImagePlaceholder = "https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg";
 
         public static readonly string DisconnectedString = "Disconnected";
 
@@ -38,6 +41,9 @@ namespace Ringer.Helpers
         public static readonly string LocalNotificationString = "localNotification";
         public static readonly string ChatPageUriFromLocalNotification = $"//mappage/chatpage?from={LocalNotificationString}";
         public static readonly string ChatPageUriFromPushNotification = $"//mappage/chatpage?from={PushNotificationString}";
+
+        public static readonly string RingerPhoneNumber = "+82-10-2922-7428";
+        public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";
 
     }
 }

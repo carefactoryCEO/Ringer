@@ -25,7 +25,7 @@ namespace Ringer.Services
 
         public LocalDbService()
         {
-            Utilities.Trace(Constants.DbPath);
+            Utility.Trace(Constants.DbPath);
             _database = new SQLiteAsyncConnection(Constants.DbPath);
             _database.CreateTableAsync<MessageModel>().Wait();
             _messageTable = _database.Table<MessageModel>();

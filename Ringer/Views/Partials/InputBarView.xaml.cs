@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Ringer.ViewModels;
+using Ringer.Views.Controls;
 using Xamarin.Forms;
 
 namespace Ringer.Views.Partials
@@ -36,11 +39,25 @@ namespace Ringer.Views.Partials
                     SendButton.IsEnabled = ActionsButton.IsEnabled = true;
                 });
             });
+
+            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", async (sender, showing) =>
+            {
+                if (!showing)
+                    RingerEditor.Unfocus();
+
+                if (showing)
+                {
+                    await Task.Delay(100);
+                    RingerEditor.Focus();
+                }
+            });
         }
+
         #endregion
 
         #region Custom Events
         public event EventHandler ListShouldBeScrolled;
+        public event EventHandler<bool> KeyboardShuldBeShownChanged;
         public void NotifyListScroll() => ListShouldBeScrolled?.Invoke(this, new EventArgs());
         #endregion
 

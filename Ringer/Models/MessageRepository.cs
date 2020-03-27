@@ -77,14 +77,14 @@ namespace Ringer.Models
                 SenderId = e.SenderId,
                 CreatedAt = e.CreatedAt,
                 ReceivedAt = DateTime.UtcNow,
-                MessageTypes = Utilities.GetMediaAndDirectionType(e.Body, e.SenderId, App.UserId)
+                MessageTypes = Utility.GetMediaAndDirectionType(e.Body, e.SenderId, App.UserId)
             };
 
             await AddMessageAsync(message);
 
             Debug.WriteLine(App.RoomId);
 
-            Utilities.Trace(message.MessageTypes.ToString());
+            Utility.Trace(message.MessageTypes.ToString());
         }
         private async void SomeoneEntered(object sender, SignalREventArgs e)
         {
@@ -98,7 +98,7 @@ namespace Ringer.Models
                     ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
 
-            Utilities.Trace(e.Message);
+            Utility.Trace(e.Message);
         }
         private async void SomeoneLeft(object sender, SignalREventArgs e)
         {
@@ -112,7 +112,7 @@ namespace Ringer.Models
                     ReceivedAt = DateTime.UtcNow
                 }).ConfigureAwait(false);
 
-            Utilities.Trace(e.Message);
+            Utility.Trace(e.Message);
         }
         #endregion
 
@@ -151,7 +151,7 @@ namespace Ringer.Models
                     SenderId = p.SenderId,
                     CreatedAt = p.CreatedAt,
                     ReceivedAt = DateTime.UtcNow,
-                    MessageTypes = Utilities.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
+                    MessageTypes = Utility.GetMediaAndDirectionType(p.Body, p.SenderId, App.UserId)
                 }).ToArray();
 
             MessageModel lastSavedMessage = await _localDbService.GetLastMessageAsync(App.RoomId);
@@ -162,7 +162,7 @@ namespace Ringer.Models
             {
                 before = i > 0 ? messages[i - 1] : lastSavedMessage;
 
-                if (before.SenderId == messages[i].SenderId && Utilities.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
+                if (before.SenderId == messages[i].SenderId && Utility.InSameMinute(messages[i].CreatedAt, before.CreatedAt))
                 {
                     // 메시지 타입 수정
                     before.MessageTypes ^= MessageTypes.Trailing;
@@ -196,7 +196,7 @@ namespace Ringer.Models
         {
             if (await _localDbService.GetLastMessageAsync(App.RoomId).ConfigureAwait(false) is MessageModel lastMessage)
             {
-                if (lastMessage.SenderId == message.SenderId && Utilities.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+                if (lastMessage.SenderId == message.SenderId && Utility.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
                 {
                     // 메시지 타입 수정
                     lastMessage.MessageTypes ^= MessageTypes.Trailing;

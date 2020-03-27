@@ -4,12 +4,15 @@ using Microsoft.EntityFrameworkCore;
 using Ringer.HubServer.Data;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using Ringer.HubServer.Models;
 using System.Text.Json;
 using System.IO;
 using CsvHelper;
 using System.Globalization;
-using System.Net.Http.Headers;
+using System.Linq;
+using Ringer.Core.Models;
+using Geolocation;
+using System;
+using Microsoft.Extensions.Logging;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -18,19 +21,43 @@ namespace Ringer.HubServer.Controllers
     public class InformationController : ControllerBase
     {
         private readonly RingerDbContext _dbContext;
-        public InformationController(RingerDbContext dbContext)
+        private readonly ILogger<InformationController> _logger;
+
+        public InformationController(RingerDbContext dbContext, ILogger<InformationController> logger)
         {
             _dbContext = dbContext;
+            _logger = logger;
+        }
+
+        [HttpGet("consulates/{lat}/{lon}")]
+        public async Task<IActionResult> GetConsulateByCoordinates(double lat, double lon)
+        {
+            List<Consulate> consulates = await _dbContext.Consulates.ToListAsync();
+            var origin = new Coordinate(lat, lon);
+
+            foreach (var con in consulates)
+            {
+                con.Distance = GeoCalculator.GetDistance(origin, new Coordinate(con.Latitude, con.Longitude), 1, DistanceUnit.Kilometers);
+            }
+
+            return Ok(consulates.OrderBy(c => c.Distance));
         }
 
         [HttpGet("consulates")]
         public async Task<IActionResult> GetConsulates()
         {
-            var consulates = await _dbContext.Consulates.ToListAsync();
+            List<Consulate> consulates = await _dbContext.Consulates.ToListAsync();
 
             return Ok(consulates);
         }
 
+        [HttpGet("consulates/{countryCode}")] // /information/consulates/us
+        public async Task<IActionResult> GetConsulatesByCoundtryCode(string countryCode)
+        {
+            List<Consulate> consulates = await _dbContext.Consulates.Where(c => c.CountryCode == countryCode).ToListAsync();
+
+            return Ok(consulates);
+        }
 
         [HttpPost("upload")]
         public async Task<IActionResult> Upload(IFormFile file)
@@ -46,51 +73,16 @@ namespace Ringer.HubServer.Controllers
             return Ok(savedConsulates);
         }
 
-        [HttpPost("dropzone")]
-        public async Task<IActionResult> Dropzone()
+        [HttpGet("set-countrycode/{id}/{countryCode}")]
+        public async Task<IActionResult> SetCountryCode(int id, string countryCode)
         {
-            var files = HttpContext.Request.Form.Files;
-            var consulates = new List<Consulate>();
+            var consulate = await _dbContext.Consulates.FirstOrDefaultAsync(c => c.Id == id);
+            consulate.CountryCodeAndroid = countryCode;
+            consulate.CountryCodeiOS = consulate.CountryCode;
 
-            foreach (var file in files)
-            {
-                if (file.Length > 0)
-                {
-                    using(var stream = file.OpenReadStream())
-                    using(var reader = new StreamReader(stream))
-                    using(var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
-                    {
-                        csvReader.Read();
-                        csvReader.ReadHeader();
-                        while (csvReader.Read())
-                        {
-                            var consulate = new Consulate
-                            {
-                                ConsulateType = csvReader.GetField("ConsulateType"),
-                                Country = csvReader.GetField("Country"),
-                                KoreanName = csvReader.GetField("KoreanName"),
-                                LocalName = csvReader.GetField("LocalName"),
-                                PhoneNumber = csvReader.GetField("PhoneNumber"),
-                                EmergencyPhoneNumber = csvReader.GetField("EmergencyPhoneNumber"),
-                                Email = csvReader.GetField("Email"),
-                                Address = csvReader.GetField("Address"),
-                                Homepage = csvReader.GetField("Homepage"),
-                                Latitude = csvReader.GetField<double>("Latitude"),
-                                Longitude = csvReader.GetField<double>("Longitude"),
-                                GoogleMap = csvReader.GetField("GoogleMap")
-                            };
-                            consulates.Add(consulate);
-                        }
-                    }
-                }
-            }
-
-            await _dbContext.Consulates.AddRangeAsync(consulates);
             await _dbContext.SaveChangesAsync();
 
-            var savedConsulates = await _dbContext.Consulates.ToListAsync();
-
-            return Ok(savedConsulates);
+            return Ok();
         }
 
         [HttpPost("upload-csv")]
@@ -98,9 +90,9 @@ namespace Ringer.HubServer.Controllers
         {
             var consulates = new List<Consulate>();
 
-            using(var stream = csv.OpenReadStream())
-            using(var reader = new StreamReader(stream))
-            using(var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (var stream = csv.OpenReadStream())
+            using (var reader = new StreamReader(stream))
+            using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
             {
                 csvReader.Read();
                 csvReader.ReadHeader();

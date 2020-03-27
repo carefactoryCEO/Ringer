@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms;
+﻿using System;
+using Xamarin.Forms;
 
 namespace Ringer.Views.Controls
 {
@@ -12,7 +13,6 @@ namespace Ringer.Views.Controls
             get => (float)GetValue(CornerRadiusProperty);
             set => SetValue(CornerRadiusProperty, value);
         }
-
 
         public new static BindableProperty PlaceholderProperty
           = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(ExtendedEditorControl));
