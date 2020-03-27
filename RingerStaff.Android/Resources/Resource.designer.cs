@@ -202,7 +202,6 @@ namespace RingerStaff.Droid
 			global::Plugin.LocalNotification.Resource.Attribute.fontWeight = global::RingerStaff.Droid.Resource.Attribute.fontWeight;
 			global::Plugin.LocalNotification.Resource.Attribute.ttcIndex = global::RingerStaff.Droid.Resource.Attribute.ttcIndex;
 			global::Plugin.LocalNotification.Resource.Boolean.enable_system_alarm_service_default = global::RingerStaff.Droid.Resource.Boolean.enable_system_alarm_service_default;
-			global::Plugin.LocalNotification.Resource.Boolean.enable_system_foreground_service_default = global::RingerStaff.Droid.Resource.Boolean.enable_system_foreground_service_default;
 			global::Plugin.LocalNotification.Resource.Boolean.enable_system_job_service_default = global::RingerStaff.Droid.Resource.Boolean.enable_system_job_service_default;
 			global::Plugin.LocalNotification.Resource.Boolean.workmanager_test_configuration = global::RingerStaff.Droid.Resource.Boolean.workmanager_test_configuration;
 			global::Plugin.LocalNotification.Resource.Color.notification_action_color_filter = global::RingerStaff.Droid.Resource.Color.notification_action_color_filter;
@@ -7661,19 +7660,16 @@ namespace RingerStaff.Droid
 			public const int enable_system_alarm_service_default = 2130968579;
 			
 			// aapt resource value: 0x7F040004
-			public const int enable_system_foreground_service_default = 2130968580;
+			public const int enable_system_job_service_default = 2130968580;
 			
 			// aapt resource value: 0x7F040005
-			public const int enable_system_job_service_default = 2130968581;
+			public const int is_tablet = 2130968581;
 			
 			// aapt resource value: 0x7F040006
-			public const int is_tablet = 2130968582;
+			public const int mtrl_btn_textappearance_all_caps = 2130968582;
 			
 			// aapt resource value: 0x7F040007
-			public const int mtrl_btn_textappearance_all_caps = 2130968583;
-			
-			// aapt resource value: 0x7F040008
-			public const int workmanager_test_configuration = 2130968584;
+			public const int workmanager_test_configuration = 2130968583;
 			
 			static Boolean()
 			{

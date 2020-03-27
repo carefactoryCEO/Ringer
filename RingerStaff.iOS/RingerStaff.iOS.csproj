@@ -176,7 +176,7 @@
     <PackageReference Include="Xamarin.Forms" Version="4.5.0.495" />
     <PackageReference Include="Xamarin.Essentials" Version="1.5.1" />
     <PackageReference Include="Plugin.LocalNotification">
-      <Version>5.0.2</Version>
+      <Version>5.0.1</Version>
     </PackageReference>
     <PackageReference Include="Xam.Plugin.SimpleAudioPlayer">
       <Version>1.4.0</Version>
