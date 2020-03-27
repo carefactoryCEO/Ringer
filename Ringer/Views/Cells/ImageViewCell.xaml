@@ -38,18 +38,17 @@
         </Grid.ColumnDefinitions>
 
         <!-- 1st Column : Avatar -->
-        <Frame BackgroundColor="SkyBlue"
+        <Frame BackgroundColor="#8DD7FD"
                    HasShadow="False"
-                   CornerRadius="13"
+                   CornerRadius="8"
                    Margin="5"
-                   Padding="10"
+                   Padding="0"
                    VerticalOptions="Start"
                    d:IsVisible="False"
                    IsVisible="{Binding MessageTypes,
                                     Converter={StaticResource MessageTypesToBooleanConverter},
                                     ConverterParameter='Avatar'}">
             <Image Source="StartChatButton"/>
-
         </Frame>
 
         <!-- 2nd Column -->
@@ -93,41 +92,6 @@
                     <TapGestureRecognizer Tapped="Image_Tapped"/>
                 </ff:CachedImage.GestureRecognizers>
             </ff:CachedImage>
-            <!--<Frame Padding="0"
-                   BackgroundColor="Transparent"
-                   CornerRadius="11"
-                   HasShadow="False"
-                   IsClippedToBounds="True">
-                <Frame.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="Image_Tapped"/>
-                </Frame.GestureRecognizers>
-
-                <StackLayout Orientation="Horizontal">
-                <Image Source="{Binding Body}"
-                           HorizontalOptions="Center"
-                           VerticalOptions="Center"
-                           WidthRequest="240"
-                           HeightRequest="240"
-                           Aspect="AspectFill"/>
-                <ff:CachedImage x:Name="cachedImage"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"
-                                LoadingPlaceholder="https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg"
-                                WidthRequest="240"
-                                HeightRequest="240"
-                                Aspect="AspectFill"
-                                CacheDuration="50"
-                                RetryCount="10"
-                                RetryDelay="100">
-                    <ff:CachedImage.Transformations>
-                        <fftransformations:CornersTransformation
-                            CornersTransformType="BottomLeftCut,TopRightRounded"
-                            BottomLeftCornerSize="20"
-                            TopRightCornerSize="30"/>
-                    </ff:CachedImage.Transformations>
-                </ff:CachedImage>
-                </StackLayout>
-            </Frame>-->
 
         </StackLayout>
 

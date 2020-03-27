@@ -11,6 +11,7 @@ using Microsoft.AppCenter.Analytics;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.Helpers;
+using Ringer.Models;
 
 namespace Ringer.Services
 {
@@ -18,7 +19,7 @@ namespace Ringer.Services
     {
         Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
         Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType);
-        Task<List<Consulate>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
+        Task<List<ConsulateModel>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
         Task SetCountryCodeAsync(int id, string countryCode);
     }
 
@@ -105,7 +106,7 @@ namespace Ringer.Services
             return false;
         }
 
-        public async Task<List<Consulate>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity)
+        public async Task<List<ConsulateModel>> GetConsulatesAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity)
         {
             var url = Constants.ConsulateUrl;
 
@@ -118,7 +119,7 @@ namespace Ringer.Services
                 throw new HttpRequestException("request failed");
 
             var consultesJson = await response.Content.ReadAsStringAsync();
-            var consulateList = JsonSerializer.Deserialize<List<Consulate>>(consultesJson, options: new JsonSerializerOptions
+            var consulateList = JsonSerializer.Deserialize<List<ConsulateModel>>(consultesJson, options: new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             });

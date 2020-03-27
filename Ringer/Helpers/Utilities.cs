@@ -49,8 +49,10 @@ namespace Ringer.Helpers
 
             return messageTypes;
         }
-        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
+        public static void Trace(object obj = default, bool analyticsAlso = false, [CallerMemberName] string callerName = "", [CallerFilePath] string callerFilePath = "")
         {
+            string message = obj.ToString();
+
             message = $"[{DateTime.UtcNow.ToString("MMddHHmmss")}]({Path.GetFileNameWithoutExtension(callerFilePath)}.{callerName}){message}";
 
             Debug.WriteLine(message);

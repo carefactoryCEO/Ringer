@@ -249,12 +249,6 @@ namespace Ringer.Services
             // 디비 저장
             return await _localDbService.SaveMessageAsync(message).ConfigureAwait(false);
         }
-
-        /// <summary>
-        /// 로컬 디비에 저장된 마지막 서버아이디보다 큰 것을 리모트 디비에서 긁어와
-        /// 메시지 타입을 수정, 로컬 디비에 저장한 후 메시지 배열을 리턴
-        /// </summary>
-        /// <returns>an array of MessageModel</returns>
         private async Task<MessageModel[]> PullRemoteMessagesAsync()
         {
             if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token) is List<PendingMessage> pendingMessages && pendingMessages.Any())
