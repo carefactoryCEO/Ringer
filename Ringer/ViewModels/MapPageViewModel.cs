@@ -25,6 +25,10 @@ namespace Ringer.ViewModels
         public string CurrentAddress { get; set; } = "검색 중...";
         public double CurrentLatitude { get; set; } = double.NegativeInfinity;
         public double CurrentLongitude { get; set; } = double.NegativeInfinity;
+
+        private ConsulateModel headerConsulate;
+        private ConsulateModel footerConsulate;
+
         public string RingerPhoneNumber { get; set; } = Constants.RingerPhoneNumber;
         public string RingerEmergencyPhoneNumber { get; set; } = Constants.RingerEmergencyPhoneNumber;
 
@@ -46,6 +50,23 @@ namespace Ringer.ViewModels
             PhoneCallCommand = new Command<string>(number => PhoneCall(number));
             OpenMapCommand = new Command<ConsulateModel>(async consulate => await OpenMap(consulate));
 
+            headerConsulate = new ConsulateModel
+            {
+                IsHeader = true,
+                KoreanName = "현재 위치",
+                Address = CurrentAddress,
+                Latitude = CurrentLatitude,
+                Longitude = CurrentLongitude,
+            };
+            footerConsulate = new ConsulateModel
+            {
+                IsFooter = true,
+                KoreanName = "링거 서포트팀",
+                Address = "불편 사항, 접속 장애 등 링거와 긴급히 연락해야 할 때 아래의 연락처를 이용하세요.",
+                PhoneNumber = Constants.RingerPhoneNumber,
+                EmergencyPhoneNumber = Constants.RingerEmergencyPhoneNumber,
+            };
+
             //Dummy();
         }
 
@@ -65,26 +86,10 @@ namespace Ringer.ViewModels
             CurrentLatitude = location.CurrentLatitude;
             CurrentLongitude = location.CurrentLongitude;
 
-            Consulates.Add(new ConsulateModel
-            {
-                IsHeader = true,
-                KoreanName = "현재 위치",
-                Address = CurrentAddress,
-                Latitude = CurrentLatitude,
-                Longitude = CurrentLongitude,
-            });
-
+            Consulates.Add(headerConsulate);
             foreach (var model in location.Consulates.Take(15))
                 Consulates.Add(model);
-
-            Consulates.Add(new ConsulateModel
-            {
-                IsFooter = true,
-                KoreanName = "링거 서포트팀",
-                Address = "불편 사항, 접속 장애 등 링거와 긴급히 연락해야 할 때 아래의 연락처를 이용하세요.",
-                PhoneNumber = Constants.RingerPhoneNumber,
-                EmergencyPhoneNumber = Constants.RingerEmergencyPhoneNumber,
-            });
+            Consulates.Add(footerConsulate);
         }
         private void PhoneCall(string number)
         {

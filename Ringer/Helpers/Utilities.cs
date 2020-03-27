@@ -6,7 +6,6 @@ using System.Text.RegularExpressions;
 using Microsoft.AppCenter.Analytics;
 using Ringer.Core.Models;
 using Ringer.Types;
-using Xamarin.Forms;
 
 namespace Ringer.Helpers
 {

@@ -38,7 +38,6 @@
 
         <DataTemplate x:Key="LastConsulateTemplate">
             <ContentView BackgroundColor="#DCDEDC" Padding="15,0">
-
                 <Frame HasShadow="False" Padding="20" CornerRadius="8">
                     <StackLayout Spacing="0">
 
@@ -190,8 +189,21 @@
                 <!--Empty View-->
                 <CollectionView.EmptyView>
                     <ContentView BackgroundColor="#DCDEDC">
-                        <ActivityIndicator HorizontalOptions="Center" VerticalOptions="Center"
-                                           IsRunning="True"/>
+                        <StackLayout Orientation="Horizontal"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+                            <Label Text="위치 정보를 불러옵니다."
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Start"
+                                   TextColor="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
+                                   HeightRequest="20"
+                                   VerticalTextAlignment="Center"/>
+                            <ActivityIndicator HorizontalOptions="Start" VerticalOptions="Start"
+                                               Color="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
+                                               WidthRequest="20"
+                                               HeightRequest="20"
+                                               IsRunning ="True"/>
+                        </StackLayout>
                     </ContentView>
                 </CollectionView.EmptyView>
 
@@ -201,13 +213,15 @@
 
                 <!--Footer-->
                 <CollectionView.Footer>
-                    <ContentView BackgroundColor="#DCDEDC">
+                    <!--<ContentView BackgroundColor="#DCDEDC">-->
+                    <ContentView BackgroundColor="#DCDEDC" >
                         <Label Text="건강한 여행, 링거"
-                           TextColor="LightSlateGray"
-                           FontSize="Large"
-                           FontAttributes="Bold"
-                           HorizontalOptions="Center"
-                           Margin="0,55,0,55"/>
+                               TextColor="LightSlateGray"
+                               IsVisible="False"
+                               FontSize="Large"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               Margin="{OnPlatform iOS='0,55', Android='0,55'}"/>
                     </ContentView>
 
                 </CollectionView.Footer>
@@ -222,6 +236,7 @@
                     BackgroundColor="Transparent"/>
 
             <Button Text="토글" Clicked="Button_Clicked"
+                    BackgroundColor="Green"
                     AbsoluteLayout.LayoutBounds="50,50,30,30"/>
 
         </AbsoluteLayout>

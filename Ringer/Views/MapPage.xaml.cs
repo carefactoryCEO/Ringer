@@ -4,7 +4,6 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Maps;
 using Ringer.ViewModels;
-using Ringer.Core.Models;
 using Ringer.Models;
 using Xamarin.Essentials;
 
@@ -24,8 +23,8 @@ namespace Ringer.Views
         protected async override void OnAppearing()
         {
             base.OnAppearing();
-            await vm.RefreshConsulatesAsync();
-            MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
+            //await vm.RefreshConsulatesAsync();
+            //MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
         }
 
         private void MoveMap(double lat, double lon, string labelString = null, string address = null)
