@@ -5,6 +5,8 @@ using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Maps;
 using Ringer.ViewModels;
 using Ringer.Core.Models;
+using Ringer.Models;
+using Xamarin.Essentials;
 
 namespace Ringer.Views
 {
@@ -51,9 +53,28 @@ namespace Ringer.Views
         }
         private void ConsulateCollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            var consulate = e.CurrentSelection.FirstOrDefault() as Consulate;
+            var consulate = e.CurrentSelection.FirstOrDefault() as ConsulateModel;
+
+            if (consulate.IsHeader)
+            {
+                MoveMap(consulate.Latitude, consulate.Longitude);
+                return;
+            }
+
+            if (consulate.IsFooter)
+                return;
 
             MoveMap(consulate.Latitude, consulate.Longitude, consulate.KoreanName, consulate.Address);
+        }
+
+        async void Button_Clicked(object sender, EventArgs e)
+        {
+            if (vm.Consulates.Any())
+                vm.Consulates.Clear();
+            else
+                await vm.RefreshConsulatesAsync();
+
+            AppInfo.ShowSettingsUI();
         }
     }
 }

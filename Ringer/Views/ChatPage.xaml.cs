@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.ViewModels;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -55,13 +56,19 @@ namespace Ringer.Views
 
             MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", (sender, showing) =>
             {
-                chatInputBarView.IsVisible = showing;
-                MessageFeed.ScrollToLast();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    chatInputBarView.IsVisible = showing;
+                    MessageFeed.ScrollToLast();
+                });
             });
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
             {
-                MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: true);
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
+                });
             });
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
