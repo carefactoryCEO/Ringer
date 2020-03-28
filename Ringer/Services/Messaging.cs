@@ -42,6 +42,7 @@ namespace Ringer.Services
         private readonly ILocalDbService _localDbService;
         private readonly IRESTService _restService;
         public HubConnection _hubConnection;
+        private bool isPulling;
         #endregion
 
         #region Public Events
@@ -251,6 +252,11 @@ namespace Ringer.Services
         }
         private async Task<MessageModel[]> PullRemoteMessagesAsync()
         {
+            if (isPulling)
+                return null;
+
+            isPulling = true;
+
             if (await _restService.PullPendingMessagesAsync(App.RoomId, App.LastServerMessageId, App.Token) is List<PendingMessage> pendingMessages && pendingMessages.Any())
             {
                 // MessageModel로 변환
@@ -291,9 +297,11 @@ namespace Ringer.Services
                     MessageUpdated?.Invoke(this, lastSavedMessage);
                 }
 
+                isPulling = false;
                 return messages;
             }
 
+            isPulling = false;
             return null;
         }
         #endregion
@@ -318,7 +326,7 @@ namespace Ringer.Services
                 {
                     //BadgeNumber = 1,
                     NotificationId = ++App.LocalNotificationId,
-                    Title = $"(local){message.Sender}",
+                    Title = message.Sender,
                     Description = message.Body,
                     ReturningData = $"server id: {message.ServerId}", // Returning data when tapped on notification.
                     //NotifyTime = DateTime.Now.AddSeconds(0.2), // Used for Scheduling local notification, if not specified notification will show immediately.
@@ -361,8 +369,11 @@ namespace Ringer.Services
 
                 foreach (var message in messages)
                 {
-                    await SaveToLocalDbAsync(message);
-                    Messages.Add(message);
+                    if (!await _localDbService.HasServerIdAsync(message))
+                    {
+                        await SaveToLocalDbAsync(message);
+                        Messages.Add(message);
+                    }
                 }
                 MessagesFetched?.Invoke(this, messages);
                 FetchingStateChanged?.Invoke(this, FetchingState.Finished);

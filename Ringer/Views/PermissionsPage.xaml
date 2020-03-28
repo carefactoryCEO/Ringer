@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Ringer.Views.PermissionsPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="permission requested"/>
+            <Button Text="위치 정보를 허용할까요?" Clicked="LocationRequested"/>
+            <Button Text="설정 앱 열기" Clicked="AppSettingRequested"/>
+
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
