@@ -77,14 +77,13 @@ namespace Ringer
         public App()
         {
             InitializeComponent();
-
-            MainPage = new AppShell();
-
             // Services
             DependencyService.Register<ILocalDbService, LocalDbService>();
             DependencyService.Register<IRESTService, RESTService>();
             DependencyService.Register<IMessaging, Messaging>();
             DependencyService.Register<ILocationService, LocationService>();
+            MainPage = new AppShell();
+
             _messaging = DependencyService.Get<IMessaging>();
             _location = DependencyService.Get<ILocationService>();
 
@@ -183,7 +182,9 @@ namespace Ringer
 
             #region Connect and load messages
             if (IsLoggedIn)
+            {
                 LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, Token);
+            }
             #endregion
 
         }
@@ -205,6 +206,8 @@ namespace Ringer
             Utility.Trace("------------OnResume------------");
 
             base.OnResume();
+
+            MessagingCenter.Send(this, "Resumed");
 
             IsOn = true;
 

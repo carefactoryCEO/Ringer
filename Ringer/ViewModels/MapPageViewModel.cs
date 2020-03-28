@@ -1,5 +1,4 @@
 ﻿using System.Collections.ObjectModel;
-using System.Diagnostics;
 using Ringer.Models;
 using Xamarin.Essentials;
 using System.Linq;
@@ -18,16 +17,16 @@ namespace Ringer.ViewModels
     public class MapPageViewModel : INotifyPropertyChanged
     {
         private readonly ILocationService location;
+        private readonly IMessaging messaging;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<Infomation> Infomations { get; set; }
         public ObservableCollection<ConsulateModel> Consulates { get; set; } = new ObservableCollection<ConsulateModel>();
-        public string CurrentAddress { get; set; } = "검색 중...";
         public double CurrentLatitude { get; set; } = double.NegativeInfinity;
         public double CurrentLongitude { get; set; } = double.NegativeInfinity;
+        public bool IsBusy { get; set; }
 
-        private ConsulateModel headerConsulate;
-        private ConsulateModel footerConsulate;
+        public string EmptyState { get; set; } = "Loading";
 
         public string RingerPhoneNumber { get; set; } = Constants.RingerPhoneNumber;
         public string RingerEmergencyPhoneNumber { get; set; } = Constants.RingerEmergencyPhoneNumber;
@@ -42,7 +41,10 @@ namespace Ringer.ViewModels
         public MapPageViewModel()
         {
             location = DependencyService.Get<ILocationService>();
-            location.LocationUpdated += (s, e) => SetConsulates();
+            location.LocationUpdated += (s, e) => OnLocationUpdated();
+
+            messaging = DependencyService.Get<IMessaging>();
+            messaging.FetchingStateChanged += Messaging_FetchingStateChanged;
 
             GoToChatPageCommand = new Command(() => GoToChatPage());
             SendEmailCommand = new Command<ConsulateModel>(async consulate => await SendEmail(consulate));
@@ -50,46 +52,68 @@ namespace Ringer.ViewModels
             PhoneCallCommand = new Command<string>(number => PhoneCall(number));
             OpenMapCommand = new Command<ConsulateModel>(async consulate => await OpenMap(consulate));
 
-            headerConsulate = new ConsulateModel
+        }
+
+        private void Messaging_FetchingStateChanged(object sender, Types.FetchingState e)
+        {
+            if (e == Types.FetchingState.Fetching)
+                IsBusy = true;
+
+            if (e == Types.FetchingState.Finished)
+                IsBusy = false;
+        }
+
+        public async Task<bool> RefreshConsulatesAsync()
+        {
+            if (Consulates.Any())
+                Consulates.Clear();
+
+            if (await location.CheckPermissionAsync<Permissions.LocationWhenInUse>())
             {
-                IsHeader = true,
+                await location.RefreshAsync();
+                EmptyState = "Loading";
+                return true;
+            }
+
+            EmptyState = "Permission";
+            return false;
+        }
+
+        private void OnLocationUpdated()
+        {
+            CurrentLatitude = location.CurrentLatitude;
+            CurrentLongitude = location.CurrentLongitude;
+
+            var firstConsulate = new ConsulateModel
+            {
                 KoreanName = "현재 위치",
-                Address = CurrentAddress,
+                Address = location.CurrentAddress,
                 Latitude = CurrentLatitude,
                 Longitude = CurrentLongitude,
             };
-            footerConsulate = new ConsulateModel
+
+            if (location.CurrentCountryCode.Equals("KR", StringComparison.CurrentCultureIgnoreCase))
+            {
+                firstConsulate.IsInKorea = true;
+                Consulates.Add(firstConsulate);
+            }
+            else
+            {
+                firstConsulate.IsHeader = true;
+                Consulates.Add(firstConsulate);
+
+                foreach (var model in location.Consulates.Take(15))
+                    Consulates.Add(model);
+            }
+
+            Consulates.Add(new ConsulateModel
             {
                 IsFooter = true,
                 KoreanName = "링거 서포트팀",
                 Address = "불편 사항, 접속 장애 등 링거와 긴급히 연락해야 할 때 아래의 연락처를 이용하세요.",
                 PhoneNumber = Constants.RingerPhoneNumber,
                 EmergencyPhoneNumber = Constants.RingerEmergencyPhoneNumber,
-            };
-
-            //Dummy();
-        }
-
-        public async Task RefreshConsulatesAsync()
-        {
-            //return;
-
-            if (Consulates.Any())
-                Consulates.Clear();
-
-            await location.RefreshAsync();
-        }
-
-        private void SetConsulates()
-        {
-            CurrentAddress = location.CurrentAddress;
-            CurrentLatitude = location.CurrentLatitude;
-            CurrentLongitude = location.CurrentLongitude;
-
-            Consulates.Add(headerConsulate);
-            foreach (var model in location.Consulates.Take(15))
-                Consulates.Add(model);
-            Consulates.Add(footerConsulate);
+            });
         }
         private void PhoneCall(string number)
         {

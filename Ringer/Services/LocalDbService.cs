@@ -16,6 +16,7 @@ namespace Ringer.Services
         Task<MessageModel> UpdateMessageAsync(MessageModel message);
         Task ResetMessagesAsync();
         Task<MessageModel> GetMessageAsync(int id);
+        Task<bool> HasServerIdAsync(MessageModel message);
     }
 
     public class LocalDbService : ILocalDbService
@@ -66,6 +67,12 @@ namespace Ringer.Services
 
             return null;
         }
+
+        public async Task<bool> HasServerIdAsync(MessageModel message)
+        {
+            return await _messageTable.FirstOrDefaultAsync(m => m.ServerId == message.ServerId) is MessageModel;
+        }
+
         public async Task<MessageModel> UpdateMessageAsync(MessageModel message)
         {
             if (await _database.UpdateAsync(message) > 0)

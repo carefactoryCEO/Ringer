@@ -7,5 +7,6 @@ namespace Ringer.Models
     {
         public bool IsHeader { get; set; }
         public bool IsFooter { get; set; }
+        public bool IsInKorea { get; set; }
     }
 }

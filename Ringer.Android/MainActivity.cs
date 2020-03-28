@@ -49,12 +49,13 @@ namespace Ringer.Droid
 
         protected override void OnStart()
         {
-            if (CheckSelfPermission(Manifest.Permission.AccessCoarseLocation) != (int)Permission.Granted)
-            {
-                RequestPermissions(new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation }, 1);
-            }
-
             base.OnStart();
+
+            //if (CheckSelfPermission(Manifest.Permission.AccessCoarseLocation) != (int)Permission.Granted)
+            //{
+            //    RequestPermissions(new string[] { Manifest.Permission.AccessCoarseLocation, Manifest.Permission.AccessFineLocation }, 1);
+            //}
+
         }
 
         protected override void OnNewIntent(Android.Content.Intent intent)

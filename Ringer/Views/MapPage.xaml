@@ -21,6 +21,66 @@
     </ContentPage.BindingContext>
 
     <ContentPage.Resources>
+        <DataTemplate x:Key="LoadingEmptyViewTemplate">
+            <ContentView BackgroundColor="#DCDEDC">
+                <StackLayout Orientation="Horizontal"
+                                     HorizontalOptions="Center"
+                                     VerticalOptions="Center">
+                    <Label Text="위치 정보를 불러옵니다."
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Start"
+                                   TextColor="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
+                                   HeightRequest="20"
+                                   VerticalTextAlignment="Center"/>
+                    <ActivityIndicator HorizontalOptions="Start" VerticalOptions="Start"
+                                               Color="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
+                                               WidthRequest="20"
+                                               HeightRequest="20"
+                                               IsRunning ="True"/>
+                </StackLayout>
+            </ContentView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="PermissionEmptyViewTemplate">
+            <ContentView BackgroundColor="#DCDEDC" Padding="15,0">
+                <Frame HasShadow="False"
+                               CornerRadius="15">
+                    <StackLayout HorizontalOptions="Center"
+                                         VerticalOptions="CenterAndExpand"
+                                         WidthRequest="280">
+
+                        <Label Text="⚙️" FontSize="{OnPlatform iOS=80, Android=60}"
+                                   TextColor="Black"
+                                   HorizontalOptions="Center"
+                                   Margin="0,0,0,10"/>
+
+                        <Label Text="링거가 사용자의 위치 정보에 접근할 권한이 없습니다."
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Start"
+                                   LineBreakMode="CharacterWrap"
+                                   TextColor="#424242"
+                                   VerticalTextAlignment="Center"
+                                   Margin="0,0,0,5"/>
+
+                        <Label Text="{OnPlatform iOS='한 번 거부한 접근 권한은 설정 앱에서만 허용할 수 있습니다.',  Android='링거를 사용하시려면 위치 정보 접근 권한을 허용해야합니다.'}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Start"
+                                   LineBreakMode="CharacterWrap"
+                                   TextColor="#424242"
+                                   VerticalTextAlignment="Center"
+                                   Margin="0,0,0,20"/>
+
+                        <Button Text="{OnPlatform iOS='설정 앱 열기', Android='위치 정보 권한 설정'}"
+                                Padding="15,3"
+                                BackgroundColor="#2E78EF"
+                                FontSize="18"
+                                TextColor="White"
+                                Clicked="PermissionButton_Clicked"/>
+                    </StackLayout>
+                </Frame>
+            </ContentView>
+        </DataTemplate>
+
         <DataTemplate x:Key="FirstConsulateTemplate">
             <ContentView BackgroundColor="#DCDEDC"
                          Padding="15,0">
@@ -30,6 +90,40 @@
                         <Label Text="현재 위치" FontSize="20" TextColor="#1680CE"/>
                         <BoxView BackgroundColor="Gray" HeightRequest="1.4" Margin="0,6,0,8"/>
                         <Label Text="{Binding Address}" TextColor="#424242"/>
+                    </StackLayout>
+                </Frame>
+
+            </ContentView>
+        </DataTemplate>
+
+        <DataTemplate x:Key="KoreaConsulateTemplate">
+            <ContentView BackgroundColor="#DCDEDC"
+                         Padding="15,0">
+
+                <Frame HasShadow="False" Padding="20" CornerRadius="8">
+                    <StackLayout Spacing="0">
+                        <Label Text="현재 위치" FontSize="20" TextColor="#1680CE"/>
+                        <BoxView BackgroundColor="Gray" HeightRequest="1.4" Margin="0,6,0,8"/>
+                        <Label Text="{Binding Address}" TextColor="#424242"/>
+
+                        <Label Text="🚑🏥✈️"
+                               FontSize="{OnPlatform iOS=80, Android=65}"
+                               TextColor="Black"
+                               HorizontalOptions="Center"
+                               Margin="0,0,0,10"/>
+                        <Label Text="119와 가까운 병원을 이용하세요."
+                               HorizontalOptions="Start"
+                               VerticalOptions="Start"
+                               LineBreakMode="CharacterWrap"
+                               TextColor="#424242"
+                               VerticalTextAlignment="Center"/>
+                        <Label HorizontalOptions="Center"
+                               VerticalOptions="Start"
+                               LineBreakMode="CharacterWrap"
+                               TextColor="#424242"
+                               VerticalTextAlignment="Center"
+                               Text="링거는 해외에 체류 중인 한국인을 위한 서비스입니다. 출국 후 이용하세요."/>
+
                     </StackLayout>
                 </Frame>
 
@@ -92,35 +186,35 @@
                         </Label>
 
                         <StackLayout Orientation="Horizontal"
-                                                 HorizontalOptions="EndAndExpand"
-                                                 Spacing="8">
+                                     HorizontalOptions="EndAndExpand"
+                                     Spacing="8">
 
                             <Button Text="이메일"
-                                                Command="{Binding BindingContext.SendEmailCommand, Source={x:Reference mapPage}}"
-                                                CommandParameter="{Binding .}"
-                                                BackgroundColor="#1680CE"
-                                                Padding="{OnPlatform iOS='10,4', Android='5,2'}"
-                                                HeightRequest="24"
-                                                FontSize="{OnPlatform Android='11'}"
-                                                TextColor="White"/>
+                                    Command="{Binding BindingContext.SendEmailCommand, Source={x:Reference mapPage}}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#1680CE"
+                                    Padding="{OnPlatform iOS='10,4', Android='5,2'}"
+                                    HeightRequest="24"
+                                    FontSize="{OnPlatform Android='11'}"
+                                    TextColor="White"/>
 
                             <Button Text="홈페이지"
-                                                Command="{Binding BindingContext.OpenSiteCommand, Source={x:Reference mapPage}}"
-                                                CommandParameter="{Binding .}"
-                                                BackgroundColor="#1680CE"
-                                                Padding="{OnPlatform iOS='10,4', Android='5,2'}"
-                                                FontSize="{OnPlatform Android='11'}"
-                                                HeightRequest="24"
-                                                TextColor="White"/>
+                                    Command="{Binding BindingContext.OpenSiteCommand, Source={x:Reference mapPage}}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#1680CE"
+                                    Padding="{OnPlatform iOS='10,4', Android='5,2'}"
+                                    FontSize="{OnPlatform Android='11'}"
+                                    HeightRequest="24"
+                                    TextColor="White"/>
 
                             <Button Text="지도 열기"
-                                                Command="{Binding BindingContext.OpenMapCommand, Source={x:Reference mapPage}}"
-                                                CommandParameter="{Binding .}"
-                                                BackgroundColor="#1680CE"
-                                                Padding="{OnPlatform iOS='10,4', Android='5,2'}"
-                                                FontSize="{OnPlatform Android='11'}"
-                                                HeightRequest="24"
-                                                TextColor="White"/>
+                                    Command="{Binding BindingContext.OpenMapCommand, Source={x:Reference mapPage}}"
+                                    CommandParameter="{Binding .}"
+                                    BackgroundColor="#1680CE"
+                                    Padding="{OnPlatform iOS='10,4', Android='5,2'}"
+                                    FontSize="{OnPlatform Android='11'}"
+                                    HeightRequest="24"
+                                    TextColor="White"/>
 
                         </StackLayout>
 
@@ -150,7 +244,11 @@
         <helpers:ConsulateTemplateSelector x:Key="ConsulateSelector"
                                            FirstConsulateTemplate="{StaticResource FirstConsulateTemplate}"
                                            LastConsulateTemplate="{StaticResource LastConsulateTemplate}"
-                                           ConsulateTemplate="{StaticResource ConsulateTemplate}" />
+                                           ConsulateTemplate="{StaticResource ConsulateTemplate}"
+                                           KoreaConsulateTemplate="{StaticResource KoreaConsulateTemplate}"/>
+        <helpers:ConsulateEmptyViewSelector x:Key="ConsulateEmptyViewSelector"
+                                            LoadingTemplate="{StaticResource LoadingEmptyViewTemplate}"
+                                            PermissionTemplate="{StaticResource PermissionEmptyViewTemplate}"/>
     </ContentPage.Resources>
 
     <ContentPage.Content>
@@ -173,40 +271,20 @@
             <CollectionView x:Name="ConsulateCollectionView"
                             AbsoluteLayout.LayoutFlags="All"
                             AbsoluteLayout.LayoutBounds="0,1,1,.65"
-                            VerticalScrollBarVisibility="{OnPlatform iOS='Default', Android='Always'}"
+                            BackgroundColor="#DCDEDC"
                             SelectionMode="Single"
                             SelectionChanged="ConsulateCollectionView_SelectionChanged"
-                            Margin="0"
-                            BackgroundColor="#DCDEDC"
+                            VerticalScrollBarVisibility="{OnPlatform iOS='Default', Android='Always'}"
+                            EmptyView="{Binding EmptyState}"
+                            EmptyViewTemplate="{StaticResource ConsulateEmptyViewSelector}"
                             ItemsSource="{Binding Consulates}"
                             ItemTemplate="{StaticResource ConsulateSelector}">
 
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical"
-                                       ItemSpacing="15"/>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="15"/>
                 </CollectionView.ItemsLayout>
 
-                <!--Empty View-->
-                <CollectionView.EmptyView>
-                    <ContentView BackgroundColor="#DCDEDC">
-                        <StackLayout Orientation="Horizontal"
-                                     HorizontalOptions="Center"
-                                     VerticalOptions="Center">
-                            <Label Text="위치 정보를 불러옵니다."
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Start"
-                                   TextColor="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
-                                   HeightRequest="20"
-                                   VerticalTextAlignment="Center"/>
-                            <ActivityIndicator HorizontalOptions="Start" VerticalOptions="Start"
-                                               Color="{d:OnPlatform iOS='#2E78EF', Android='#2E78EF'}"
-                                               WidthRequest="20"
-                                               HeightRequest="20"
-                                               IsRunning ="True"/>
-                        </StackLayout>
-                    </ContentView>
-                </CollectionView.EmptyView>
-
+                <!--Header-->
                 <CollectionView.Header>
                     <BoxView BackgroundColor="#DCDEDC" HeightRequest="{OnPlatform Android=0, iOS=15}"/>
                 </CollectionView.Header>
@@ -217,11 +295,11 @@
                     <ContentView BackgroundColor="#DCDEDC" >
                         <Label Text="건강한 여행, 링거"
                                TextColor="LightSlateGray"
-                               IsVisible="False"
-                               FontSize="Large"
+                               IsVisible="True"
+                               FontSize="20"
                                FontAttributes="Bold"
                                HorizontalOptions="Center"
-                               Margin="{OnPlatform iOS='0,55', Android='0,55'}"/>
+                               Margin="{OnPlatform iOS='0,55', Android='0,45'}"/>
                     </ContentView>
 
                 </CollectionView.Footer>
@@ -229,15 +307,17 @@
             </CollectionView>
 
             <ImageButton Source="StartChatButton"
+                         IsVisible="{Binding IsBusy, Converter={x:StaticResource InverseBooleanConverter}}"
                     AbsoluteLayout.LayoutFlags="PositionProportional"
                     AbsoluteLayout.LayoutBounds=".95,.95,50,50"
                     Command="{Binding GoToChatPageCommand}"
-                    WidthRequest="80" HeightRequest="80"
                     BackgroundColor="Transparent"/>
 
-            <Button Text="토글" Clicked="Button_Clicked"
-                    BackgroundColor="Green"
-                    AbsoluteLayout.LayoutBounds="50,50,30,30"/>
+            <ActivityIndicator AbsoluteLayout.LayoutFlags="PositionProportional"
+                               AbsoluteLayout.LayoutBounds=".95,.95,50,50"
+                               IsRunning="True"
+                               IsEnabled="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"/>
 
         </AbsoluteLayout>
     </ContentPage.Content>

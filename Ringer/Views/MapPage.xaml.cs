@@ -5,6 +5,7 @@ using Xamarin.Forms.Xaml;
 using Xamarin.Forms.Maps;
 using Ringer.ViewModels;
 using Ringer.Models;
+using Ringer.Services;
 using Xamarin.Essentials;
 
 namespace Ringer.Views
@@ -18,13 +19,24 @@ namespace Ringer.Views
         {
             InitializeComponent();
             BindingContext = vm = new MapPageViewModel();
+            MessagingCenter.Subscribe<App>(this, "Resumed", app => OnAppearing());
         }
 
         protected async override void OnAppearing()
         {
             base.OnAppearing();
-            //await vm.RefreshConsulatesAsync();
-            //MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
+
+            if (await vm.RefreshConsulatesAsync())
+            {
+                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
+            }
+            else if (Device.RuntimePlatform is Device.Android)
+            {
+                if (Navigation.ModalStack.LastOrDefault() is PermissionsPage)
+                    return;
+
+                await Navigation.PushModalAsync(new PermissionsPage(), true);
+            }
         }
 
         private void MoveMap(double lat, double lon, string labelString = null, string address = null)
@@ -66,14 +78,13 @@ namespace Ringer.Views
             MoveMap(consulate.Latitude, consulate.Longitude, consulate.KoreanName, consulate.Address);
         }
 
-        async void Button_Clicked(object sender, EventArgs e)
+        private async void PermissionButton_Clicked(object sender, EventArgs e)
         {
-            if (vm.Consulates.Any())
-                vm.Consulates.Clear();
-            else
-                await vm.RefreshConsulatesAsync();
+            if (Device.RuntimePlatform is Device.iOS)
+                AppInfo.ShowSettingsUI();
 
-            AppInfo.ShowSettingsUI();
+            if (Device.RuntimePlatform is Device.Android)
+                await Navigation.PushModalAsync(new PermissionsPage());
         }
     }
 }

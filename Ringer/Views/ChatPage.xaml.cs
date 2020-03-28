@@ -91,7 +91,7 @@ namespace Ringer.Views
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
 
-            vm.InitializeMessages();
+            //vm.InitializeMessages();
 
             App.IsChatPage = false;
 
