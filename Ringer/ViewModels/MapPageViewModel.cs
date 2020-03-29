@@ -18,6 +18,7 @@ namespace Ringer.ViewModels
     {
         private readonly ILocationService location;
         private readonly IMessaging messaging;
+        private bool refreshing;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<Infomation> Infomations { get; set; }
@@ -65,6 +66,14 @@ namespace Ringer.ViewModels
 
         public async Task<bool> RefreshConsulatesAsync()
         {
+            if (refreshing)
+            {
+                refreshing = false;
+                return true;
+            }
+
+            refreshing = true;
+
             if (Consulates.Any())
                 Consulates.Clear();
 
@@ -72,10 +81,13 @@ namespace Ringer.ViewModels
             {
                 await location.RefreshAsync();
                 EmptyState = "Loading";
+
+                refreshing = false;
                 return true;
             }
 
             EmptyState = "Permission";
+            refreshing = false;
             return false;
         }
 

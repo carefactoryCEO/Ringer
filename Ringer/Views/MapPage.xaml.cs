@@ -29,7 +29,7 @@ namespace Ringer.Views
 
             if (await vm.RefreshConsulatesAsync())
             {
-                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude, "현재 위치");
+                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
             }
             else if (Device.RuntimePlatform is Device.Android)
             {
