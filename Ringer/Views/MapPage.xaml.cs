@@ -7,6 +7,7 @@ using Ringer.ViewModels;
 using Ringer.Models;
 using Ringer.Services;
 using Xamarin.Essentials;
+using System.Threading.Tasks;
 
 namespace Ringer.Views
 {
@@ -28,13 +29,14 @@ namespace Ringer.Views
 
             if (await vm.RefreshConsulatesAsync())
             {
-                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
+                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude, "현재 위치");
             }
             else if (Device.RuntimePlatform is Device.Android)
             {
                 if (Navigation.ModalStack.LastOrDefault() is PermissionsPage)
                     return;
 
+                await Task.Delay(500);
                 await Navigation.PushModalAsync(new PermissionsPage(), true);
             }
         }
