@@ -50,7 +50,7 @@ namespace Ringer.ViewModels
         public string TextToSend { get; set; } = string.Empty;
         public string NavBarTitle { get; set; } = App.IsLoggedIn ? App.UserName : "로그인";
         public string Title { get; set; } = "링거 상담실";
-        public double NavBarHeight { get; set; } = 0;
+        public double NavBarHeight { get; set; }
         public Keyboard Keyboard { get; set; } = Keyboard.Chat;
         public Thickness BottomPadding { get; set; }
         public ObservableCollection<MessageModel> Messages { get; set; }
@@ -183,16 +183,6 @@ namespace Ringer.ViewModels
             await _messaging.DisconnectAsync();
             await LogInProcessAsync();
         }
-        private void ChangeKeyboardStatus(bool show, Keyboard keyboard = default)
-        {
-            IsProcessingLogin = !show;
-            IsBusy = !show;
-
-            MessagingCenter.Send(this, "ShowOrHideKeyboard", show);
-
-            if (show)
-                Keyboard = keyboard;
-        }
         private async Task HideKeyboard(int delay = 1000)
         {
             await Task.Delay(delay);
@@ -202,14 +192,14 @@ namespace Ringer.ViewModels
 
             MessagingCenter.Send(this, "ShowOrHideKeyboard", false);
         }
-
         private async Task ShowKeyboard(Keyboard keyboard = default, int delayBefore = 1000)
         {
+            Keyboard = keyboard;
+
             await Task.Delay(delayBefore);
 
             IsProcessingLogin = false;
             IsBusy = false;
-            Keyboard = keyboard;
 
             MessagingCenter.Send(this, "ShowOrHideKeyboard", true);
         }

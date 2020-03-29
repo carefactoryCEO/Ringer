@@ -46,10 +46,10 @@ namespace Ringer.iOS.Renderers
             CGSize keyboardSize = result.RectangleFValue.Size;
             if (Element != null)
             {
-                var chatInputbarView = (InputBarView)Element;
+                var inputbarView = (InputBarView)Element;
 
-                Element.Margin = new Thickness(0, 0, 0, keyboardSize.Height - chatInputbarView.Padding.Bottom); //push the entry up to keyboard height when keyboard is activated
-                chatInputbarView.NotifyListScroll();
+                Element.Margin = new Thickness(0, 0, 0, keyboardSize.Height - inputbarView.Padding.Bottom); //push the entry up to keyboard height when keyboard is activated
+                inputbarView.NotifyListScroll();
             }
         }
 

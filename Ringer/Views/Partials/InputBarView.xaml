@@ -18,7 +18,7 @@
         </ResourceDictionary>
     </ContentView.Resources>
 
-    <Grid Style="{StaticResource InputBarStyle}">
+    <Grid Style="{StaticResource InputBarStyle}" x:Name="InputGrid">
 
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -37,22 +37,21 @@
                      Grid.Row="0"/>
 
         <!-- Editor -->
-        <controls:ExtendedEditorControl
-            x:Name="RingerEditor"
-            Text="{Binding TextToSend}"
-            IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-            HeightRequest="{OnPlatform iOS=38}"
-            CornerRadius="19"
-            HasRoundedCorner="True"
-            Keyboard="{Binding Keyboard}"
-            IsExpandable="True"
-            AutoSize="Disabled"
-            HorizontalOptions="Fill"
-            Focused="RingerEditor_Focused"
-            VerticalOptions="Center"
-            Margin="{OnPlatform iOS='60,0,30,0', Android='60,0,32,0'}"
-            FontSize="{OnPlatform iOS=18, Android=16}"
-            Grid.Row="0"/>
+        <controls:ExtendedEditorControl x:Name="RingerEditor"
+                                        Text="{Binding TextToSend}"
+                                        IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
+                                        HeightRequest="{OnPlatform iOS=38}"
+                                        CornerRadius="19"
+                                        HasRoundedCorner="True"
+                                        Keyboard="{Binding Keyboard}"
+                                        IsExpandable="True"
+                                        AutoSize="Disabled"
+                                        HorizontalOptions="Fill"
+                                        Focused="RingerEditor_Focused"
+                                        VerticalOptions="Center"
+                                        Margin="{OnPlatform iOS='60,0,30,0', Android='60,0,32,0'}"
+                                        FontSize="{OnPlatform iOS=18, Android=16}"
+                                        Grid.Row="0"/>
 
         <!-- Send Button -->
         <ImageButton Source="SendButton"

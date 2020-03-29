@@ -6,8 +6,8 @@
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
              x:Class="Ringer.Views.ChatPage"
-             Title="{Binding Title}"
              x:Name="ChatContentPage"
+             Title="{Binding Title}"
              Shell.BackgroundColor="Black"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
@@ -57,8 +57,7 @@
         <!-- Navigation Bar -->
         <StackLayout Grid.Row="0" Orientation="Horizontal"
                      BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
-                     HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9"
-                     Padding="{OnPlatform Android='0,0,0,0', iOS='0,0,0,0'}">
+                     HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9">
 
             <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
                    Source="BackButton"
@@ -84,7 +83,6 @@
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
                     Command="{Binding ResetCommand}"
-                    Clicked="Reset_Clicked"
                     Text="Reset"/>
 
         </StackLayout>
