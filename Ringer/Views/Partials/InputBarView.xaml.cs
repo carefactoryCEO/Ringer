@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Ringer.ViewModels;
-using Ringer.Views.Controls;
 using Xamarin.Forms;
 
 namespace Ringer.Views.Partials
@@ -16,19 +13,19 @@ namespace Ringer.Views.Partials
         {
             InitializeComponent();
 
-            if (Device.RuntimePlatform == Device.iOS)
+            //if (Device.RuntimePlatform == Device.iOS)
+            //{
+            SizeChanged += (s, e) =>
             {
-                SizeChanged += (s, e) =>
+                if (Height > _previousHeight)
                 {
-                    if (Height > _previousHeight)
-                    {
-                        Debug.WriteLine("--------------------Editor expanded-----------------------");
-                        //NotifyListScroll();
-                    }
+                    Debug.WriteLine("--------------------Editor expanded-----------------------");
+                    NotifyListScroll();
+                }
 
-                    _previousHeight = Height;
-                };
-            }
+                _previousHeight = Height;
+            };
+            //}
 
             MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "CameraActionCompleted", (s, e) =>
             {
@@ -40,16 +37,13 @@ namespace Ringer.Views.Partials
                 });
             });
 
-            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", async (sender, showing) =>
+            MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", (sender, showing) =>
             {
                 if (!showing)
                     RingerEditor.Unfocus();
 
                 if (showing)
-                {
-                    await Task.Delay(100);
                     RingerEditor.Focus();
-                }
             });
         }
 

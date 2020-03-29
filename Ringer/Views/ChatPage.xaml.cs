@@ -58,7 +58,8 @@ namespace Ringer.Views
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
-                    chatInputBarView.IsVisible = showing;
+                    chatInputBarView.FindByName<Grid>("InputGrid").IsVisible = showing;
+                    //chatInputBarView.IsVisible = showing;
                     MessageFeed.ScrollToLast();
                 });
             });
@@ -67,6 +68,9 @@ namespace Ringer.Views
             {
                 MainThread.BeginInvokeOnMainThread(() =>
                 {
+                    if (Device.RuntimePlatform == Device.Android)
+                        InvalidateMeasure();
+
                     MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
                 });
             });
@@ -115,19 +119,8 @@ namespace Ringer.Views
         #region private methods (include event handlers)
         private void OnListShouldBeScrolled(object sender, EventArgs e)
         {
-            if (Device.RuntimePlatform == Device.iOS)
-                MessageFeed.ScrollToLast();
-        }
-        private void Reset_Clicked(object sender, EventArgs e)
-        {
-
-        }
-        private void Button_Clicked(object sender, EventArgs e)
-        {
-            //chatInputBarView.IsVisible = false;
-            //datePicker.Focus();
-
-            //await Navigation.PushModalAsync(new MediaPage());
+            //if (Device.RuntimePlatform == Device.iOS)
+            MessageFeed.ScrollToLast();
         }
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)
         {
@@ -136,11 +129,6 @@ namespace Ringer.Views
         private void TapGestureRecognizer_Tapped(object sender, EventArgs e)
         {
             Navigation.PopAsync();
-        }
-
-        void ChatInputBarView_KeyboardShuldBeShown(System.Object sender, bool e)
-        {
-            DisplayAlert($"{e}", "keyboard should be shown invoked", "close");
         }
         #endregion
     }
