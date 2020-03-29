@@ -39,5 +39,10 @@ namespace Ringer.Views
             AppInfo.ShowSettingsUI();
             await Navigation.PopModalAsync(true);
         }
+
+        async void ImageButton_Clicked(System.Object sender, System.EventArgs e)
+        {
+            await Navigation.PopModalAsync(true);
+        }
     }
 }

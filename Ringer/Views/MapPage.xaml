@@ -106,7 +106,7 @@
                         <BoxView BackgroundColor="Gray" HeightRequest="1.4" Margin="0,6,0,8"/>
                         <Label Text="{Binding Address}" TextColor="#424242"/>
 
-                        <Label Text="🚑🏥✈️"
+                        <Label Text="🏥🚑 🛫"
                                FontSize="{OnPlatform iOS=80, Android=65}"
                                TextColor="Black"
                                HorizontalOptions="Center"

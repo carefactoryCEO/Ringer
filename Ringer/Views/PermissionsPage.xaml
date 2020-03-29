@@ -2,12 +2,49 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Ringer.Views.PermissionsPage">
+    <ContentPage.Resources>
+        <Style TargetType="Button">
+            <Setter Property="BackgroundColor" Value="{StaticResource ButtonBackgroundColor}" />
+            <Setter Property="TextColor" Value="{StaticResource White}" />
+            <Setter Property="Margin" Value="0,5,0,10"/>
+        </Style>
+    </ContentPage.Resources>
     <ContentPage.Content>
-        <StackLayout>
-            <Label Text="permission requested"/>
-            <Button Text="위치 정보를 허용할까요?" Clicked="LocationRequested"/>
-            <Button Text="설정 앱 열기" Clicked="AppSettingRequested"/>
+        <ContentView BackgroundColor="#ededed">
+            <Frame HasShadow="False"
+                   Margin="50"
+                   VerticalOptions="CenterAndExpand"
+                   
+                   CornerRadius="15">
 
-        </StackLayout>
+                <StackLayout Padding="20">
+
+                    <StackLayout Orientation="Horizontal">
+
+                        <Label Text="위치 정보 권한 설정"
+                               FontSize="20"
+                               HorizontalOptions="Start"/>
+
+                        <ImageButton Source="{FontImage Glyph={StaticResource IconClose},
+                                                  FontFamily={StaticResource MaterialFontFamily},
+                                                  Color={StaticResource Black}}"
+                                     HorizontalOptions="EndAndExpand"
+                                     BackgroundColor="Transparent"
+                                     Clicked="ImageButton_Clicked"/>
+
+                    </StackLayout>
+
+                    <Label Text="링거를 사용하시려면 위치 정보 접근 권한을 허용해 주셔야 합니다."
+                           Margin="0,15,0,0"/>
+                    <Button Text="위치 정보를 허용할까요?" Clicked="LocationRequested" />
+
+                    <Label Text="이전 팝업에서 '다시 묻지 않음'을 선택하셨다면 직접 설정 .앱에서 위치 정보를 수정하셔야 합니다."
+                           Margin="0,15,0,0"/>
+                    <Button Text="설정 앱 열기" Clicked="AppSettingRequested" />
+
+
+                </StackLayout>
+            </Frame>
+        </ContentView>
     </ContentPage.Content>
 </ContentPage>

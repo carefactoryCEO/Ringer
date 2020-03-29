@@ -82,6 +82,8 @@
             <Color x:Key="MessageTextColor">#111111</Color>
             <Color x:Key="MessageUnreadCountTextColoir">#FFEB03</Color>
 
+            <Color x:Key="ButtonBackgroundColor">#2E78EF</Color>
+
             <!-- Messages Feed -->
             <Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>
             <!--<Color x:Key="MessagesFeedBackgroundColor">#DCDEDC</Color>-->
