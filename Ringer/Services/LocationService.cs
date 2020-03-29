@@ -47,17 +47,8 @@ namespace Ringer.Services
 
         public async Task RefreshAsync()
         {
-            if (await CheckStatusAsync<LocationWhenInUse>() != PermissionStatus.Granted)
-                return;
-
-            // check location permission
-            // if not
-            // go to permission page
-
-            // get current location and display it
             try
             {
-                // TODO: Location permission check here
                 var request = new GeolocationRequest(GeolocationAccuracy.Medium);
 
                 var location = await Geolocation.GetLastKnownLocationAsync() ?? await Geolocation.GetLocationAsync(request);
@@ -98,6 +89,8 @@ namespace Ringer.Services
                     CurrentAddress = geocodeAddress;
                     CurrentCountryCode = placemark.CountryCode;
                 }
+
+
 
                 Consulates = await api.GetConsulatesByCoordinateAsync(CurrentLatitude, CurrentLongitude);
 
