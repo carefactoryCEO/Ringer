@@ -107,14 +107,14 @@ namespace Ringer.HubServer.Controllers
             return Ok();
         }
 
-        [HttpGet("list")]
-        public async Task<ActionResult<string>> GetListAsync()
-        {
-            var rooms = await _dbContext.Rooms.ToListAsync();
-            var response = JsonSerializer.Serialize<List<Room>>(rooms);
+        //[HttpGet("list")]
+        //public async Task<ActionResult<string>> GetListAsync()
+        //{
+        //    var rooms = await _dbContext.Rooms.ToListAsync();
+        //    var response = JsonSerializer.Serialize<List<Room>>(rooms);
 
-            return Ok(response);
-        }
+        //    return Ok(response);
+        //}
 
         [HttpPost("register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterInfo registerInfo)
@@ -142,16 +142,43 @@ namespace Ringer.HubServer.Controllers
         public async Task<ActionResult> StaffLoginAsync([FromBody]LoginInfo loginInfo)
         {
             var user = await _userService.LogInAsync(loginInfo.Email, loginInfo.Password);
-            var secretKey = _configuration["SecurityKey"];
 
             if (user == null)
                 return BadRequest();
 
-            loginInfo.DeviceId ??= "deviceId";
-            user.Name ??= "name here";
+            if (!user.Devices.Any(d => d.Id == loginInfo.DeviceId))
+            {
+                // 디바이스가 디비에 존재하면 다른 유저가 이 디바이스를 사용했었던 것임.
+                var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == loginInfo.DeviceId);
+
+                if (device != null)
+                {
+                    // 디바이스의 오너를 현재 유저로 변경한다.
+                    device.Owner = user;
+                }
+                else
+                {
+                    user.Devices.Add(new Device
+                    {
+                        Id = loginInfo.DeviceId,
+                        DeviceType = loginInfo.DeviceType,
+                    });
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+
+            var secretKey = _configuration["SecurityKey"];
 
             var token = user.JwtToken(loginInfo, secretKey);
-            var response = new { Token = token, RoomId = "room id here" };
+            var response = new LoginResponse
+            {
+                token = token,
+                roomId = null,
+                userId = user.Id,
+                success = true,
+                userName = user.Name
+            };
 
             return Ok(response);
         }

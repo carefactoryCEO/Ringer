@@ -18,7 +18,7 @@ namespace Ringer.ConsoleApp
         static bool server = false;
         static string hubUrl => server ? "https://ringerhub.azurewebsites.net/hubs/chat" : "https://localhost:5001/hubs/chat";
         static string tokenUrl => server ? "https://ringerhub.azurewebsites.net/auth/login" : "https://localhost:5001/auth/login";
-        static string listUrl => server ? "https://ringerhub.azurewebsites.net/auth/list" : "https://localhost:5001/auth/list";
+        static string listUrl => server ? "https://ringerhub.azurewebsites.net/rooms/list" : "https://localhost:5001/rooms/list";
         static readonly MessagingService messagingService = new MessagingService();
 
         static HttpResponseMessage response;
@@ -66,6 +66,8 @@ namespace Ringer.ConsoleApp
             var token = responseObject.token;
 
             Console.WriteLine($"Got Token: " + token);
+
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
 
             #endregion
 

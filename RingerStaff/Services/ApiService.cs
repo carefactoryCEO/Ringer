@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -15,7 +16,7 @@ namespace RingerStaff.Services
 {
     public static class ApiService
     {
-        static HttpClient _client = new HttpClient();
+        static readonly HttpClient _client = new HttpClient();
 
         /// <summary>
         /// 서버에서 토큰을 받아온다.
@@ -44,9 +45,12 @@ namespace RingerStaff.Services
             if (response.StatusCode == HttpStatusCode.OK)
             {
                 var responseString = await response.Content.ReadAsStringAsync();
-                var responseObject = JsonSerializer.Deserialize<LoginResponse>(responseString);
+                LoginResponse loginResult = JsonSerializer.Deserialize<LoginResponse>(responseString);
 
-                return responseObject.token;
+                App.UserId = loginResult.userId;
+                App.UserName = loginResult.userName;
+
+                return loginResult.token;
             }
 
             return null;
@@ -60,9 +64,27 @@ namespace RingerStaff.Services
             public string[] Enrollments { get; set; }
         }
 
-        public static async Task<List<RoomModel>> LoadRoomsAsync()
+        public static async Task<string> GetRoomNameByIdAsync(string roomId)
         {
-            // header에 토큰을 넣는다.
+            try
+            {
+                if (!_client.DefaultRequestHeaders.Contains("Authorization"))
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + App.Token);
+
+                var url = App.BaseUrl + $"/rooms/name?roomId={roomId}";
+                var result = await _client.GetStringAsync(url);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                return null;
+            }
+        }
+
+        public static async Task<List<RoomInformation>> LoadRoomsAsync()
+        {
             if (App.IsLoggedIn)
             {
                 try
@@ -70,60 +92,47 @@ namespace RingerStaff.Services
                     if (!_client.DefaultRequestHeaders.Contains("Authorization"))
                         _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + App.Token);
 
-                    string response = await _client.GetStringAsync(App.BaseUrl + "/auth/list");
+                    string response = await _client.GetStringAsync(App.BaseUrl + "/rooms/room-with-informations");
 
-                    Debug.WriteLine($"ApiService.LoadRoomAsync(): {response}");
+                    var rooms = JsonSerializer.Deserialize<List<RoomInformation>>(response, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                    var rooms = JsonSerializer.Deserialize<List<RoomsResponse>>(response);
-
-                    var roomModels = new List<RoomModel>();
-                    foreach (var room in rooms)
-                        roomModels.Add(new RoomModel { Id = room.Id, Title = room.Name });
-
-                    return roomModels;
-
-
-                    //if (response.StatusCode == HttpStatusCode.OK)
-                    //{
-                    //    var responseContent = await apiResponse.Content.ReadAsStringAsync();
-                    //    var obj = JsonSerializer.Deserialize<RoomsResponse>(responseContent);
-
-                    //    foreach (var room in obj.rooms)
-                    //        Debug.WriteLine(room);
-                    //}
+                    return rooms;
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex);
                 }
-
             }
+            return null;
+        }
 
+        public static async Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token)
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
 
-            // Api -> get room id list from server
-
-            // foreach room id : get lastMessage -> lastmessage.Body, lastMessage.arrivedAt, unread count
-
-
-            var result = new List<RoomModel>
+            try
             {
-                new RoomModel
-                {
-                    Title = "신모범 43M 시카고(미국) 두통",
-                    LastMessage = "어제부터 오른쪽 관자놀이가 아프더라구요.",
-                    LastMessageArrivedAt = DateTime.Now.Subtract(TimeSpan.FromHours(1)),
-                    UnreadMessagesCount = 5
-                },
-                new RoomModel
-                {
-                    Title = "김순용 39M 방콕(태국) 무좀",
-                    LastMessage = "어렸을 때부터 오른발에 무좀이 심했어요.",
-                    LastMessageArrivedAt = DateTime.Now.Subtract(TimeSpan.FromMinutes(58)),
-                    UnreadMessagesCount = 4
-                }
-            };
+                string requestUri = $"{App.PendingUrl}?roomId={roomId}&lastId={lastMessageId}";
+                var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
-            return result;
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException("request failed");
+
+                // TODO if token expired -> response.StatusCode
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new HttpRequestException("unauthorized");
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
+
+                return pendingMessages;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return null;
+            }
         }
     }
 }

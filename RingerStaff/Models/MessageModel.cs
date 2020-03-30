@@ -7,6 +7,7 @@ namespace RingerStaff.Models
     public class MessageModel : BaseViewModel
     {
         public int Id { get; set; }
+        public int ServerId { get; set; }
         public string Body { get; set; }
         public string Sender { get; set; }
         public int SenderId { get; set; }
