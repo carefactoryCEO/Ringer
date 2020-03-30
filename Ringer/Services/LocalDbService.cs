@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
@@ -8,59 +9,85 @@ namespace Ringer.Services
 {
     public interface ILocalDbService
     {
-        Task<List<Message>> GetMessagesAsync(bool desc);
-        Task<Message> GetMessageAsync(int id);
-        Task<int> SaveMessageAsync(Message message, bool update = false);
+        Task<List<MessageModel>> GetMessagesAsync(int take = 50, int skip = 0);
+        Task<MessageModel> GetLastMessageAsync(string roomId);
+        Task<MessageModel> GetSentMessageAsync(string roomId);
+        Task<MessageModel> SaveMessageAsync(MessageModel message);
+        Task<MessageModel> UpdateMessageAsync(MessageModel message);
         Task ResetMessagesAsync();
-        Task<Message> GetLastMessage(string currentRoomId);
-        Task<int> GetLastMessageIndexAsync(string currentRoomId);
+        Task<MessageModel> GetMessageAsync(int id);
+        Task<bool> HasServerIdAsync(MessageModel message);
     }
 
     public class LocalDbService : ILocalDbService
     {
-        private SQLiteAsyncConnection _database;
+        private readonly SQLiteAsyncConnection _database;
+        private AsyncTableQuery<MessageModel> _messageTable;
 
         public LocalDbService()
         {
+            Utility.Trace(Constants.DbPath);
             _database = new SQLiteAsyncConnection(Constants.DbPath);
-            _database.CreateTableAsync<Message>().Wait();
+            _database.CreateTableAsync<MessageModel>().Wait();
+            _messageTable = _database.Table<MessageModel>();
         }
 
-        public Task<List<Message>> GetMessagesAsync(bool desc = false)
+        public async Task<List<MessageModel>> GetMessagesAsync(int take = 50, int skip = 0)
         {
-            if (desc)
-                return _database.Table<Message>().Where(m => m.RoomId == App.CurrentRoomId).OrderByDescending(m => m.Id).ToListAsync();
+            // 날짜의 역순으로 skip만큼 띄고, take만큼 선택
+            List<MessageModel> messageModels =
+                await _messageTable
+                    .Where(m => m.RoomId == App.RoomId)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Skip(skip)
+                    .Take(take)
+                    .ToListAsync();
 
-            return _database.Table<Message>().Where(m => m.RoomId == App.CurrentRoomId).ToListAsync();
-        }
-        public Task<Message> GetMessageAsync(int id)
-        {
-            return _database.Table<Message>()
-                .Where(m => m.Id == id)
-                .FirstOrDefaultAsync();
-        }
-        public Task<int> SaveMessageAsync(Message message, bool update = false)
-        {
-            if (update)
-                return _database.UpdateAsync(message);
+            // 날짜순 정렬
+            messageModels.Reverse();
 
-            return _database.InsertAsync(message);
+            return messageModels;
+        }
+        public Task<MessageModel> GetSentMessageAsync(string roomId)
+        {
+            return _messageTable
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync(m => m.RoomId == roomId && m.ServerId == -1);
+        }
+        public Task<MessageModel> GetLastMessageAsync(string roomId)
+        {
+            return _messageTable
+                .OrderByDescending(m => m.CreatedAt)
+                .FirstOrDefaultAsync(m => m.RoomId == roomId);
+        }
+        public async Task<MessageModel> SaveMessageAsync(MessageModel message)
+        {
+            if (await _database.InsertAsync(message) > 0)
+                return message;
+
+            return null;
+        }
+
+        public async Task<bool> HasServerIdAsync(MessageModel message)
+        {
+            return await _messageTable.FirstOrDefaultAsync(m => m.ServerId == message.ServerId) is MessageModel;
+        }
+
+        public async Task<MessageModel> UpdateMessageAsync(MessageModel message)
+        {
+            if (await _database.UpdateAsync(message) > 0)
+                return message;
+
+            return null;
         }
         public Task ResetMessagesAsync()
         {
-            return _database.DeleteAllAsync<Message>();
+            return _database.DeleteAllAsync<MessageModel>();
         }
-        public async Task<int> GetLastMessageIndexAsync(string currentRoomId)
+
+        public Task<MessageModel> GetMessageAsync(int id)
         {
-            var message = await GetLastMessage(currentRoomId);
-            return message?.Id ?? 0;
-        }
-        public Task<Message> GetLastMessage(string currentRoomId)
-        {
-            return _database.Table<Message>()
-                .Where(m => m.RoomId == currentRoomId)
-                .OrderByDescending(m => m.Id)
-                .FirstOrDefaultAsync();
+            return _messageTable.FirstOrDefaultAsync(m => m.Id == id);
         }
     }
 }

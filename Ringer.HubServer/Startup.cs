@@ -32,20 +32,17 @@ namespace Ringer.HubServer
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            if (_env.IsProduction())
-            {
-                // context
-                services.AddDbContext<RingerDbContext>(options =>
-                        options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
+            // services.AddCors(options =>
+            // {
+            //     options.AddPolicy("allow",
+            //     builder =>
+            //     {
+            //         builder.WithOrigins("https://localhost:5003", "http://localhost:5002").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+            //     });
+            // });
 
-                // db migration
-                //using var context = services.BuildServiceProvider().GetService<RingerDbContext>();
-                //context.Database.Migrate();
-
-            }
-            else
-                services.AddDbContext<RingerDbContext>(options =>
-                        options.UseSqlite(Configuration.GetConnectionString("RingerDbContext")));
+            services.AddDbContext<RingerDbContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
 
 
             // security key
@@ -101,6 +98,11 @@ namespace Ringer.HubServer
 
             });
 
+            services.AddSpaStaticFiles(options =>
+            {
+                options.RootPath = "wwwroot";
+            });
+
             services.AddControllers();
 
             services.AddSignalR();
@@ -147,13 +149,15 @@ namespace Ringer.HubServer
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // migrate any database changes on startup (includes initial db creation)
-            using (var scope = app.ApplicationServices.CreateScope())
-                scope.ServiceProvider.GetService<RingerDbContext>().Database.Migrate();
+            // using (var scope = app.ApplicationServices.CreateScope())
+            //     scope.ServiceProvider.GetService<RingerDbContext>().Database.Migrate();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // app.UseCors("allow");
 
             app.UseSwagger();
 
@@ -173,6 +177,15 @@ namespace Ringer.HubServer
             {
                 endpoints.MapHub<ChatHub>("/Hubs/Chat");
                 endpoints.MapControllers();
+            });
+
+            app.UseSpaStaticFiles();
+            app.UseSpa(builder =>
+            {
+                if (env.IsDevelopment())
+                {
+                    builder.UseProxyToSpaDevelopmentServer("http://localhost:8080");
+                }
             });
         }
     }

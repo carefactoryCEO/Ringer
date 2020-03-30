@@ -67,28 +67,14 @@ namespace RingerStaff.Services
 
                 new MessageModel
                 {
-                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-                    // https://ringerstoragekr.blob.core.windows.net/ringer/test.mp4
                     Body = "https://ringerstoragekr.blob.core.windows.net/ringer/test.mp4",
                     Sender = "video",
                     MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
                     UnreadCount = 1
                 },
 
-                //new MessageModel
-                //{
-                //    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-                //    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
-                //    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV",
-                //    Sender = "video",
-                //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
-                //    UnreadCount = 1
-                //},
-
                 new MessageModel
                 {
-                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-                    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
                     Body = "https://ringerstoragekr.blob.core.windows.net/ringer/android.mp4",
                     Sender = "video",
                     MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
@@ -97,9 +83,7 @@ namespace RingerStaff.Services
 
                 new MessageModel
                 {
-                    //Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
-                    //      https://ringerstoragekr.blob.core.windows.net/ringer/test2.MOV
-                    Body = "https://clips.vorwaerts-gmbh.de/big_buck_bunny.mp4",
+                    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/BigBuckBunny.mp4",
                     Sender = "video",
                     MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
                     UnreadCount = 1
@@ -122,6 +106,15 @@ namespace RingerStaff.Services
 
                 },
 
+                // https://ringerstoragekr.blob.core.windows.net/ringer/VIDEO_20200312_132905.mp4
+
+                new MessageModel
+                {
+                    Body = "https://ringerstoragekr.blob.core.windows.net/ringer/VIDEO_20200312_132905.mp4",
+                    Sender = "video",
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing | MessageTypes.Video,
+                    UnreadCount = 1
+                },
 
             };
 

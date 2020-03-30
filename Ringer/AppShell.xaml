@@ -5,6 +5,7 @@
        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        mc:Ignorable="d"
        xmlns:local="clr-namespace:Ringer.Views"
+       BackgroundColor="Black"
        Title="Ringer"
        x:Class="Ringer.AppShell">
 
@@ -27,7 +28,4 @@
     </Shell.Resources>
 
     <ShellContent ContentTemplate="{DataTemplate local:MapPage}" Route="mappage"/>
-    <!--<ShellContent ContentTemplate="{DataTemplate local:MapPage}" Route="mappage"/>
-    <ShellContent ContentTemplate="{DataTemplate local:ChatPage}" Route="chatpage"/>
-    <ShellContent ContentTemplate="{DataTemplate local:VidyoPage}" Route="vidyopage"/>-->
 </Shell>

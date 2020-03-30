@@ -14,8 +14,10 @@ namespace Ringer.Helpers
         public static readonly string HubUrl = BaseUrl + "/hubs/chat";
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
         public static readonly string ReportUrl = BaseUrl + "/auth/report";
+        public static readonly string InformationUrl = BaseUrl + "/information";
+        public static readonly string ConsulateUrl = InformationUrl + "/consulates";
         public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");
-        public static readonly string System = "system";
+        public static readonly string System = "링거";
 
         // Camera action
         public static readonly string Title = "작업을 선택하세요.";
@@ -25,6 +27,23 @@ namespace Ringer.Helpers
         public static readonly string AttachingPhoto = "사진 불러오기";
         public static readonly string TakingVideo = "동영상 촬영";
         public static readonly string AttachingVideo = "동영상 불러오기";
+
+        public static readonly string BlobContainerName = "ringer";
+        public static readonly string BlobStorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=ringerstoragekr;AccountKey=D3egnQI+dAWuKGMEjR10TaSe+2VtxHP2PMCivX6AlyvKEYBdaLZgxb8U7U0QQooRG5NJa/iQkjMFJ452Em+QLg==;EndpointSuffix=core.windows.net";
+
+        // Message
+        public static readonly int MessageCount = 100;
+        public static readonly string ImagePlaceholder = "https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg";
+
+        public static readonly string DisconnectedString = "Disconnected";
+
+        public static readonly string PushNotificationString = "pushNotification";
+        public static readonly string LocalNotificationString = "localNotification";
+        public static readonly string ChatPageUriFromLocalNotification = $"//mappage/chatpage?from={LocalNotificationString}";
+        public static readonly string ChatPageUriFromPushNotification = $"//mappage/chatpage?from={PushNotificationString}";
+
+        public static readonly string RingerPhoneNumber = "+82-10-2922-7428";
+        public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";
 
     }
 }

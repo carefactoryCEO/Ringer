@@ -2,121 +2,91 @@
 using System.Linq;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
-using Xamarin.Essentials;
 using Xamarin.Forms.Maps;
-using Ringer.Models;
-using System.Threading.Tasks;
 using Ringer.ViewModels;
-using Map = Xamarin.Forms.Maps.Map;
-using System.Diagnostics;
+using Ringer.Models;
+using Ringer.Services;
+using Xamarin.Essentials;
+using System.Threading.Tasks;
 
 namespace Ringer.Views
 {
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class MapPage : ContentPage
     {
-        #region constructor
+        private readonly MapPageViewModel vm;
+
         public MapPage()
         {
             InitializeComponent();
+            BindingContext = vm = new MapPageViewModel();
+            MessagingCenter.Subscribe<App>(this, "Resumed", app => OnAppearing());
         }
-        #endregion
 
-        #region override methods
         protected async override void OnAppearing()
         {
             base.OnAppearing();
 
-            await Task.WhenAll
-            (
-                PushAlert.TranslateTo(0, 0, 200, Easing.SinIn),
-                GetGeolocationAsync()
-            );
-
-            await Task.Delay(5000);
-
-            await PushAlert.TranslateTo(0, -80, 200, Easing.SinInOut);
-        }
-        #endregion
-
-        #region private methods
-        private async Task GetGeolocationAsync()
-        {
-            try
+            if (await vm.RefreshConsulatesAsync())
             {
-                // TODO: Location permission check here
-                var request = new GeolocationRequest(GeolocationAccuracy.Medium);
-                var location = await Geolocation.GetLastKnownLocationAsync() ?? await Geolocation.GetLocationAsync(request);
+                MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
+            }
+            else if (Device.RuntimePlatform is Device.Android)
+            {
+                if (Navigation.ModalStack.LastOrDefault() is PermissionsPage)
+                    return;
 
-                if (location != null)
+                await Task.Delay(500);
+                await Navigation.PushModalAsync(new PermissionsPage(), true);
+            }
+        }
+
+        private void MoveMap(double lat, double lon, string labelString = null, string address = null)
+        {
+            Position position = new Position(lat, lon);
+            var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
+
+            RingerMap.MoveToRegion(mapSpan);
+            RingerMap.IsShowingUser = true;
+
+            if (labelString != null)
+            {
+                RingerMap.Pins.Add(new Pin
                 {
-                    var position = new Position(location.Latitude, location.Longitude);
-                    var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
-
-                    MyMap.MoveToRegion(mapSpan);
-                    MyMap.IsShowingUser = true;
-
-                    await (BindingContext as MapPageViewModel).InsertCurrentLocationAsync(location);
-
-                    Console.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
-                }
-            }
-            catch (FeatureNotSupportedException fnsEx)
-            {
-                Console.WriteLine(fnsEx.Message);
-            }
-            catch (FeatureNotEnabledException fneEx)
-            {
-                Console.WriteLine(fneEx.Message);
-            }
-            catch (PermissionException pEx)
-            {
-                Console.WriteLine(pEx.Message);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
+                    Label = labelString,
+                    Address = address,
+                    Type = PinType.Place,
+                    Position = position
+                });
             }
         }
-
-        private void MyMap_MapClicked(object sender, MapClickedEventArgs e)
+        private void MapCurrentButton_Clicked(object sender, EventArgs e)
         {
-            Console.WriteLine($"{e.Position.Latitude}, {e.Position.Longitude}");
+            MoveMap(vm.CurrentLatitude, vm.CurrentLongitude);
         }
-
-        private async void MapCurrentButton_Clicked(object sender, EventArgs e)
+        private void ConsulateCollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            await GetGeolocationAsync();
+            var consulate = e.CurrentSelection.FirstOrDefault() as ConsulateModel;
+
+            if (consulate.IsHeader)
+            {
+                MoveMap(consulate.Latitude, consulate.Longitude);
+                return;
+            }
+
+            if (consulate.IsFooter)
+                return;
+
+            MoveMap(consulate.Latitude, consulate.Longitude, consulate.KoreanName, consulate.Address);
         }
 
-        private async void ItemsListView_ItemSelected(object sender, SelectedItemChangedEventArgs e)
+        private async void PermissionButton_Clicked(object sender, EventArgs e)
         {
-            try
-            {
-                var address = (e.SelectedItem as Infomation).Location;
-                var locations = await Geocoding.GetLocationsAsync(address);
+            if (Device.RuntimePlatform is Device.iOS)
+                AppInfo.ShowSettingsUI();
 
-                var location = locations?.FirstOrDefault();
-                if (location != null)
-                {
-                    var position = new Position(location.Latitude, location.Longitude);
-                    var mapSpan = MapSpan.FromCenterAndRadius(position, Distance.FromMeters(175));
-                    MyMap.MoveToRegion(mapSpan);
-
-                    Debug.WriteLine($"Latitude: {location.Latitude}, Longitude: {location.Longitude}, Altitude: {location.Altitude}");
-                }
-            }
-            catch (FeatureNotSupportedException fnsEx)
-            {
-                // Feature not supported on device
-                Debug.WriteLine(fnsEx.Message);
-            }
-            catch (Exception ex)
-            {
-                // Handle exception that may have occurred in geocoding
-                Debug.WriteLine(ex.Message);
-            }
+            if (Device.RuntimePlatform is Device.Android)
+                await Navigation.PushModalAsync(new PermissionsPage());
         }
-        #endregion
     }
 }

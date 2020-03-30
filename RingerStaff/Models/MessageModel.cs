@@ -6,9 +6,11 @@ namespace RingerStaff.Models
 {
     public class MessageModel : BaseViewModel
     {
-
+        public int Id { get; set; }
         public string Body { get; set; }
         public string Sender { get; set; }
+        public int SenderId { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         private MessageTypes messageTypes;
         public MessageTypes MessageTypes

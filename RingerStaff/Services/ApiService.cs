@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -53,10 +54,10 @@ namespace RingerStaff.Services
 
         public class RoomsResponse
         {
-            public string id { get; set; }
-            public string name { get; set; }
-            public string deviceId { get; set; }
-            public string[] rooms { get; set; }
+            public string Id { get; set; }
+            public string Name { get; set; }
+            public bool IsClosed { get; set; }
+            public string[] Enrollments { get; set; }
         }
 
         public static async Task<List<RoomModel>> LoadRoomsAsync()
@@ -69,16 +70,27 @@ namespace RingerStaff.Services
                     if (!_client.DefaultRequestHeaders.Contains("Authorization"))
                         _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + App.Token);
 
-                    var apiResponse = await _client.GetAsync(App.BaseUrl + "/rooms");
+                    string response = await _client.GetStringAsync(App.BaseUrl + "/auth/list");
 
-                    if (apiResponse.StatusCode == HttpStatusCode.OK)
-                    {
-                        var responseContent = await apiResponse.Content.ReadAsStringAsync();
-                        var obj = JsonSerializer.Deserialize<RoomsResponse>(responseContent);
+                    Debug.WriteLine($"ApiService.LoadRoomAsync(): {response}");
 
-                        foreach (var room in obj.rooms)
-                            Debug.WriteLine(room);
-                    }
+                    var rooms = JsonSerializer.Deserialize<List<RoomsResponse>>(response);
+
+                    var roomModels = new List<RoomModel>();
+                    foreach (var room in rooms)
+                        roomModels.Add(new RoomModel { Id = room.Id, Title = room.Name });
+
+                    return roomModels;
+
+
+                    //if (response.StatusCode == HttpStatusCode.OK)
+                    //{
+                    //    var responseContent = await apiResponse.Content.ReadAsStringAsync();
+                    //    var obj = JsonSerializer.Deserialize<RoomsResponse>(responseContent);
+
+                    //    foreach (var room in obj.rooms)
+                    //        Debug.WriteLine(room);
+                    //}
                 }
                 catch (Exception ex)
                 {

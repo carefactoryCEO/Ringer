@@ -1,62 +1,73 @@
-﻿using Xamarin.Forms;
-using Ringer.Core;
+﻿using System;
 using System.Diagnostics;
-using System;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AppCenter.Push;
-using Ringer.Helpers;
 using Xamarin.Essentials;
-using Ringer.Models;
-using System.Runtime.CompilerServices;
+using Xamarin.Forms;
 using Ringer.Services;
-using Ringer.Views;
-using Ringer.Core.EventArgs;
+using Ringer.Helpers;
+using Plugin.LocalNotification;
 
 namespace Ringer
 {
     public partial class App : Application
     {
         #region private members
-        private LocalDbService _localDbService;
-        private IMessageRepository _messageRepository;
-        private IRESTService _restService;
-        private MessagingService _messagingService;
+        private readonly IMessaging _messaging;
         #endregion
 
         #region public static propertie
-        public static bool IsChatPage => Shell.Current.CurrentState.Location.ToString().EndsWith("chatpage", StringComparison.CurrentCultureIgnoreCase);
-        public static bool IsLoggedIn => Token != null && DeviceId != null && UserName != null && CurrentRoomId != null;
-        public static bool DeviceIsOn
+        public static bool IsOn { get; set; }
+        public static bool IsChatPage { get; set; }
+        public static bool IsCameraActivated { get; set; }
+
+        public static bool IsLoggedIn => Token != null &&
+                                         DeviceId != null &&
+                                         UserName != null &&
+                                         RoomId != null;
+        public static int LocalNotificationId
         {
-            get => Preferences.Get(nameof(DeviceIsOn), false);
-            set => Preferences.Set(nameof(DeviceIsOn), value);
+            get => Preferences.Get(nameof(LocalNotificationId), -1);
+            set => Preferences.Set(nameof(LocalNotificationId), value);
         }
-        public static int LastMessageId
-        {
-            get => Preferences.Get(nameof(LastMessageId), 0);
-            set => Preferences.Set(nameof(LastMessageId), value);
-        }
-        public static string DeviceId // Appcenter에서 받음
-        {
-            get => Preferences.Get(nameof(DeviceId), null);
-            set => Preferences.Set(nameof(DeviceId), value);
-        }
-        public static string Token // 로그인 후에 받음
+        public static string Token
         {
             get => Preferences.Get(nameof(Token), null);
             set => Preferences.Set(nameof(Token), value);
         }
-        public static string UserName // 로그인 과정 중에 받음
+
+        public static int UserId
+        {
+            get => Preferences.Get(nameof(UserId), -1);
+            set => Preferences.Set(nameof(UserId), value);
+        }
+        public static string UserName
         {
             get => Preferences.Get(nameof(UserName), null);
             set => Preferences.Set(nameof(UserName), value);
         }
-        public static string CurrentRoomId
+
+        public static string DeviceId
         {
-            get => Preferences.Get(nameof(CurrentRoomId), null);
-            set => Preferences.Set(nameof(CurrentRoomId), value);
+            get => Preferences.Get(nameof(DeviceId), null);
+            set => Preferences.Set(nameof(DeviceId), value);
+        }
+        public static string LastConnectionId
+        {
+            get => Preferences.Get(nameof(LastConnectionId), null);
+            set => Preferences.Set(nameof(LastConnectionId), value);
+        }
+        public static string RoomId
+        {
+            get => Preferences.Get(nameof(RoomId), null);
+            set => Preferences.Set(nameof(RoomId), value);
+        }
+        public static int LastServerMessageId
+        {
+            get => Preferences.Get(nameof(LastServerMessageId), 0);
+            set => Preferences.Set(nameof(LastServerMessageId), value);
         }
         #endregion
 
@@ -64,145 +75,70 @@ namespace Ringer
         public App()
         {
             InitializeComponent();
-
+            // Services
+            DependencyService.Register<ILocalDbService, LocalDbService>();
+            DependencyService.Register<IRESTService, RESTService>();
+            DependencyService.Register<IMessaging, Messaging>();
+            DependencyService.Register<ILocationService, LocationService>();
             MainPage = new AppShell();
 
-            #region Register messagingService
-            DependencyService.Register<MessagingService>();
-            DependencyService.Register<LocalDbService>();
-            DependencyService.Register<IMessageRepository, MessageRepository>();
-            DependencyService.Register<IRESTService, RESTService>();
+            _messaging = DependencyService.Get<IMessaging>();
 
-            _localDbService = DependencyService.Resolve<LocalDbService>();
-            _restService = DependencyService.Resolve<IRESTService>();
-            _messagingService = DependencyService.Resolve<MessagingService>();
-            _messageRepository = DependencyService.Resolve<IMessageRepository>();
+            // Local Notification
+            NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
 
-            _messagingService.Connecting += Trace_ConnectionStatus;
-            _messagingService.Connected += Trace_ConnectionStatus;
-            _messagingService.ConnectionFailed += Trace_ConnectionStatus;
+            // essaging event
+            _messaging.Connecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Connected += (s, e) => Utility.Trace(e.Message);
+            _messaging.ConnectionFailed += (s, e) => Utility.Trace(e.Message, true);
 
-            _messagingService.Disconnecting += Trace_ConnectionStatus;
-            _messagingService.Disconnected += MessagingService_Disconnected;
-            _messagingService.DisconnectionFailed += Trace_ConnectionStatus;
+            _messaging.Disconnecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Disconnected += (s, e) => Utility.Trace(e.Message);
+            _messaging.DisconnectionFailed += (s, e) => Utility.Trace(e.Message, true);
 
-            _messagingService.Closed += Trace_ConnectionStatus;
-            _messagingService.Reconnecting += Trace_ConnectionStatus;
-            _messagingService.Reconnected += Trace_ConnectionStatus;
-
-            _messagingService.MessageReceived += MessageReceived;
-            _messagingService.SomeoneEntered += SomeoneEntered;
-            _messagingService.SomeoneLeft += SomeoneLeft;
-
-            #endregion
-
-            PageDisappearing += App_PageDisappearing;
-            PageAppearing += App_PageAppearing;
+            _messaging.Reconnecting += (s, e) => Utility.Trace(e.Message);
+            _messaging.Reconnected += (s, e) => Utility.Trace(e.Message);
+            _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
         }
-
         #endregion
 
         #region private methods
-        private void Trace_ConnectionStatus(object sender, ConnectionEventArgs e)
+        private void Current_NotificationTapped(NotificationTappedEventArgs e)
         {
-            //_messageRepository.AddLocalMessage(new Message { Body = $"{DateTime.UtcNow}\n{e.Message}", Sender = Constants.System });
+            Utility.Trace($"------local: {e.Data}");
 
-            Trace(e.Message);
-        }
-
-        private async void MessagingService_Disconnected(object sender, ConnectionEventArgs e)
-        {
-            Trace_ConnectionStatus(sender, e);
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
-
-        }
-        private async void App_PageAppearing(object sender, Page page)
-        {
-            if (page is ChatPage)
-                await _restService.ReportDeviceStatusDebouncedAsync(true);
-            //_restService.ReportDeviceStatus(true);
-        }
-        private async void App_PageDisappearing(object sender, Page page)
-        {
-            if (page is ChatPage)
-                await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
-
-        }
-        #endregion
-
-        #region messaging handlers
-        public static void Trace(string message = "", bool analyticsAlso = false, [CallerMemberName] string callerName = "")
-        {
-            message = $"\n[{DateTime.UtcNow.ToString("yy-MM-dd HH:mm:ss")}]{callerName}: {message}";
-
-            Debug.WriteLine(message);
-
-            if (analyticsAlso)
-                Analytics.TrackEvent(message);
-        }
-        private void SomeoneLeft(object sender, SignalREventArgs e)
-        {
-            if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = Constants.System });
-
-            Trace(e.Message);
-        }
-        private void SomeoneEntered(object sender, SignalREventArgs e)
-        {
-            if (e.Sender != UserName)
-                _messageRepository.AddLocalMessage(new Message { Body = e.Message, Sender = Constants.System });
-
-            Trace(e.Message);
-        }
-        private async void MessageReceived(object sender, MessageReceivedEventArgs e)
-        {
-            var name = e.SenderName == UserName ? string.Empty : $"{e.SenderName}: ";
-
-            await _messageRepository.AddMessageAsync(new Message
-            {
-                Id = e.MessageId,
-                SenderId = e.SenderId,
-                CreatedAt = e.CreatedAt,
-                Body = $"{name}{e.Body}",
-                Sender = e.SenderName
-            });
-
-            // 
-            //Preferences.Set(CurrentRoomId, e.MessageId);
-
-            Debug.WriteLine(Preferences.Get(CurrentRoomId, 0));
-
-            Trace(e.Body);
+            Shell.Current.GoToAsync(Constants.ChatPageUriFromLocalNotification);
         }
         #endregion
 
         #region Life Cycle Methods
         protected override async void OnStart()
         {
+            base.OnStart();
+
+            IsOn = true;
+
             if (DesignMode.IsDesignModeEnabled)
                 return;
 
-
             #region AppCenter
-            // Intercept Push Notification
             if (!AppCenter.Configured)
             {
+                // Intercept Push Notification
                 Push.PushNotificationReceived += async (sender, e) =>
                 {
                     string body = null;
                     string pushSender = null;
-                    // If there is custom data associated with the notification,
-                    // print the entries
+
                     if (e.CustomData != null)
                     {
                         foreach (var key in e.CustomData.Keys)
                         {
+                            Utility.Trace($"------(push){key}: {e.CustomData[key]}");
                             switch (key)
                             {
                                 case "room":
-                                    CurrentRoomId = e.CustomData[key];
+                                    RoomId = e.CustomData[key];
                                     break;
 
                                 case "body":
@@ -219,74 +155,62 @@ namespace Ringer
                         }
                     }
 
-                    if (CurrentRoomId != null && !IsChatPage)
-                    {
-                        await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
-                    }
+                    await _messaging.FetchRemoteMessagesAsync();
+                    await Shell.Current.GoToAsync(Constants.ChatPageUriFromPushNotification);
                 };
             }
 
-            AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS, typeof(Analytics), typeof(Crashes), typeof(Push));
+            AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS,
+                typeof(Analytics), typeof(Crashes), typeof(Push));
 
             Analytics.TrackEvent("Ringer started");
 
             if (await Push.IsEnabledAsync())
             {
                 Guid? id = await AppCenter.GetInstallIdAsync();
+
                 Debug.WriteLine("-------------------------");
-                Debug.WriteLine($"device id: {DeviceId}");
+                Debug.WriteLine($"device id: {id}");
                 Debug.WriteLine("-------------------------");
 
-                // Set Device Id
-                DeviceId = id?.ToString();
+                if (id != null)
+                    DeviceId = id?.ToString();
             }
             #endregion
-
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //_restService.ReportDeviceStatus(false);
 
             #region Connect and load messages
             if (IsLoggedIn)
             {
-                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
-
-                _messagingService.Init(Constants.HubUrl, Token);
-                await _messagingService.ConnectAsync().ConfigureAwait(false);
+                LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, Token);
             }
             #endregion
-            base.OnStart();
         }
-        protected override async void OnSleep()
+        protected override void OnSleep()
         {
-            Debug.WriteLine($"{DateTime.Now.Millisecond}:OnSleep");
-            await _restService.ReportDeviceStatusDebouncedAsync(false);
-            //await _restService.ReportDeviceStatusDebouncedAsync(false, 1000);
-            //_restService.ReportDeviceStatus(false);
+            Utility.Trace("-------------OnSleep-------------");
+
+            IsOn = false;
+
+            LastConnectionId = _messaging.ConnectionId;
+
+            if (Utility.iOS)
+                _messaging.DisconnectAsync();
+
             base.OnSleep();
         }
         protected override async void OnResume()
         {
-            //try
-            //{
-            Debug.WriteLine($"{DateTime.Now.Millisecond}:OnResume");
+            Utility.Trace("------------OnResume------------");
 
-            //_restService.ReportDeviceStatus(IsChatPage);
-            await _restService.ReportDeviceStatusDebouncedAsync(IsChatPage);
+            base.OnResume();
 
-            if (IsLoggedIn)
-            {
-                await _messageRepository.LoadMessagesAsync().ConfigureAwait(false);
+            MessagingCenter.Send(this, "Resumed");
 
-                if (!_messagingService.IsReconnecting)
-                    await _messagingService.ConnectAsync().ConfigureAwait(false);
+            IsOn = true;
 
-            }
-            //}
-            //catch (Exception ex)
-            //{
-            //    Debug.WriteLine(ex.Message);
-            //}
+            await _messaging.FetchRemoteMessagesAsync();
+            await _messaging.EnsureConnected();
+
         }
         #endregion
     }

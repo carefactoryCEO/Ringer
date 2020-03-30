@@ -16,9 +16,9 @@ namespace Ringer.ConsoleApp
     {
         #region members
         static bool server = false;
-        static string hubUrl => server ? "https://ringerhub.azurewebsites.net/hubs/chat" : "http://localhost:5000/hubs/chat";
-        static string tokenUrl => server ? "https://ringerhub.azurewebsites.net/auth/login" : "http://localhost:5000/auth/login";
-        static string listUrl => server ? "https://ringerhub.azurewebsites.net/auth/list" : "http://localhost:5000/auth/list";
+        static string hubUrl => server ? "https://ringerhub.azurewebsites.net/hubs/chat" : "https://localhost:5001/hubs/chat";
+        static string tokenUrl => server ? "https://ringerhub.azurewebsites.net/auth/login" : "https://localhost:5001/auth/login";
+        static string listUrl => server ? "https://ringerhub.azurewebsites.net/auth/list" : "https://localhost:5001/auth/list";
         static readonly MessagingService messagingService = new MessagingService();
 
         static HttpResponseMessage response;
@@ -127,9 +127,9 @@ namespace Ringer.ConsoleApp
                 {
                     await messagingService.JoinRoomAsync(roomList[text], name);
 
-                    Console.WriteLine("--- Joined to " + text + " ---");
-
                     currentRoomId = roomList[text];
+
+                    Console.WriteLine($"--- Joined to {text}({currentRoomId})  ---");
                 }
 
                 else if (text == "leave")
@@ -184,7 +184,7 @@ namespace Ringer.ConsoleApp
         private static void Service_OnMessageReceived(object sender, MessageReceivedEventArgs e)
         {
 
-            if (e.SenderName == name)
+            if (e.SenderName == name || e.RoomId != currentRoomId)
                 return;
 
             Console.WriteLine($"{e.SenderName}: {e.Body}");

@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Ringer.Views.VideoPlayerPage"
+             BackgroundColor="Black"
+             Shell.BackgroundColor="Black">
+    <!--
+    https://ringerstoragekr.blob.core.windows.net/ringer/video-2-20200321-155813-682.mp4
+    https://ringervideo.azureedge.net/ringer/video-2-20200321-155813-682.mp4
+
+    https://ringerstoragekr.blob.core.windows.net/ringer/video-2-20200316-102016-026.mp4
+
+    https://sec.ch9.ms/ch9/5d93/a1eab4bf-3288-4faf-81c4-294402a85d93/XamarinShow_mid.mp4
+    https://ringerstoragekr.blob.core.windows.net/ringer/XamarinShow_mid.mp4
+    https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+    https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4
+    -->
+
+    <!--<MediaElement Source="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                  ShowsPlaybackControls="True">
+    </MediaElement>-->
+    <Grid>
+        <WebView x:Name="webView"></WebView>
+    </Grid>
+</ContentPage>

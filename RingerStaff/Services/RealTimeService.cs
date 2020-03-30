@@ -3,8 +3,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.AppCenter.Crashes;
 using Microsoft.AspNetCore.SignalR.Client;
 using Ringer.Core.EventArgs;
+using RingerStaff.Models;
 
 namespace RingerStaff.Services
 {
@@ -41,13 +43,30 @@ namespace RingerStaff.Services
             _hubConnection.Reconnecting += OnReconnecting;
             _hubConnection.Reconnecting += OnReconnected;
 
-            _hubConnection.On<string, string, int, int, DateTime>("ReceiveMessage", OnReceiveMessage);
+            _hubConnection.On<string, string, int, int, DateTime, string>("ReceiveMessage", OnReceiveMessage);
             _hubConnection.On<string>("Entered", OnEntered);
             _hubConnection.On<string>("Left", OnLeft);
         }
 
         public static string Url;
         public static string Token;
+
+        public static async Task SendMessageAsync(MessageModel message, string roomId)
+        {
+            if (!IsConnected)
+                await ConnectAsync();
+
+            await _hubConnection.InvokeAsync("SendMessageToRoomAsyc", message.Body, roomId);
+
+        }
+
+        public static async Task EnterRoomAsync(string roomId, string name)
+        {
+            if (!IsConnected)
+                await ConnectAsync();
+
+            await _hubConnection.InvokeAsync("AddToGroup", roomId, name);
+        }
 
         public static async Task ConnectAsync(string url, string token)
         {
@@ -84,45 +103,53 @@ namespace RingerStaff.Services
             }
         }
 
-        private static void OnLeft(string obj)
+        private static void OnLeft(string userName)
         {
-            throw new NotImplementedException();
+            //Debug.WriteLine($"{userName} left..");
+            SomeoneLeft?.Invoke(null, new SignalREventArgs(string.Empty, userName));
         }
 
-        private static void OnEntered(string obj)
+        private static void OnEntered(string userName)
         {
-            throw new NotImplementedException();
+            //Debug.WriteLine($"{userName} Entered..");
+            SomeoneEntered?.Invoke(null, new SignalREventArgs(string.Empty, userName));
+
         }
 
-        private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
+        private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt, string roomId = null)
         {
-            Debug.WriteLine($"({senderName}): ({messageId}){body}");
+            MessageReceived?.Invoke(_hubConnection, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt, roomId));
         }
 
         private static Task OnReconnected(Exception arg)
         {
-            throw new NotImplementedException();
+            Reconnected?.Invoke(null, new ConnectionEventArgs(arg.Message));
+            return Task.CompletedTask;
         }
 
-        private static Task OnReconnecting(Exception arg)
+        private static Task OnReconnecting(Exception err)
         {
-            throw new NotImplementedException();
+            Reconnecting?.Invoke(null, new ConnectionEventArgs(err.Message));
+            return Task.CompletedTask;
         }
 
         private static Task OnClosed(Exception arg)
         {
-            throw new NotImplementedException();
+            Closed?.Invoke(null, new ConnectionEventArgs(arg.Message));
+            return Task.CompletedTask;
         }
 
         public static event EventHandler<ConnectionEventArgs> Connecting;
         public static event EventHandler<ConnectionEventArgs> Connected;
         public static event EventHandler<ConnectionEventArgs> ConnectionFailed;
+
         public static event EventHandler<ConnectionEventArgs> Disconnecting;
         public static event EventHandler<ConnectionEventArgs> Disconnected;
         public static event EventHandler<ConnectionEventArgs> DisconnectionFailed;
-        public static event EventHandler<ConnectionEventArgs> Closed;
+
         public static event EventHandler<ConnectionEventArgs> Reconnecting;
         public static event EventHandler<ConnectionEventArgs> Reconnected;
+        public static event EventHandler<ConnectionEventArgs> Closed;
 
         public static event EventHandler<SignalREventArgs> SomeoneEntered;
         public static event EventHandler<SignalREventArgs> SomeoneLeft;

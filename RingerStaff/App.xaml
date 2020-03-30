@@ -103,6 +103,7 @@
             <converters:MessageTypesToGridLengthConverter x:Key="MessageTypesToGridLengthConverter"/>
             <converters:MessageTypesToIntegerConverter x:Key="MessageTypesToIntegerConverter"/>
             <converters:MessageTypesToLayoutOptionConverter x:Key="MessageTypesToLayoutOptionConverter"/>
+            <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
             <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter"/>
             <converters:MessageTypesToColorConverter x:Key="MessageTypesToColorConverter"/>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>

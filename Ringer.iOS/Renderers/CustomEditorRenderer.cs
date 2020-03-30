@@ -15,7 +15,6 @@ namespace Ringer.iOS.Renderers
     {
         UILabel _placeholderLabel;
         double previousHeight = -1;
-        double previousWidth = -1;
         int prevLines = 2;
         nfloat _cornerRadius = 16;
 
@@ -189,7 +188,5 @@ namespace Ringer.iOS.Renderers
             Control.AddConstraints(hConstraints);
             Control.AddConstraints(vConstraints);
         }
-
-
     }
 }

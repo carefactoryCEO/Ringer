@@ -1,140 +1,135 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AppCenter.Analytics;
 using Ringer.Core.Data;
+using Ringer.Core.Models;
 using Ringer.Helpers;
-using Xamarin.Forms;
+using Ringer.Models;
 
 namespace Ringer.Services
 {
     public interface IRESTService
     {
-        void ReportDeviceStatus(bool isOn);
-        Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds = 50);
-        Task<List<PendingMessage>> PullPendingMessagesAsync();
-        Task LogInAsync(string name, DateTime birthDate, GenderType genderType);
+        Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
+        Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType);
+        Task<List<ConsulateModel>> GetConsulatesByCoordinateAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
+        Task SetCountryCodeAsync(int id, string countryCode);
     }
 
     public class RESTService : IRESTService
     {
-        private HttpClient _client;
-        private CancellationTokenSource _cts;
+        private readonly HttpClient _client;
 
         public RESTService()
         {
             _client = new HttpClient();
-            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", App.Token);
-            _cts = new CancellationTokenSource();
         }
 
-        public async Task ReportDeviceStatusDebouncedAsync(bool isOn, int debounceMilliSeconds)
+        public async Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token)
         {
-            _cts?.Cancel();
-            _cts = new CancellationTokenSource();
-            var thisToken = _cts.Token;
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
 
-            await Task.Delay(debounceMilliSeconds);
-
-            if (!thisToken.IsCancellationRequested)
+            try
             {
-                if (App.DeviceId == null || App.DeviceIsOn == isOn)
-                    return;
+                string requestUri = $"{Constants.PendingUrl}?roomId={roomId}&lastId={lastMessageId}";
+                var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
 
-                App.DeviceIsOn = isOn;
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException("request failed");
 
-                var report = JsonSerializer.Serialize(new DeviceReport
-                {
-                    DeviceId = App.DeviceId,
-                    Status = isOn
-                });
+                // TODO if token expired -> response.StatusCode
 
-                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new HttpRequestException("unauthorized");
 
-                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
+                var responseString = await response.Content.ReadAsStringAsync();
+                var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
+
+                return pendingMessages;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return null;
             }
         }
 
-        public void ReportDeviceStatus(bool isOn)
+        public async Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType)
         {
-            if (App.DeviceId == null || App.DeviceIsOn == isOn)
-                return;
-
-            App.DeviceIsOn = isOn;
-
-            var report = JsonSerializer.Serialize(new DeviceReport
+            LoginInfo loginInfo = new LoginInfo
             {
-                DeviceId = App.DeviceId,
-                Status = isOn
-            });
-
-            Task.Run(async () =>
-            {
-                var response = await _client.PostAsync(Constants.ReportUrl, new StringContent(report, Encoding.UTF8, "application/json")).ConfigureAwait(false);
-
-                Debug.WriteLine($"[ReportDeviceStatusAsync()]IsOn:{isOn}, success:{response.IsSuccessStatusCode}, response:{response.ReasonPhrase}");
-
-            }).ConfigureAwait(false);
-        }
-
-        public async Task<List<PendingMessage>> PullPendingMessagesAsync()
-        {
-            // context.Request.Headers.Add("Authorization", "Bearer " + JWToken);
-            if (App.IsLoggedIn)
-                _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
-
-
-            var response = await _client.GetAsync($"{Constants.PendingUrl}?roomId={App.CurrentRoomId}&lastnumber={App.LastMessageId}").ConfigureAwait(false);
-
-            // if token expired -> response.StatusCode
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-            {
-                Debug.WriteLine(response.Headers.WwwAuthenticate.ToString());
-
-                return new List<PendingMessage>();
-            }
-
-            var responseString = await response.Content.ReadAsStringAsync();
-            var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
-
-            return pendingMessages;
-        }
-
-        public async Task LogInAsync(string name, DateTime birthDate, GenderType genderType)
-        {
-
-            var loginInfo = JsonSerializer.Serialize(new LoginInfo
-            {
-                Name = App.UserName,
+                Name = name,
                 BirthDate = birthDate,
                 Gender = genderType,
                 DeviceId = App.DeviceId,
-                DeviceType = Device.RuntimePlatform == Device.iOS ? DeviceType.iOS : DeviceType.Android
-            });
+                DeviceType = Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS ? DeviceType.iOS : DeviceType.Android
+            };
 
-            Debug.WriteLine(loginInfo);
+            var loginInfoJson = JsonSerializer.Serialize(loginInfo);
 
-            HttpResponseMessage response = await _client.PostAsync(Constants.LoginUrl, new StringContent(loginInfo, Encoding.UTF8, "application/json"));
+            HttpResponseMessage response = await _client.PostAsync(Constants.LoginUrl, new StringContent(loginInfoJson, Encoding.UTF8, "application/json"));
 
-            // 로그인 실패
-            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            // 전송 실패
+            if (response.StatusCode != HttpStatusCode.OK)
                 Debug.WriteLine(await response.Content.ReadAsStringAsync());
 
-            var responseString = await response.Content.ReadAsStringAsync();
-            var responseObject = JsonSerializer.Deserialize<LoginResponse>(responseString);
+            var responseJson = await response.Content.ReadAsStringAsync();
 
-            // TODO: token 발급되었는지 확인
-            // TODO: token 발급되지 않았으면 처음부터 다시? 손쉽게 오타 부분만 고칠 수 있는 UI 제공
-            App.Token = responseObject.token;
-            App.CurrentRoomId = responseObject.roomId;
+            // 로그인 성공
+            if (JsonSerializer.Deserialize<LoginResponse>(responseJson) is LoginResponse loginResponse)
+            {
+                if (loginResponse.success)
+                {
+                    Analytics.TrackEvent("User Logged in", new Dictionary<string, string>
+                    {
+                        {"roomId", loginResponse.roomId},
+                        {"userId", loginResponse.userId.ToString()},
+                        {"userName", name}
+                    });
 
-            Debug.WriteLine(App.Token);
-            Debug.WriteLine(App.CurrentRoomId);
+                    App.Token = loginResponse.token;
+                    App.RoomId = loginResponse.roomId;
+                    App.UserId = loginResponse.userId;
+                    App.UserName = name;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public async Task<List<ConsulateModel>> GetConsulatesByCoordinateAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity)
+        {
+            var url = Constants.ConsulateUrl;
+
+            if (lat > double.NegativeInfinity && lon > double.NegativeInfinity)
+                url += $"/{lat}/{lon}";
+
+            var response = await _client.GetAsync(url);
+
+            if (!response.IsSuccessStatusCode)
+                throw new HttpRequestException("request failed");
+
+            var consultesJson = await response.Content.ReadAsStringAsync();
+            var consulateList = JsonSerializer.Deserialize<List<ConsulateModel>>(consultesJson, options: new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            return consulateList;
+        }
+
+        public Task SetCountryCodeAsync(int id, string countryCode)
+        {
+            return _client.GetAsync(Constants.InformationUrl + $"/set-countrycode/{id}/{countryCode}");
         }
     }
 }

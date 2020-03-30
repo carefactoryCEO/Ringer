@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ringer.Core.Models;
 using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Views;
@@ -49,6 +50,12 @@ namespace RingerStaff.ViewModels
 
             LogoutCommand = new Command(async () => await ExcuteLogoutCommandAsync());
 
+        }
+
+        internal void SetRoomId(object roomModel)
+        {
+            if (roomModel is RoomModel)
+                App.CurrentRoomId = ((RoomModel)roomModel).Id;
         }
 
         public async Task<bool> LoadRoomsAsync()

@@ -74,7 +74,7 @@ namespace Ringer.HubServer.Controllers
         // GET api/authors/RickAndMSFT
         [HttpGet("{body}")]
         [Authorize]
-        public async Task<Author> Get(string body)
+        public async Task<Author> Get(string body, string roomId = "a0ed073a-fec6-4c5e-9a20-6c1ff55d7f44")
         {
             /*
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // Context.UserIdentifier
@@ -94,18 +94,14 @@ namespace Ringer.HubServer.Controllers
             {
                 Body = body,
                 CreatedAt = DateTime.UtcNow,
-                RoomId = "563f122f-2f99-4dd3-806c-4f78a9b23645",
+                RoomId = roomId,
                 SenderId = userId
             };
 
             dbContext.Messages.Add(message);
             await dbContext.SaveChangesAsync();
 
-
-
-            // private static void OnReceiveMessage(string senderName, string body, int messageId, int senderId, DateTime createdAt)
-            // await Clients.Group(roomId).SendAsync("ReceiveMessage", user.Name, body, message.Id, _userId, message.CreatedAt);
-            await hubContext.Clients.All.SendAsync("ReceiveMessage", name, body, message.Id, user.Id, message.CreatedAt);
+            await hubContext.Clients.Group(roomId).SendAsync("ReceiveMessage", name, body, message.Id, user.Id, message.CreatedAt, message.Id);
             return new Author { Id = 1, Name = "mike" };
         }
     }

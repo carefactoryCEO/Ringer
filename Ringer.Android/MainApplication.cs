@@ -1,15 +1,15 @@
 ﻿using System;
 using Android.App;
 using Android.Runtime;
-using Plugin.CurrentActivity;
+//using Plugin.CurrentActivity;
 
 namespace Ringer.Droid
 {
-    #if DEBUG
-        [Application(Debuggable = true)]
-    #else
+#if DEBUG
+    [Application(Debuggable = true)]
+#else
         [Application(Debuggable = false)]
-    #endif
+#endif
     public class MainApplication : Application
     {
         public MainApplication(IntPtr handle, JniHandleOwnership transer)
@@ -20,7 +20,7 @@ namespace Ringer.Droid
         public override void OnCreate()
         {
             base.OnCreate();
-            CrossCurrentActivity.Current.Init(this);
+            //CrossCurrentActivity.Current.Init(this);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Ringer.HubServer.Data;
 
@@ -14,25 +15,27 @@ namespace Ringer.HubServer.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.0.1");
+                .HasAnnotation("ProductVersion", "3.1.2")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Ringer.Core.Models.Device", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ConnectionId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DeviceType")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsOn")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<int>("OwnerId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -45,13 +48,14 @@ namespace Ringer.HubServer.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("RoomId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -66,19 +70,20 @@ namespace Ringer.HubServer.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Body")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("RoomId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("SenderId")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -92,13 +97,13 @@ namespace Ringer.HubServer.Migrations
             modelBuilder.Entity("Ringer.Core.Models.Room", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsClosed")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -109,43 +114,44 @@ namespace Ringer.HubServer.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<DateTime>("BirthDate")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Email")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gender")
                         .IsRequired()
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Password")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<byte[]>("PasswordHash")
-                        .HasColumnType("BLOB");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<byte[]>("PasswordSalt")
-                        .HasColumnType("BLOB");
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserType")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
+                        .HasColumnType("nvarchar(max)")
                         .HasDefaultValue("Consumer");
 
                     b.HasKey("Id");
@@ -157,7 +163,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(7180),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6100),
                             Gender = "Male",
                             Name = "Admin",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -167,7 +173,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8100),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6950),
                             Gender = "Male",
                             Name = "신모범",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -177,7 +183,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8120),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6970),
                             Gender = "Female",
                             Name = "김은미",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -187,7 +193,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6970),
                             Gender = "Male",
                             Name = "김순용",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -197,12 +203,71 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 1, 21, 0, 12, 13, 26, DateTimeKind.Utc).AddTicks(8130),
+                            CreatedAt = new DateTime(2020, 3, 25, 1, 29, 49, 520, DateTimeKind.Utc).AddTicks(6980),
                             Gender = "Female",
                             Name = "함주희",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserType = "Consumer"
                         });
+                });
+
+            modelBuilder.Entity("Ringer.HubServer.Models.Consulate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Address")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConsulateType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CountryCode")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CountryCodeAndroid")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CountryCodeiOS")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyPhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GoogleMap")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Homepage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KoreanName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("LocalName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CountryCode", "CountryCodeiOS", "CountryCodeAndroid");
+
+                    b.ToTable("Consulate");
                 });
 
             modelBuilder.Entity("Ringer.Core.Models.Device", b =>

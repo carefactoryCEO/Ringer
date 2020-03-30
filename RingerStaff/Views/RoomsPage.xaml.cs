@@ -16,12 +16,22 @@ namespace RingerStaff.Views
             BindingContext = vm = new RoomsPageViewModel();
         }
 
-        void OnItemSelected(object sender, SelectedItemChangedEventArgs e)
+        ~RoomsPage()
+        {
+
+        }
+
+        async void OnItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             var list = sender as ListView;
-            list.SelectedItem = null;
 
-            Shell.Current.GoToAsync("chatpage");
+            vm.SetRoomId(list.SelectedItem);
+
+            // TODO [Bug]null로 지정하면 itemselected가 두 번 실행된다. 이유를 알아내든가 자마린 팀에 제보하던가..콜렉션 뷰로 가면 될 거 같기도 하고...
+            // list.SelectedItem = null;
+
+            await Shell.Current.GoToAsync("chatpage").ConfigureAwait(false);
+
         }
 
         protected override async void OnAppearing()

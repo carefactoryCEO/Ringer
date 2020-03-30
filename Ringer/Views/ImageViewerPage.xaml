@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Ringer.Views.ImageViewerPage"
+             xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
+             BackgroundColor="Black"
+             Shell.BackgroundColor="Black">
+    <Grid>
+
+        <Grid x:Name="container">
+            <Grid.GestureRecognizers>
+                <PinchGestureRecognizer PinchUpdated="PinchGestureRecognizer_PinchUpdated"/>
+                <PanGestureRecognizer PanUpdated="PanGestureRecognizer_PanUpdated"/>
+                <SwipeGestureRecognizer Direction="Left" Swiped="SwipeGestureRecognizer_Swiped"/>
+                <SwipeGestureRecognizer Direction="Right" Swiped="SwipeGestureRecognizer_Swiped"/>
+                <SwipeGestureRecognizer Direction="Down" Swiped="SwipeGestureRecognizer_Swiped"/>
+                <TapGestureRecognizer NumberOfTapsRequired="2" Tapped="TapGestureRecognizer_Tapped"/>
+            </Grid.GestureRecognizers>
+            <ff:CachedImage x:Name="imageViewer"
+                        HorizontalOptions="FillAndExpand"
+                        VerticalOptions="FillAndExpand"
+                        LoadingPlaceholder="{StaticResource ImagePlaceholder}"
+                        FadeAnimationDuration="100"
+                        Aspect="AspectFit"
+                        CacheDuration="50"
+                        RetryCount="10"
+                        RetryDelay="250">
+            </ff:CachedImage>
+        </Grid>
+
+    </Grid>
+</ContentPage>

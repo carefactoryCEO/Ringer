@@ -2,14 +2,119 @@
 <Application xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:converters="clr-namespace:RingerStaff.Converters"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
              mc:Ignorable="d"
              x:Class="Ringer.App"
-             
-             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
              android:Application.WindowSoftInputModeAdjust="Resize">
-            <!-- 키보드 올라오면 툴바도 같이 올라가 버리는 문제 수정 https://xamgirl.com/adjusting-elements-when-keyboard-shows-in-xamarin-forms/ -->
+    <!-- 키보드 올라오면 툴바도 같이 올라가 버리는 문제 수정 https://xamgirl.com/adjusting-elements-when-keyboard-shows-in-xamarin-forms/ -->
     <Application.Resources>
-        
+        <ResourceDictionary>
+            <x:String x:Key="ImagePlaceholder">https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg</x:String>
+            <!--Icons-->
+            <x:String x:Key="IconPlayCircleOutline">&#xf05a;</x:String>
+            <x:String x:Key="IconPlay">&#xf40a;</x:String>
+            <x:String x:Key="IconDownload">&#xf1da;</x:String>
+            <x:String x:Key="IconUpNext">&#xfb8d;</x:String>
+            <x:String x:Key="IconMarkPlayed">&#xf134;</x:String>
+            <x:String x:Key="IconArchived">&#xf03c;</x:String>
+            <x:String x:Key="IconShare">&#xf497;</x:String>
+
+            <x:String x:Key="IconAbout">&#xf2fd;</x:String>
+            <x:String x:Key="IconTwitter">&#xf544;</x:String>
+            <x:String x:Key="IconMedia">&#xf40b;</x:String>
+            <x:String x:Key="IconSettings">&#xf8ba;</x:String>
+            <x:String x:Key="IconBlog">&#xf46b;</x:String>
+            <x:String x:Key="IconReload">&#xf453;</x:String>
+            <x:String x:Key="IconDatabaseRefresh">&#xfcdb;</x:String>
+
+
+            <x:String x:Key="IconChat">&#xfb55;</x:String>
+            <x:String x:Key="IconStaff">&#xf004;</x:String>
+            <x:String x:Key="IconSchedule">&#xf192;</x:String>
+            <x:String x:Key="IconSetting">&#xf493;</x:String>
+            <x:String x:Key="IconSearch">&#xf349;</x:String>
+            <x:String x:Key="IconNewChat">&#xf527;</x:String>
+            <x:String x:Key="IconAccount">&#xf004;</x:String>
+            <x:String x:Key="IconLogin">&#xf342;</x:String>
+            <x:String x:Key="IconLogout">&#xf343;</x:String>
+            <x:String x:Key="IconArrowLeft">&#xf04d;</x:String>
+            <x:String x:Key="IconArrowLeftThick">&#xf04e;</x:String>
+            <x:String x:Key="IconClose">&#xf156;</x:String>
+            <x:String x:Key="IconPlusBox">&#xf703;</x:String>
+            <x:String x:Key="VideoPlay">&#xf40a;</x:String>
+
+            <!-- Input Accessory Buttons(ChatInputBarView) -->
+            <x:String x:Key="Camera">&#xf100;</x:String>
+
+            <x:String x:Key="Image">&#xf2e9;</x:String>
+            <x:String x:Key="FolderImage">&#xf24F;</x:String>
+            <x:String x:Key="MessageImage">&#xf364;</x:String>
+
+            <x:String x:Key="Video">&#xf567;</x:String>
+            <x:String x:Key="VideoVintage">&#xfA1B;</x:String>
+            <x:String x:Key="VideoOutline">&#xfBB8;</x:String>
+
+            <x:String x:Key="VideoFile">&#xf22B;</x:String>
+            <x:String x:Key="VideoFileOutline">&#xfE10;</x:String>
+            <x:String x:Key="Film">&#xf22F;</x:String>
+            <x:String x:Key="FilmStrip">&#xf230;</x:String>
+            <x:String x:Key="MessageVideo">&#xf36B;</x:String>
+
+            <x:String x:Key="VideoWireless">&#xfEEF;</x:String>
+            <x:String x:Key="VideoWirelessOutline">&#xfEF0;</x:String>
+
+            <x:String x:Key="Phone">&#xf3F2;</x:String>
+            <x:String x:Key="VideoCall">&#xf918;</x:String>
+            <x:String x:Key="VideoCallOutline">&#xfEB7;</x:String>
+
+            <x:String x:Key="Invite">&#xf014;</x:String>
+            <x:String x:Key="InviteOutline">&#xf800;</x:String>
+
+            <Color x:Key="NavigationPrimary">#2196F3</Color>
+            <Color x:Key="White">#FFFFFF</Color>
+            <Color x:Key="Black">#000000</Color>
+
+            <Color x:Key="ActionIconBackground">#B95C5C</Color>
+            <Color x:Key="ResetActionIconBackground">#52A7D5</Color>
+            <!--#52A7D5-->
+
+            <!-- Chat Cell -->
+            <Color x:Key="MessageMetadataColor">LightGray</Color>
+            <Color x:Key="MessageOutgoingBackgroundColor">#FFEB03</Color>
+            <Color x:Key="MessageIncommingBackgroundClor">#FFFFFF</Color>
+            <Color x:Key="MessageTextColor">#111111</Color>
+            <Color x:Key="MessageUnreadCountTextColoir">#FFEB03</Color>
+
+            <Color x:Key="ButtonBackgroundColor">#2E78EF</Color>
+
+            <!-- Messages Feed -->
+            <Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>
+            <!--<Color x:Key="MessagesFeedBackgroundColor">#DCDEDC</Color>-->
+            <!--#DCDEDC-->
+
+            <!-- ChatInputBarView -->
+
+
+            <OnPlatform x:Key="MaterialFontFamily" x:TypeArguments="x:String">
+                <On Platform="iOS" Value="Material Design Icons" />
+                <On Platform="Android" Value="materialdesignicons-webfont.ttf#Material Design Icons" />
+                <On Platform="UWP" Value="Assets/Fonts/materialdesignicons-webfont.ttf#Material Design Icons" />
+            </OnPlatform>
+
+            <!-- View Cell binding coverters -->
+            <!-- TODO: move these converters to ChatPage: 챗페이지에서만 쓰잖아.. -->
+            <converters:MessageTypesToBooleanConverter x:Key="MessageTypesToBooleanConverter"/>
+            <converters:MessageTypesToThicknessConverter x:Key="MessageTypesToThicknessConverter"/>
+            <converters:MessageTypesToGridLengthConverter x:Key="MessageTypesToGridLengthConverter"/>
+            <converters:MessageTypesToIntegerConverter x:Key="MessageTypesToIntegerConverter"/>
+            <converters:MessageTypesToLayoutOptionConverter x:Key="MessageTypesToLayoutOptionConverter"/>
+            <converters:DateTimeToStringConverter x:Key="DateTimeToStringConverter"/>
+            <converters:IntegerToBooleanConverter x:Key="IntegerToBooleanConverter"/>
+            <converters:MessageTypesToColorConverter x:Key="MessageTypesToColorConverter"/>
+            <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+            <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

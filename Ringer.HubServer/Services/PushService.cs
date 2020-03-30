@@ -6,7 +6,6 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 
@@ -14,7 +13,7 @@ namespace Ringer.HubServer.Services
 {
     public interface IPushService
     {
-        Task<bool> Push(string title, string message, Dictionary<string, string> customData);
+        void Push(string title, string message, Dictionary<string, string> customData);
     }
 
     public class PushService : IPushService
@@ -109,7 +108,7 @@ namespace Ringer.HubServer.Services
             public List<string> AndroidDevices { get; set; }
         }
 
-        public async Task<bool> Push(string title, string message, Dictionary<string, string> customData = default)
+        public async void Push(string title, string message, Dictionary<string, string> customData = default)
         {
             try
             {
@@ -120,7 +119,7 @@ namespace Ringer.HubServer.Services
                     message = message.Substring(0, 95) + "...";
 
                 if (!receiver.IOSDevices.Any() && !receiver.AndroidDevices.Any())
-                    return false; //No devices to send
+                    return; //No devices to send
 
                 //To make sure in Android, title and message is retain when click from notification. Else it's lost when app is in background
                 if (customData == null)
@@ -193,14 +192,11 @@ namespace Ringer.HubServer.Services
 
                     var result = await httpClient.PostAsync(URL, httpContent);
                 }
-
-                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
 
-                return false;
             }
         }
     }

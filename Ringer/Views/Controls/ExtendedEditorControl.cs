@@ -1,9 +1,19 @@
-﻿using Xamarin.Forms;
+﻿using System;
+using Xamarin.Forms;
 
 namespace Ringer.Views.Controls
 {
     public class ExtendedEditorControl : Editor
     {
+        public static BindableProperty CornerRadiusProperty
+            = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(ExtendedEditorControl), 16f);
+
+        public float CornerRadius
+        {
+            get => (float)GetValue(CornerRadiusProperty);
+            set => SetValue(CornerRadiusProperty, value);
+        }
+
         public new static BindableProperty PlaceholderProperty
           = BindableProperty.Create(nameof(Placeholder), typeof(string), typeof(ExtendedEditorControl));
 

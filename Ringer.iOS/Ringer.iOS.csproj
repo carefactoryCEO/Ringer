@@ -55,18 +55,17 @@
     <MtouchArch>ARMv7, ARM64</MtouchArch>
     <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
-    <CodesignEntitlements>
-    </CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
-    <MtouchExtraArgs>--interpreter</MtouchExtraArgs>
-    <DeviceSpecificBuild>true</DeviceSpecificBuild>
     <OptimizePNGs>true</OptimizePNGs>
     <MtouchFastDev>true</MtouchFastDev>
-    <MtouchEnableSGenConc>false</MtouchEnableSGenConc>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <MtouchI18n>cjk</MtouchI18n>
-    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
     <CodesignExtraArgs />
     <CodesignResourceRules />
+    <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
+    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
+    <MtouchInterpreter>-all</MtouchInterpreter>
+    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -75,8 +74,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
-    <CodesignKey>iPhone Developer</CodesignKey>
-    <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <CodesignKey>Apple Distribution: CareFactory Corp. (583LP97227)</CodesignKey>
+    <CodesignEntitlements>Info.plist</CodesignEntitlements>
+    <MtouchExtraArgs>--optimize=experimental-xforms-product-type</MtouchExtraArgs>
+    <MtouchI18n>cjk</MtouchI18n>
+    <CodesignProvision>Ringer Adhoc Provisioning Profile</CodesignProvision>
+    <MtouchFloat32>true</MtouchFloat32>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <AppExtensionDebugBundleId />
@@ -84,48 +87,15 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
-    <Compile Include="Renderers\ChatInputBarViewRenderer.cs" />
     <Compile Include="Renderers\CustomEditorRenderer.cs" />
-    <Compile Include="Renderers\ExtendedListViewRenderer.cs" />
     <None Include="Entitlements.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <None Include="Info.plist" />
+    <Compile Include="Renderers\RingerListViewRenderer.cs" />
+    <Compile Include="Renderers\InputBarViewRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon1024.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon167.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon152.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon87.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon80.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon76.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon60.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon58.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon40.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon29.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Icon20.png">
       <Visible>false</Visible>
     </ImageAsset>
     <BundleResource Include="Resources\tab_about.png" />
@@ -134,9 +104,6 @@
     <BundleResource Include="Resources\tab_feed.png" />
     <BundleResource Include="Resources\tab_feed%402x.png" />
     <BundleResource Include="Resources\tab_feed%403x.png" />
-    <BundleResource Include="Resources\xamarin_logo.png" />
-    <BundleResource Include="Resources\xamarin_logo%402x.png" />
-    <BundleResource Include="Resources\xamarin_logo%403x.png" />
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Ringer.Icon@2x21.png">
       <Visible>false</Visible>
     </ImageAsset>
@@ -146,19 +113,6 @@
     <ImageAsset Include="Assets.xcassets\Splash.imageset\Contents.json">
       <Visible>false</Visible>
     </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\Splash.imageset\Splash.Logo.Circle.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\Splash.imageset\Splash.Logo.Circle@2x.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <ImageAsset Include="Assets.xcassets\Splash.imageset\Splash.Logo.Circle@3x.png">
-      <Visible>false</Visible>
-    </ImageAsset>
-    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
-    <BundleResource Include="Resources\CameraButton.png" />
-    <BundleResource Include="Resources\CameraButton%402x.png" />
-    <BundleResource Include="Resources\CameraButton%403x.png" />
     <BundleResource Include="Resources\BackButton.png" />
     <BundleResource Include="Resources\BackButton%402x.png" />
     <BundleResource Include="Resources\BackButton%403x.png" />
@@ -171,6 +125,53 @@
     <BundleResource Include="Resources\StartChatButton.png" />
     <BundleResource Include="Resources\StartChatButton%402x.png" />
     <BundleResource Include="Resources\StartChatButton%403x.png" />
+    <BundleResource Include="Resources\FilmButton.png" />
+    <BundleResource Include="Resources\FilmButton%402x.png" />
+    <BundleResource Include="Resources\FilmButton%403x.png" />
+    <BundleResource Include="Resources\ImageButton.png" />
+    <BundleResource Include="Resources\ImageButton%402x.png" />
+    <BundleResource Include="Resources\ImageButton%403x.png" />
+    <BundleResource Include="Resources\InviteButton.png" />
+    <BundleResource Include="Resources\InviteButton%402x.png" />
+    <BundleResource Include="Resources\InviteButton%403x.png" />
+    <BundleResource Include="Resources\PhoneCallButton.png" />
+    <BundleResource Include="Resources\PhoneCallButton%402x.png" />
+    <BundleResource Include="Resources\PhoneCallButton%403x.png" />
+    <BundleResource Include="Resources\VideoButton.png" />
+    <BundleResource Include="Resources\VideoButton%402x.png" />
+    <BundleResource Include="Resources\VideoButton%403x.png" />
+    <BundleResource Include="Resources\VideoCallButton.png" />
+    <BundleResource Include="Resources\VideoCallButton%402x.png" />
+    <BundleResource Include="Resources\VideoCallButton%403x.png" />
+    <BundleResource Include="Resources\ActionsButton.png" />
+    <BundleResource Include="Resources\ActionsButton%402x.png" />
+    <BundleResource Include="Resources\ActionsButton%403x.png" />
+    <BundleResource Include="Resources\SendButton.png" />
+    <BundleResource Include="Resources\SendButton%402x.png" />
+    <BundleResource Include="Resources\SendButton%403x.png" />
+    <BundleResource Include="Resources\CameraButton.png" />
+    <BundleResource Include="Resources\CameraButton%402x.png" />
+    <BundleResource Include="Resources\CameraButton%403x.png" />
+    <BundleResource Include="Resources\materialdesignicons-webfont.ttf" />
+    <BundleResource Include="Resources\good_things_happen.aiff" />
+    <BundleResource Include="Resources\good_things_happen.mp3" />
+    <BundleResource Include="Resources\filling_your_inbox.m4r" />
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\Ringer.Icon-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\Ringer.Icon%402x-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash.imageset\Ringer.Icon%403x-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Contents.json" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%402x.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%403x.png" />
+    <InterfaceDefinition Include="Resources\LaunchScreen.storyboard" />
+    <InterfaceDefinition Include="Resources\RingerLaunchScreen.storyboard" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%402x-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%403x-1.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%403x-2.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon-2.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon-3.png" />
+    <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%402x-2.png" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -183,39 +184,45 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client">
-      <Version>3.0.0</Version>
+      <Version>3.1.3</Version>
     </PackageReference>
     <PackageReference Include="Plugin.Permissions">
-      <Version>5.0.0-beta</Version>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody">
-      <Version>3.1.3</Version>
+      <Version>6.0.0-beta</Version>
     </PackageReference>
     <PackageReference Include="Refractored.MvvmHelpers">
       <Version>1.3.0</Version>
     </PackageReference>
     <PackageReference Include="Xam.Plugin.Media">
-      <Version>4.4.8-beta</Version>
+      <Version>5.0.0-beta</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.3.0.991221" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.3.1" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.495" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.2" />
     <PackageReference Include="Xamarin.Forms.Maps">
-      <Version>4.3.0.991221</Version>
+      <Version>4.5.0.495</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Analytics">
-      <Version>2.1.1</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter">
-      <Version>2.1.1</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Crashes">
-      <Version>2.1.1</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Push">
-      <Version>2.1.1</Version>
+      <Version>3.1.0</Version>
     </PackageReference>
-    <PackageReference Include="Microsoft.AspNet.SignalR.Client">
-      <Version>2.4.1</Version>
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>5.0.2</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading">
+      <Version>2.4.11.982</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading.Forms">
+      <Version>2.4.11.982</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.FFImageLoading.Transformations">
+      <Version>2.4.11.982</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
@@ -251,5 +258,8 @@
   </ItemGroup>
   <ItemGroup>
     <BundleResource Include="Resources\SendIcon%403x.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Assets.xcassets\Splash-Screen.imageset\" />
   </ItemGroup>
 </Project>

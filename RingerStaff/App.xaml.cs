@@ -2,20 +2,20 @@
 using RingerStaff.Services;
 using Plugin.LocalNotification;
 using System.Diagnostics;
-using RingerStaff.Views;
-using System.Linq;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Push;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
 using System;
 using Xamarin.Essentials;
+using System.Collections.ObjectModel;
+using RingerStaff.Models;
 
 namespace RingerStaff
 {
     public partial class App : Application
     {
-        public static string BaseUrl = DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
+        public static string BaseUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net" : DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
         public static string Huburl = BaseUrl + "/hubs/chat";
         public static string LoginUrl = BaseUrl + "/auth/staff-login";
         public static string Token
@@ -25,6 +25,7 @@ namespace RingerStaff
         }
         public static string DeviceId;
         public static string CurrentRoomId;
+        public static ObservableCollection<MessageModel> Messages = new ObservableCollection<MessageModel>();
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
 
@@ -58,10 +59,10 @@ namespace RingerStaff
         {
             #region AppCenter
 
-            /** // Intercept Push Notification
+            // Intercept Push Notification
             if (!AppCenter.Configured)
             {
-                Push.PushNotificationReceived += async (sender, e) =>
+                Push.PushNotificationReceived += (sender, e) =>
                 {
                     string body = null;
                     string pushSender = null;
@@ -71,6 +72,8 @@ namespace RingerStaff
                     {
                         foreach (var key in e.CustomData.Keys)
                         {
+                            Debug.WriteLine($"[{key}]{e.CustomData[key]}");
+
                             switch (key)
                             {
                                 case "room":
@@ -88,18 +91,20 @@ namespace RingerStaff
                         }
                     }
 
-                    if (CurrentRoomId != null && !IsChatPage)
-                    {
-                        await Shell.Current.Navigation.PopToRootAsync(false);
-                        await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
-                    }
+                    //if (CurrentRoomId != null)
+                    //{
+                    //    await Shell.Current.Navigation.PopToRootAsync(false);
+                    //    await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
+                    //}
                 };
             }
-            **/
 
+
+            //"ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +
+            //"android=b4662d44-77f1-47f8-8256-dd1756a6f015;"
             AppCenter.Start(
-                "ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +
-                "android=b4662d44-77f1-47f8-8256-dd1756a6f015;",
+                "ios=9573aacd-70c3-459f-aa6c-b841953e7f1d;" +
+                "android=2468e092-6b08-4ce9-a777-cc06f2d20408;",
                 typeof(Analytics),
                 typeof(Crashes),
                 typeof(Push));
@@ -108,7 +113,7 @@ namespace RingerStaff
 
             if (await Push.IsEnabledAsync())
             {
-                Guid? id = await AppCenter.GetInstallIdAsync();
+                Guid? id = await AppCenter.GetInstallIdAsync().ConfigureAwait(false);
                 // Set Device Id
                 DeviceId = id?.ToString();
 
@@ -121,7 +126,7 @@ namespace RingerStaff
             #region SignalR Connection
             if (IsLoggedIn)
             {
-                await RealTimeService.ConnectAsync(Huburl, Token);
+                await RealTimeService.ConnectAsync(Huburl, Token).ConfigureAwait(false);
             }
             #endregion
         }

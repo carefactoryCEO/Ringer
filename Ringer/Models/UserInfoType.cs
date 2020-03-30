@@ -3,6 +3,6 @@ namespace Ringer.Models
 {
     public enum UserInfoType
     {
-        None, Name, BirthDate, Gender
+        None, Name, BirthDate, Gender, Retry
     }
 }
