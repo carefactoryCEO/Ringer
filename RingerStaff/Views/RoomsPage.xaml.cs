@@ -27,9 +27,6 @@ namespace RingerStaff.Views
             {
                 if (App.IsLoggedIn)
                 {
-                    // subscribe new message event of Realtime service
-
-                    // get Rooms from MessageRepository
                     var roomsPopulated = await vm.LoadRoomsAsync();
                 }
                 else

@@ -15,10 +15,14 @@ namespace RingerStaff
 {
     public partial class App : Application
     {
-        public static string BaseUrl = DeviceInfo.DeviceType == DeviceType.Physical ? "https://ringerhub.azurewebsites.net" : DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" : DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
-        public static string Huburl = BaseUrl + "/hubs/chat";
+        public static readonly string BaseUrl = DeviceInfo.DeviceType ==
+            DeviceType.Physical ? "https://ringerhub.azurewebsites.net" :
+            DeviceInfo.Platform == DevicePlatform.iOS ? "http://localhost:5000" :
+            DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5000" : null;
+        public static readonly string Huburl = BaseUrl + "/hubs/chat";
         public static readonly string PendingUrl = BaseUrl + "/message/pending";
-        public static string LoginUrl = BaseUrl + "/auth/staff-login";
+        public static readonly string LoginUrl = BaseUrl + "/auth/staff-login";
+
         public static string Token
         {
             get => Preferences.Get(nameof(Token), null);
@@ -40,7 +44,7 @@ namespace RingerStaff
             set => Preferences.Set(nameof(UserId), value);
         }
         public static string RoomId;
-        internal static string RoomTitle;
+        public static string RoomTitle;
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
 
@@ -53,15 +57,6 @@ namespace RingerStaff
             DependencyService.Register<MockDataStore>();
 
             MainPage = new AppShell();
-
-            PageAppearing += App_PageAppearing;
-        }
-
-        private void App_PageAppearing(object sender, Page page)
-        {
-            //if (!IsLoggedIn)
-            //    if (page.Navigation.ModalStack.Count == 0 || !(page.Navigation.ModalStack.Last() is LoginPage))
-            //        page.Navigation.PushModalAsync(new LoginPage());
         }
 
         private void OnLocalNotificationTapped(NotificationTappedEventArgs e)
@@ -72,7 +67,6 @@ namespace RingerStaff
         protected override async void OnStart()
         {
             #region AppCenter
-
             // Intercept Push Notification
             if (!AppCenter.Configured)
             {
@@ -113,9 +107,6 @@ namespace RingerStaff
                 };
             }
 
-
-            //"ios=0da55050-30d7-43a3-ba7c-1404af4ccba0;" +
-            //"android=b4662d44-77f1-47f8-8256-dd1756a6f015;"
             AppCenter.Start(
                 "ios=9573aacd-70c3-459f-aa6c-b841953e7f1d;" +
                 "android=2468e092-6b08-4ce9-a777-cc06f2d20408;",
@@ -128,7 +119,6 @@ namespace RingerStaff
             if (await Push.IsEnabledAsync())
             {
                 Guid? id = await AppCenter.GetInstallIdAsync().ConfigureAwait(false);
-                // Set Device Id
                 DeviceId = id?.ToString();
 
                 Debug.WriteLine("-------------------------");
@@ -137,12 +127,8 @@ namespace RingerStaff
             }
             #endregion
 
-            #region SignalR Connection
             if (IsLoggedIn)
-            {
                 await RealTimeService.ConnectAsync(Huburl, Token).ConfigureAwait(false);
-            }
-            #endregion
         }
 
         protected override void OnSleep()
