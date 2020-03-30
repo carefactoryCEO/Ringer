@@ -36,9 +36,14 @@ namespace Ringer.Views
         {
             set
             {
+                notificationCalled = true;
+
                 if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
                 {
-                    notificationCalled = true;
+                    Device.InvokeOnMainThreadAsync(() =>
+                    {
+                        vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
+                    });
                 }
             }
         }
@@ -48,6 +53,12 @@ namespace Ringer.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            if (notificationCalled)
+            {
+                notificationCalled = false;
+                await vm.RefreshMessageAsync();
+            }
 
             App.IsChatPage = true;
 
@@ -81,11 +92,7 @@ namespace Ringer.Views
                     Utility.Trace(((MessageModel)message).Body);
                 });
             });
-
-            if (App.IsLoggedIn)
-                vm.OnAppearing();
-            else
-                await vm.LogInProcessAsync();
+            await vm.LogInProcessAsync();
         }
         protected override void OnDisappearing()
         {

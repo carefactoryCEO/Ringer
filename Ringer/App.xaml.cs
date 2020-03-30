@@ -158,6 +158,7 @@ namespace Ringer
                         }
                     }
 
+                    await _messaging.FetchRemoteMessagesAsync();
                     await Shell.Current.GoToAsync(Constants.ChatPageUriFromPushNotification);
                 };
             }
@@ -211,14 +212,8 @@ namespace Ringer
 
             IsOn = true;
 
-            if (IsLoggedIn)
-            {
-                await Task.WhenAll(new Task[]
-                {
-                    _messaging.EnsureConnected(),
-                    _messaging.FetchRemoteMessagesAsync()
-                });
-            }
+            await _messaging.FetchRemoteMessagesAsync();
+            await _messaging.EnsureConnected();
 
         }
         #endregion

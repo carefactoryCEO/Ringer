@@ -40,13 +40,6 @@ namespace Ringer.ViewModels
         public ICommand GalleryVideoCommand { get; }
         public ICommand LoadBufferCommand { get; }
         public ICommand RefreshCommand { get; }
-
-        public void OnAppearing()
-        {
-            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            _messaging.BufferMessages();
-
-        }
         #endregion
 
         #region Events
@@ -87,16 +80,15 @@ namespace Ringer.ViewModels
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             ResetCommand = new Command(async () => await Reset());
             LoadBufferCommand = new Command(() => LoadBuffer());
-            RefreshCommand = new Command(() =>
-            {
-                Messages = new ObservableCollection<MessageModel>(_messaging.Messages.TakeLast(Constants.MessageCount));
-                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-            });
+            RefreshCommand = new Command(async () => await RefreshMessageAsync());
 
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            _messaging.BufferMessages();
         }
         #endregion
 
         #region Private Methods
+
         private void OnMessagesFetched(object sender, MessageModel[] fetchedMessages)
         {
             if (fetchedMessages.Any())
@@ -669,8 +661,6 @@ namespace Ringer.ViewModels
             IsBusy = true;
             await _messaging.InitMessagesAsync();
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            _messaging.BufferMessages();
-            Messages.Add(new MessageModel { Body = "ensureMessageLoaded" });
             MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
             IsBusy = false;
         }
@@ -841,6 +831,15 @@ namespace Ringer.ViewModels
                         break;
                     }
             }
+        }
+        public async Task RefreshMessageAsync()
+        {
+            IsBusy = true;
+            await _messaging.InitMessagesAsync();
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            _messaging.BufferMessages();
+            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+            IsBusy = false;
         }
         #endregion
 
