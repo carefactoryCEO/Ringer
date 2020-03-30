@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RingerStaff.Views.RoomsPage"
-             Title="{Binding Title}">
+             Title="링거">
     <ContentPage.ToolbarItems>
 
         <ToolbarItem Command="{Binding SearchCommand}"
@@ -35,52 +35,61 @@
     </ContentPage.ToolbarItems>
 
     <Grid>
-        <ListView ItemsSource="{Binding Rooms}"
-                  Margin="0,0,0,0"
-                  SeparatorVisibility="None"
-                  VerticalOptions="FillAndExpand"
-                  HasUnevenRows="true"
-                  ItemSelected="OnItemSelected">
-            <ListView.ItemTemplate>
+        <CollectionView ItemsSource="{Binding Rooms}"
+                        SelectionMode="Single"
+                        SelectionChanged="CollectionView_SelectionChanged">
+            <CollectionView.EmptyView>
+                <ContentView>
+                    <Label Text="아무도 없습니다." HorizontalOptions="Center" VerticalOptions="Center"/>
+                </ContentView>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <ViewCell>
-                        <StackLayout Padding="15">
-                            <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding Title}"
+                    <StackLayout Padding="15">
+
+                        <StackLayout Orientation="Horizontal">
+                            <Label Text="{Binding Title}"
                                        LineBreakMode="NoWrap"
                                        Style="{DynamicResource ListItemTextStyle}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
-                                <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tt h:mm}'}"
+                            <Label Text="{Binding LastMessageArrivedAt, StringFormat='{0:tt h:mm}'}"
                                        TextColor="Gray"
                                        FontSize="12"
                                        HorizontalOptions="EndAndExpand"/>
-                            </StackLayout>
-                            <StackLayout Orientation="Horizontal">
-                                <Label Text="{Binding LastMessage}"
+                        </StackLayout>
+
+                        <StackLayout Orientation="Horizontal">
+                            <Label Text="{Binding LastMessage}"
                                        LineBreakMode="NoWrap"
                                        Style="{DynamicResource ListItemDetailTextStyle}"
                                        TextColor="Gray"
                                        FontSize="13" />
-                                <Frame CornerRadius="11" Padding="0"
+                            <Frame CornerRadius="11" Padding="0"
                                        BackgroundColor="#E95E3D"
                                        TranslationY="-5"
                                        HasShadow="False"
                                        HorizontalOptions="EndAndExpand">
-                                    <Label Text="{Binding UnreadMessagesCount}"
+                                <Label Text="{Binding UnreadMessagesCount}"
                                            Margin="8,4"
                                            FontSize="12"
                                            BackgroundColor="Transparent"
                                            TextColor="White" />
-                                </Frame>
-                            </StackLayout>
+                            </Frame>
                         </StackLayout>
-                    </ViewCell>
+                    </StackLayout>
                 </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-        <ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}"/>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <!--<ActivityIndicator IsRunning="{Binding IsBusy}" IsEnabled="{Binding IsBusy}"/>-->
+        <ActivityIndicator IsRunning="True"
+                           IsVisible="{Binding IsBusy}"
+                           IsEnabled="{Binding IsBusy}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           HeightRequest="40"
+                           WidthRequest="40"/>
+
     </Grid>
-
-
 </ContentPage>

@@ -140,6 +140,19 @@
                 <Label Text="초대" HorizontalOptions="Center"/>
             </StackLayout>
 
+            <StackLayout Grid.Row="1" Grid.Column="3">
+                <ImageButton Source="{FontImage Glyph={StaticResource IconDatabaseRefresh},
+                                                FontFamily={StaticResource MaterialFontFamily},
+                                                Color={StaticResource ResetActionIconBackground},
+                                                Size=45}"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Command="{Binding ResetCommand}"/>
+                <Label Text="리셋" HorizontalOptions="Center"/>
+            </StackLayout>
+
+
+
         </Grid>
 
     </Grid>

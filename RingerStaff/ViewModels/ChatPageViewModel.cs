@@ -1,10 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ringer.Core.Data;
 using Ringer.Core.EventArgs;
+using Ringer.Core.Models;
+using RingerStaff.Helpers;
 using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Types;
@@ -17,13 +23,18 @@ namespace RingerStaff.ViewModels
     {
         private ObservableCollection<MessageModel> messages;
         private string textToSend;
-
         private double navBarHeight;
         private Thickness bottomPadding;
+        private bool messagesLoading;
+
+        public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
+        public ObservableCollection<MessageModel> Messages { get => messages; set => SetProperty(ref messages, value); }
+        public double NavBarHeight { get => navBarHeight; set => SetProperty(ref navBarHeight, value); }
+        public Thickness BottomPadding { get => bottomPadding; set => SetProperty(ref bottomPadding, value); }
 
         public ChatPageViewModel()
         {
-            Title = "신모범 44M 워싱턴(미국)";
+            Title = App.RoomTitle;
             messages = new ObservableCollection<MessageModel>();
 
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
@@ -39,23 +50,27 @@ namespace RingerStaff.ViewModels
             RealTimeService.SomeoneEntered += RealTimeService_SomeoneEntered;
             RealTimeService.SomeoneLeft += RealTimeService_SomeoneLeft;
 
+            messages.CollectionChanged += Messages_CollectionChanged;
         }
-
 
         private void RealTimeService_SomeoneLeft(object sender, SignalREventArgs e)
         {
+            if (e.Sender == App.UserName)
+                return;
+
             MessageModel message = new MessageModel
             {
                 Body = $"{e.Sender}가 나갔습니다.",
                 MessageTypes = MessageTypes.EntranceNotice | MessageTypes.Leading | MessageTypes.Trailing
             };
 
-            Messages.Add(message);
-            MessagingCenter.Send(this, "MessageAdded", message);
+            messages.Add(message);
         }
-
         private void RealTimeService_SomeoneEntered(object sender, SignalREventArgs e)
         {
+            if (e.Sender == App.UserName)
+                return;
+
             MessageModel message = new MessageModel
             {
                 Body = $"{e.Sender}가 들어왔습니다.",
@@ -64,138 +79,133 @@ namespace RingerStaff.ViewModels
             };
 
             Messages.Add(message);
-            MessagingCenter.Send(this, "MessageAdded", message);
         }
-
         private void RealTimeService_Reconnecting(object sender, ConnectionEventArgs e)
         {
             Debug.WriteLine(e.Message);
             MessagingCenter.Send(this, "ConnectionEvent", e.Message);
         }
-
         private void RealTimeService_Reconnected(object sender, ConnectionEventArgs e)
         {
             Debug.WriteLine(e.Message);
         }
-
         private void RealTimeService_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
+            if (e.RoomId != App.RoomId)
+                return;
+
+            if (e.SenderId == App.UserId)
+                return;
+
+            var lastMessage = Messages.LastOrDefault();
             MessageModel message = new MessageModel
             {
                 Body = e.Body,
                 Sender = e.SenderName,
-                CreatedAt = e.CreatedAt.ToLocalTime(),
-                MessageTypes = MessageTypes.Incomming | MessageTypes.Leading | MessageTypes.Trailing
+                CreatedAt = e.CreatedAt
             };
 
-            // text, image, video (media type)
-            message.MessageTypes |= MessageTypes.Text;
-
-            MessageModel lastMessage = Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
-
-            if (lastMessage != null)
-            {
-                if (lastMessage.Sender == message.Sender && InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
-                {
-                    lastMessage.MessageTypes ^= MessageTypes.Trailing;
-                    message.MessageTypes ^= MessageTypes.Leading;
-                }
-            }
+            Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
 
             Messages.Add(message);
-            MessagingCenter.Send<ChatPageViewModel, MessageModel>(this, "MessageAdded", message);
-        }
-
-        private bool InSameMinute(DateTime current, DateTime last)
-        {
-            return current - last < TimeSpan.FromMinutes(1) && current.Minute == last.Minute;
         }
 
         private async Task SendMessageAsync()
         {
-            if (TextToSend == string.Empty)
+            var body = TextToSend.Trim();
+
+            if (string.IsNullOrEmpty(body))
                 return;
 
+            TextToSend = string.Empty;
+
+            var lastMessage = messages.LastOrDefault();
             var message = new MessageModel
             {
-                Body = TextToSend,
-                Sender = "",
-                UnreadCount = 2,
-                MessageTypes = MessageTypes.Outgoing | MessageTypes.Leading | MessageTypes.Trailing,
-                CreatedAt = DateTime.UtcNow.ToLocalTime()
+                Body = body,
+                SenderId = App.UserId,
+                Sender = App.UserName,
+                CreatedAt = DateTime.UtcNow
             };
 
-            // text, image, video (media type)
-            message.MessageTypes |= MessageTypes.Text;
-
-            MessageModel lastMessage = Messages.OrderByDescending(m => m.CreatedAt).FirstOrDefault();
-
-            if (lastMessage != null)
-            {
-                if (lastMessage.Sender == message.Sender && InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
-                {
-                    lastMessage.MessageTypes ^= MessageTypes.Trailing;
-                    message.MessageTypes ^= MessageTypes.Leading;
-                }
-            }
+            Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
 
             Messages.Add(message);
-            TextToSend = string.Empty;
-            MessagingCenter.Send(this, "MessageAdded", message);
 
-            await RealTimeService.SendMessageAsync(message, App.CurrentRoomId);
+            await RealTimeService.SendMessageAsync(message, App.RoomId);
         }
 
+        private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                MessagingCenter.Send(this, "MessageAdded", messages.Last());
+            }
+        }
 
         private Task ExcuteOpenProfilePageCommand()
         {
             return Shell.Current.GoToAsync("profilepage");
         }
-
         private Task ExcuteOpenSessionsPageCommand()
         {
             return Shell.Current.Navigation.PushModalAsync(new SessionsPage());
         }
-
-        internal async Task OnAppearingAsync()
-        {
-            await RealTimeService.EnterRoomAsync(App.CurrentRoomId, "staff");
-            await LoadMessagesAsync();
-        }
-
-        internal async Task OnDisappearingAsync()
-        {
-            await Task.Delay(0);
-        }
-
         private Task ExcuteGoBackCommand()
         {
             return Shell.Current.Navigation.PopAsync();
         }
 
-
+        public async Task OnAppearingAsync()
+        {
+            await RealTimeService.EnterRoomAsync(App.RoomId, "staff");
+            await LoadMessagesAsync();
+        }
+        public async Task OnDisappearingAsync()
+        {
+            await Task.Delay(0);
+        }
         public async Task LoadMessagesAsync()
         {
             IsBusy = true;
 
-            var messageModels = await MessageRepository.LoadMessageAsync();
-
             Messages.Clear();
 
-            foreach (var messageModel in messageModels)
+            List<PendingMessage> pendingMessages = await ApiService.PullPendingMessagesAsync(App.RoomId, 0, App.Token);
+
+            if (!pendingMessages.Any())
+                return;
+
+            MessageModel[] messages = pendingMessages
+                .OrderBy(p => p.CreatedAt)
+                .TakeLast(50)
+                .Select(pm => new MessageModel
+                {
+                    ServerId = pm.Id,
+                    Body = pm.Body,
+                    Sender = pm.SenderName,
+                    SenderId = pm.SenderId,
+                    CreatedAt = pm.CreatedAt,
+                    UnreadCount = 0
+                })
+                .ToArray();
+
+            messagesLoading = true;
+
+            for (int i = 0; i < messages.Length; i++)
             {
-                Messages.Add(messageModel);
-                MessagingCenter.Send(this, "MessageAdded", messageModels.Last());
+                MessageModel lastMessage = i > 0 ? messages[i - 1] : null;
+                Utility.SetMessageTypes(ref messages[i], ref lastMessage, App.UserId);
+                Messages.Add(messages[i]);
             }
+
+            messagesLoading = false;
+
+            if (Messages.Any())
+                MessagingCenter.Send(this, "MessageAdded", Messages.Last());
 
             IsBusy = false;
         }
-
-        public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
-        public ObservableCollection<MessageModel> Messages { get => messages; set => SetProperty(ref messages, value); }
-        public double NavBarHeight { get => navBarHeight; set => SetProperty(ref navBarHeight, value); }
-        public Thickness BottomPadding { get => bottomPadding; set => SetProperty(ref bottomPadding, value); }
-
 
         public ICommand LoadMessagesCommand { get; set; }
         public ICommand SendCommand { get; set; }
@@ -205,19 +215,5 @@ namespace RingerStaff.ViewModels
         public ICommand OpenSessionsPageCommand { get; set; }
         public ICommand OpenProfilePageCommand { get; set; }
 
-    }
-
-    public static class FlagExtension
-    {
-        public static MessageTypes Add(this MessageTypes flag, MessageTypes toAdd)
-        {
-            return flag | toAdd;
-        }
-
-        public static MessageTypes Remove(this MessageTypes flag, MessageTypes toAdd)
-        {
-            var newflag = flag & ~toAdd;
-            return newflag;
-        }
     }
 }

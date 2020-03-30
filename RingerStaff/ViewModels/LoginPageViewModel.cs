@@ -13,7 +13,7 @@ namespace RingerStaff.ViewModels
         {
             LoginCommand = new Command(async () => await LoginAsync());
             EmailText = "test@test.com";
-            PasswordText = "password";
+            PasswordText = "string";
         }
 
         private string _emailText;
@@ -32,6 +32,7 @@ namespace RingerStaff.ViewModels
                 if (!string.IsNullOrEmpty(token))
                 {
                     App.Token = token;
+                    await RealTimeService.ConnectAsync(App.Huburl, App.Token);
                     await Shell.Current.Navigation.PopModalAsync();
                 }
                 else

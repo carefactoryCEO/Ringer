@@ -79,5 +79,15 @@
                                    BindingContext="{Binding .}"
                                    PagePadding="{Binding Padding, Source={x:Reference ChatContentPage}}"/>
 
+        <ContentView IsVisible="{Binding IsBusy}"
+                     Grid.RowSpan="2"
+                     BackgroundColor="#7000">
+            <ActivityIndicator IsEnabled="{Binding IsBusy}"
+                               IsRunning="{Binding IsBusy}"
+                               HorizontalOptions="CenterAndExpand"
+                               VerticalOptions="CenterAndExpand"
+                               Color="White"/>
+        </ContentView>
+
     </Grid>
 </ContentPage>

@@ -9,7 +9,6 @@ using Xamarin.Forms;
 using Ringer.Services;
 using Ringer.Helpers;
 using Plugin.LocalNotification;
-using System.Threading.Tasks;
 
 namespace Ringer
 {
@@ -17,7 +16,6 @@ namespace Ringer
     {
         #region private members
         private readonly IMessaging _messaging;
-        private readonly ILocationService _location;
         #endregion
 
         #region public static propertie
@@ -85,7 +83,6 @@ namespace Ringer
             MainPage = new AppShell();
 
             _messaging = DependencyService.Get<IMessaging>();
-            _location = DependencyService.Get<ILocationService>();
 
             // Local Notification
             NotificationCenter.Current.NotificationTapped += Current_NotificationTapped;
@@ -187,7 +184,6 @@ namespace Ringer
                 LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, Token);
             }
             #endregion
-
         }
         protected override void OnSleep()
         {

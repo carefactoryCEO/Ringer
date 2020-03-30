@@ -168,6 +168,8 @@ namespace Ringer.ViewModels
         }
         private async Task Reset()
         {
+            MessagingCenter.Send(this, "ShowOrHideKeyboard", false);
+
             App.Token = null;
             App.RoomId = null;
             App.UserName = null;

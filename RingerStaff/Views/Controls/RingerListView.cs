@@ -12,7 +12,7 @@ namespace RingerStaff.Views.Controls
     {
         private double _previousHeight;
 
-        public RingerListView() : this(ListViewCachingStrategy.RecycleElement)
+        public RingerListView() : this(ListViewCachingStrategy.RetainElement)
         {
             if (Device.RuntimePlatform == Device.Android)
             {

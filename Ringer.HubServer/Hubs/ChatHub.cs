@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using System.Security.Claims;
 
 namespace Ringer.HubServer.Hubs
 {
@@ -26,6 +27,7 @@ namespace Ringer.HubServer.Hubs
         private int UserId => Convert.ToInt32(Context.UserIdentifier);
         private string DeviceId => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceId")?.Value;
         private string DeviceType => Context.User?.Claims?.FirstOrDefault(c => c.Type == "DeviceType")?.Value;
+        private string UserName => Context.User?.Claims?.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value;
 
         public ChatHub(RingerDbContext dbContext, ILogger<ChatHub> logger, IWebHostEnvironment env)
         {
@@ -35,25 +37,47 @@ namespace Ringer.HubServer.Hubs
         }
 
         #region Enter or Leave a Room
-        public async Task AddToGroup(string group, string user)
+        public async Task AddToGroup(string roomId, string userName)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, group);
+            await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
 
-            _logger.LogWarning($"User {user} entered to room. [room id: {group}]");
+            var room = await _dbContext.Rooms
+                .Include(r => r.Enrollments)
+                    .ThenInclude(e => e.User)
+                .FirstOrDefaultAsync(r => r.Id == roomId);
 
-            // TODO: user가 방에 원래 있었다면 들어왔다는 메시지를 보내지 않는다.
+            // check if the user is already in this room
+            var en = room.Enrollments.FirstOrDefault(e => e.UserId == UserId);
+            if (en is null)
+            {
+                room.Enrollments.Add(new Enrollment{ UserId = UserId, RoomId = roomId });
+                
+                _logger.LogWarning($"User({userName}) entered to room({roomId}) with device({DeviceId}({DeviceType}))");
+                
+                await _dbContext.SaveChangesAsync();
+                // notify entering
+                await Clients.Group(roomId).SendAsync("Entered", userName);
+            }
 
-            await Clients.Group(group).SendAsync("Entered", user);
         }
-        public async Task RemoveFromGroup(string group, string user)
+        public async Task RemoveFromGroup(string roomId, string userName)
         {
-            // TODO: user가 원래 방에 있었는지 확인
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
 
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, group);
+            var room = await _dbContext.Rooms
+                .Include(r => r.Enrollments)
+                .FirstOrDefaultAsync(r => r.Id == roomId);
 
-            _logger.LogWarning($"User {user} removed from room. [room id: {group}]");
+            var en = room.Enrollments.FirstOrDefault(e => e.UserId == UserId);
 
-            await Clients.Group(group).SendAsync("Left", user);
+            if (en is null)
+                return;
+
+            _logger.LogWarning($"User {userName} removed from room. [room id: {roomId}]");
+            await Clients.Group(roomId).SendAsync("Left", userName);
+
+            room.Enrollments.Remove(en);
+            await _dbContext.SaveChangesAsync();
         }
         #endregion
 
@@ -149,38 +173,31 @@ namespace Ringer.HubServer.Hubs
         {
             try
             {
-                var currentDevice = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == DeviceId);
+                _logger.LogWarning($"user {UserName}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Connected.");
 
-                if (currentDevice != null)
+                var device = await _dbContext.Devices
+                    .Include(d => d.Owner)
+                        .ThenInclude(u => u.Enrollments)
+                            .ThenInclude(e => e.Room)
+                    .FirstOrDefaultAsync(d => d.Id == DeviceId);
+
+                if (device != null)
                 {
-                    currentDevice.IsOn = true;
-                    currentDevice.ConnectionId = Context.ConnectionId;
+                    device.IsOn = true;
+                    device.ConnectionId = Context.ConnectionId;
 
                     await _dbContext.SaveChangesAsync();
-                }
 
-
-                // Owner(User)가 속한 모든 방에 접속한 device를 추가
-                User user = await _dbContext.Users
-                    .Include(user => user.Enrollments)
-                        .ThenInclude(enrollment => enrollment.Room)
-                    .FirstOrDefaultAsync(u => u.Id == UserId);
-
-                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Connected.");
-
-                if (user.UserType == UserType.Consumer)
-                {
-                    foreach (Enrollment enrollment in user.Enrollments)
+                    foreach (var en in device.Owner.Enrollments)
                     {
-                        await AddToGroup(enrollment.Room.Id, user.Name);
-                        _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) added to romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
+                        await AddToGroup(en.RoomId, UserName);
+                        _logger.LogWarning($"user {UserName}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) added to romm {en.Room.Name}[{en.Room.Id}].");
                     }
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                //await Clients.Client(Context.ConnectionId).SendAsync("ReceiveMessage", "error", ex.Message);
             }
             finally
             {
@@ -192,36 +209,17 @@ namespace Ringer.HubServer.Hubs
         {
             try
             {
-                if (DeviceId != null)
+                var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == DeviceId);
+
+                if (device != null)
                 {
-                    var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == DeviceId);
-
-                    if (device != null)
-                    {
-                        device.ConnectionId = null;
-                        device.IsOn = false;
-                        await _dbContext.SaveChangesAsync();
-
-                        _logger.LogWarning($"[{DeviceId}]({DeviceType})'s IsOn: {device.IsOn}");
-                    }
-                    else
-                        throw new ArgumentNullException("device is null.");
+                    device.ConnectionId = null;
+                    device.IsOn = false;
+                    await _dbContext.SaveChangesAsync();
+                    _logger.LogWarning($"[{DeviceId}]({DeviceType})'s IsOn: {device.IsOn}");
+                    _logger.LogWarning($"user {UserName}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Disconnected.");
                 }
 
-                // 접속한 Device의 Ower(User)가 속한 모든 방에서 Device를 제거
-                User user = await _dbContext.Users
-                    .Include(u => u.Enrollments)
-                        .ThenInclude(enrollment => enrollment.Room)
-                    .FirstOrDefaultAsync(u => u.Id == UserId);
-
-                _logger.LogWarning($"user {user.Name}({Context.ConnectionId}) with device [{DeviceId}]({DeviceType}) Disconnected.");
-
-                //foreach (Enrollment enrollment in user.Enrollments)
-                //{
-                //    await Groups.RemoveFromGroupAsync(Context.ConnectionId, enrollment.Room.Id);
-
-                //    _logger.LogWarning($"user {user.Name}[{Context.ConnectionId}] with device [{DeviceId}]({DeviceType}) removed from romm {enrollment.Room.Name}[{enrollment.Room.Id}].");
-                //}
             }
             catch (Exception ex)
             {

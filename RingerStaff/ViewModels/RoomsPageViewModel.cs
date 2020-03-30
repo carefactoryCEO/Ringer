@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Ringer.Core.Data;
 using Ringer.Core.Models;
 using RingerStaff.Models;
 using RingerStaff.Services;
@@ -52,29 +54,40 @@ namespace RingerStaff.ViewModels
 
         }
 
-        internal void SetRoomId(object roomModel)
+        internal void SetRoomId(RoomModel roomModel)
         {
-            if (roomModel is RoomModel)
-                App.CurrentRoomId = ((RoomModel)roomModel).Id;
+            App.RoomId = roomModel.Id;
+            App.RoomTitle = roomModel.Title;
         }
 
         public async Task<bool> LoadRoomsAsync()
         {
+            if (!App.IsLoggedIn)
+                return false;
+
             IsBusy = true;
 
             try
             {
-                var roomModels = await ApiService.LoadRoomsAsync();
+                List<RoomInformation> roomInfors = await ApiService.LoadRoomsAsync();
 
-                if (roomModels.Count == 0)
+                if (roomInfors.Count == 0)
                     return false;
 
                 Rooms.Clear();
 
-                foreach (var roomModel in roomModels)
-                    Rooms.Add(roomModel);
+                foreach (var roomInfo in roomInfors)
+                {
+                    var room = new RoomModel
+                    {
+                        Title = roomInfo.Room.Name,
+                        Id = roomInfo.Room.Id,
+                        LastMessage = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.Body,
+                        LastMessageArrivedAt = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.CreatedAt
+                    };
 
-                IsBusy = false;
+                    Rooms.Add(room);
+                }
 
                 return true;
             }
@@ -93,6 +106,10 @@ namespace RingerStaff.ViewModels
         private async Task ExcuteLogoutCommandAsync()
         {
             App.Token = null;
+            Rooms.Clear();
+
+            await RealTimeService.DisconnectAsync();
+
             await Shell.Current.Navigation.PushModalAsync(new LoginPage());
         }
 

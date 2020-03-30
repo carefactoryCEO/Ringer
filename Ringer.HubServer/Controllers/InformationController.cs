@@ -111,7 +111,11 @@ namespace Ringer.HubServer.Controllers
                         Homepage = csvReader.GetField("Homepage"),
                         Latitude = csvReader.GetField<double>("Latitude"),
                         Longitude = csvReader.GetField<double>("Longitude"),
-                        GoogleMap = csvReader.GetField("GoogleMap")
+                        GoogleMap = csvReader.GetField("GoogleMap"),
+                        CountryCode = csvReader.GetField("CountryCode"),
+                        CountryCodeAndroid = csvReader.GetField("CountryCodeAndroid"),
+                        CountryCodeiOS = csvReader.GetField("CountryCodeiOS"),
+
                     };
 
                     consulates.Add(consulate);

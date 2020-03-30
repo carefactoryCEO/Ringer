@@ -58,6 +58,7 @@ namespace Ringer.Views
             {
                 notificationCalled = false;
                 await vm.RefreshMessageAsync();
+                MessageFeed.ScrollToLast();
             }
 
             App.IsChatPage = true;

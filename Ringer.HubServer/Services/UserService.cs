@@ -33,7 +33,9 @@ namespace Ringer.HubServer.Services
             if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 return null;
 
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.Email == email).ConfigureAwait(false);
+            var user = await _context.Users
+                .Include(u => u.Devices)
+                .SingleOrDefaultAsync(u => u.Email == email).ConfigureAwait(false);
 
             // check if username exists
             if (user == null)
