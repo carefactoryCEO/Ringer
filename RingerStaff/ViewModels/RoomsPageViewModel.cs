@@ -16,6 +16,8 @@ namespace RingerStaff.ViewModels
 {
     public class RoomsPageViewModel : BaseViewModel
     {
+        private static Dictionary<string, int> UnreadCounts = new Dictionary<string, int>();
+
         public RoomsPageViewModel()
         {
             Title = "채팅";
@@ -51,7 +53,28 @@ namespace RingerStaff.ViewModels
             });
 
             LogoutCommand = new Command(async () => await ExcuteLogoutCommandAsync());
+            GoChatCommand = new Command<object>(async room => await GoChat(room));
 
+            RealTimeService.MessageReceived += RealTimeService_MessageReceived;
+
+        }
+
+        private async Task GoChat(object room)
+        {
+            RoomModel model = (RoomModel)room;
+            UnreadCounts[model.Id] = 0;
+            App.RoomId = model.Id;
+            App.RoomTitle = model.Title;
+            await Shell.Current.GoToAsync("chatpage");
+        }
+
+        private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)
+        {
+            var room = Rooms.FirstOrDefault(r => r.Id == e.RoomId);
+
+            room.LastMessage = e.Body;
+            room.LastMessageArrivedAt = e.CreatedAt;
+            room.UnreadMessagesCount++;
         }
 
         internal void SetRoomId(RoomModel roomModel)
@@ -78,12 +101,16 @@ namespace RingerStaff.ViewModels
 
                 foreach (var roomInfo in roomInfors)
                 {
+                    if (!UnreadCounts.ContainsKey(roomInfo.Room.Id))
+                        UnreadCounts[roomInfo.Room.Id] = 0;
+
                     var room = new RoomModel
                     {
                         Title = roomInfo.Room.Name,
                         Id = roomInfo.Room.Id,
                         LastMessage = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.Body,
-                        LastMessageArrivedAt = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.CreatedAt
+                        LastMessageArrivedAt = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.CreatedAt,
+                        UnreadMessagesCount = UnreadCounts[roomInfo.Room.Id]
                     };
 
                     Rooms.Add(room);
@@ -123,5 +150,6 @@ namespace RingerStaff.ViewModels
         public ICommand RefreshCommand { get; set; }
         public ICommand LogoutCommand { get; set; }
         public ICommand SearchCommand { get; set; }
+        public ICommand GoChatCommand { get; set; }
     }
 }

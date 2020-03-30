@@ -54,11 +54,11 @@ namespace RingerStaff.Views
 
         async void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RoomModel selectedRoom = e.CurrentSelection.FirstOrDefault() as RoomModel;
+            //RoomModel selectedRoom = e.CurrentSelection.FirstOrDefault() as RoomModel;
 
-            vm.SetRoomId(selectedRoom);
+            //vm.SetRoomId(selectedRoom);
 
-            await Shell.Current.GoToAsync("chatpage").ConfigureAwait(false);
+            //await Shell.Current.GoToAsync("chatpage").ConfigureAwait(false);
         }
     }
 }
