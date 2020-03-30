@@ -26,6 +26,9 @@
             <x:String x:Key="IconMedia">&#xf40b;</x:String>
             <x:String x:Key="IconSettings">&#xf8ba;</x:String>
             <x:String x:Key="IconBlog">&#xf46b;</x:String>
+            <x:String x:Key="IconReload">&#xf453;</x:String>
+            <x:String x:Key="IconDatabaseRefresh">&#xfcdb;</x:String>
+
 
             <x:String x:Key="IconChat">&#xfb55;</x:String>
             <x:String x:Key="IconStaff">&#xf004;</x:String>
@@ -74,6 +77,8 @@
             <Color x:Key="Black">#000000</Color>
 
             <Color x:Key="ActionIconBackground">#B95C5C</Color>
+            <Color x:Key="ResetActionIconBackground">#52A7D5</Color>
+            <!--#52A7D5-->
 
             <!-- Chat Cell -->
             <Color x:Key="MessageMetadataColor">LightGray</Color>

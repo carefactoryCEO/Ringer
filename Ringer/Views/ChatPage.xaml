@@ -59,11 +59,11 @@
                      BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
                      HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9">
 
-            <Image BackgroundColor="{StaticResource NavBarButtonBackgroundColor}"
+            <Image BackgroundColor="Transparent"
                    Source="BackButton"
-                   HorizontalOptions="Start"
+                   HorizontalOptions="StartAndExpand"
                    TranslationY="-4"
-                   VerticalOptions="End"                   
+                   VerticalOptions="End"               
                    WidthRequest="70"
                    HeightRequest="34">
                 <Image.GestureRecognizers>
@@ -77,19 +77,25 @@
                    FontAttributes="Bold"
                    Padding="0,13"
                    x:Name="TitleLabel"
+                   BackgroundColor="Transparent"
                    Text="{Binding NavBarTitle}"/>
             <!--<Button Text="Video" Clicked="Button_Clicked"/>-->
 
-            <Button Style="{StaticResource NavBarButtonsStyle}"
+            <!--<Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
                     Command="{Binding ResetCommand}"
-                    Text="Reset"/>
+                    Text="Reset"/>-->
 
-            <Button Style="{StaticResource NavBarButtonsStyle}"
-                    HorizontalOptions="End"
-                    Command="{Binding RefreshCommand}"
-                    Text="Refresh"/>
-
+            <ImageButton Source="{FontImage Glyph={StaticResource IconReload},
+                                            FontFamily={StaticResource MaterialFontFamily},
+                                            Color={StaticResource White}}"
+                         HorizontalOptions="EndAndExpand"
+                         VerticalOptions="End"
+                         WidthRequest="70"
+                         HeightRequest="34"
+                         TranslationY="{OnPlatform iOS='-4'}"
+                         BackgroundColor="Transparent"
+                         Command="{Binding RefreshCommand}"/>
         </StackLayout>
 
         <!-- Input Bar -->

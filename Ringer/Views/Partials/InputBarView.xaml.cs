@@ -39,6 +39,8 @@ namespace Ringer.Views.Partials
 
             MessagingCenter.Subscribe<ChatPageViewModel, bool>(this, "ShowOrHideKeyboard", (sender, showing) =>
             {
+                ActionsGrid.IsVisible = false;
+
                 if (!showing)
                     RingerEditor.Unfocus();
 
@@ -69,6 +71,8 @@ namespace Ringer.Views.Partials
 
         void ActionsButton_Clicked(object sender, EventArgs e)
         {
+            RingerEditor.Unfocus();
+
             ActionsGrid.IsVisible = true;
 
             SendButton.IsEnabled = ActionsButton.IsEnabled = false;
