@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
+using Ringer.Services;
 using Ringer.ViewModels;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -18,6 +19,7 @@ namespace Ringer.Views
         #region private fields
         private readonly ChatPageViewModel vm;
         private Thickness _insets;
+        private bool notificationCalled;
         #endregion
 
         #region constructor
@@ -34,13 +36,13 @@ namespace Ringer.Views
         {
             set
             {
+                notificationCalled = true;
+
                 if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
                 {
-                    Device.BeginInvokeOnMainThread(async () =>
+                    Device.InvokeOnMainThreadAsync(() =>
                     {
-                        await vm.EnsureMessageLoaded()
-                            .ContinueWith(t => MessageFeed.ScrollToLast());
-                        TitleLabel.Focus();
+                        vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
                     });
                 }
             }
@@ -51,6 +53,12 @@ namespace Ringer.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            if (notificationCalled)
+            {
+                notificationCalled = false;
+                await vm.RefreshMessageAsync();
+            }
 
             App.IsChatPage = true;
 
@@ -84,9 +92,6 @@ namespace Ringer.Views
                     Utility.Trace(((MessageModel)message).Body);
                 });
             });
-
-            MessageFeed.ScrollToLast();
-
             await vm.LogInProcessAsync();
         }
         protected override void OnDisappearing()
@@ -94,8 +99,6 @@ namespace Ringer.Views
             MessagingCenter.Unsubscribe<ChatPageViewModel, bool>(this, "HideKeyboard");
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageAdded");
             MessagingCenter.Unsubscribe<ChatPageViewModel, object>(this, "MessageLoaded");
-
-            //vm.InitializeMessages();
 
             App.IsChatPage = false;
 
@@ -119,7 +122,6 @@ namespace Ringer.Views
         #region private methods (include event handlers)
         private void OnListShouldBeScrolled(object sender, EventArgs e)
         {
-            //if (Device.RuntimePlatform == Device.iOS)
             MessageFeed.ScrollToLast();
         }
         private void DatePicker_DateSelected(object sender, DateChangedEventArgs e)

@@ -80,11 +80,7 @@ namespace Ringer.ViewModels
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             ResetCommand = new Command(async () => await Reset());
             LoadBufferCommand = new Command(() => LoadBuffer());
-            RefreshCommand = new Command(() =>
-            {
-                Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-            });
+            RefreshCommand = new Command(async () => await RefreshMessageAsync());
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
             _messaging.BufferMessages();
@@ -92,6 +88,7 @@ namespace Ringer.ViewModels
         #endregion
 
         #region Private Methods
+
         private void OnMessagesFetched(object sender, MessageModel[] fetchedMessages)
         {
             if (fetchedMessages.Any())
@@ -835,9 +832,14 @@ namespace Ringer.ViewModels
                     }
             }
         }
-        public void InitializeMessages()
+        public async Task RefreshMessageAsync()
         {
-            _messaging.InitMessagesAsync();
+            IsBusy = true;
+            await _messaging.InitMessagesAsync();
+            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            _messaging.BufferMessages();
+            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+            IsBusy = false;
         }
         #endregion
 

@@ -360,8 +360,8 @@ namespace Ringer.Services
         }
         public async Task FetchRemoteMessagesAsync()
         {
-            if (App.LastConnectionId == ConnectionId)
-                return;
+            //if (App.LastConnectionId == ConnectionId)
+            //    return;
 
             if (await PullRemoteMessagesAsync() is MessageModel[] messages)
             {

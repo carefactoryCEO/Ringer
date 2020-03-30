@@ -85,6 +85,11 @@
                     Command="{Binding ResetCommand}"
                     Text="Reset"/>
 
+            <Button Style="{StaticResource NavBarButtonsStyle}"
+                    HorizontalOptions="End"
+                    Command="{Binding RefreshCommand}"
+                    Text="Refresh"/>
+
         </StackLayout>
 
         <!-- Input Bar -->
