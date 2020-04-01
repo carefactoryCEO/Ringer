@@ -6,10 +6,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Azure.Storage.Blobs;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
+using Ringer.Core;
 using Ringer.Core.Data;
 using Ringer.Core.EventArgs;
 using RingerStaff.Helpers;
@@ -24,6 +26,7 @@ namespace RingerStaff.ViewModels
     public class ChatPageViewModel : BaseViewModel
     {
         private ObservableCollection<MessageModel> messages;
+        private readonly BlobContainerClient blobContainer;
         private string textToSend;
         private double navBarHeight;
         private Thickness bottomPadding;
@@ -37,6 +40,8 @@ namespace RingerStaff.ViewModels
         {
             Title = App.RoomTitle;
             messages = new ObservableCollection<MessageModel>();
+            blobContainer = new BlobContainerClient(Constant.BlobStorageConnectionString, Constant.BlobContainerName);
+
 
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
             LoadMessagesCommand = new Command(async () => await LoadMessagesAsync());
@@ -456,33 +461,14 @@ namespace RingerStaff.ViewModels
         }
         private async Task<bool> TakingVideoPermittedAsync()
         {
-            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
-                return await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync();
-
-            else if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
-                return await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync();
-
-            else
-                return false;
+            return Device.RuntimePlatform == Xamarin.Forms.Device.iOS
+                ? await CheckCameraPermissionAsync() && await CheckPhotosPermissionsAsync() && await CheckMicPermissionAsync()
+                : Device.RuntimePlatform == Device.Android
+                ? await CheckCameraPermissionAsync() && await CheckStoragePermissionAsync()
+                : false;
         }
         #endregion
 
-        //private async Task TakePhotoAsync()
-        //{
-
-        //}
-        //private async Task PickPhotoAsync()
-        //{
-
-        //}
-        //private async Task TakeVideoAsync()
-        //{
-
-        //}
-        //private async Task PickVideoAsync()
-        //{
-
-        //}
         private async Task InviteAsync()
         {
 
