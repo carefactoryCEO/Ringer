@@ -27,9 +27,6 @@ namespace RingerStaff.Views
             {
                 if (App.IsLoggedIn)
                 {
-                    // subscribe new message event of Realtime service
-
-                    // get Rooms from MessageRepository
                     var roomsPopulated = await vm.LoadRoomsAsync();
                 }
                 else
@@ -57,11 +54,11 @@ namespace RingerStaff.Views
 
         async void CollectionView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            RoomModel selectedRoom = e.CurrentSelection.FirstOrDefault() as RoomModel;
+            //RoomModel selectedRoom = e.CurrentSelection.FirstOrDefault() as RoomModel;
 
-            vm.SetRoomId(selectedRoom);
+            //vm.SetRoomId(selectedRoom);
 
-            await Shell.Current.GoToAsync("chatpage").ConfigureAwait(false);
+            //await Shell.Current.GoToAsync("chatpage").ConfigureAwait(false);
         }
     }
 }

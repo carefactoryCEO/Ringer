@@ -16,6 +16,10 @@ using Android.App;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 
+// for plugin media
+[assembly: UsesFeature("android.hardware.camera", Required = true)]
+[assembly: UsesFeature("android.hardware.camera.autofocus", Required = true)]
+
 // Version information for an assembly consists of the following four values:
 //
 //      Major Version

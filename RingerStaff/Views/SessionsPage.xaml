@@ -7,11 +7,11 @@
              x:Class="RingerStaff.Views.SessionsPage">
     <StackLayout HorizontalOptions="Center" VerticalOptions="FillAndExpand" Padding="20,88,20,34">
 
-        <Button Text="닫기" Clicked="CloseButton_Clicked" BackgroundColor="LightGray"/>
+        <!--<Button Text="닫기" Clicked="CloseButton_Clicked" BackgroundColor="LightGray"/>-->
 
         <StackLayout Orientation="Horizontal">
-            <Button Text="상담시작" BackgroundColor="LightBlue" HorizontalOptions="FillAndExpand"/>
-            <Button Text="상담종료" BackgroundColor="LightPink" VerticalOptions="FillAndExpand" Padding="20,0,20,0"/>
+            <Button Text="상담시작" BackgroundColor="LightBlue" HorizontalOptions="EndAndExpand" Padding="20,5"/>
+            <Button Text="상담종료" BackgroundColor="LightPink" VerticalOptions="EndAndExpand" Padding="20,5"/>
         </StackLayout>
 
         <CollectionView VerticalOptions="FillAndExpand">

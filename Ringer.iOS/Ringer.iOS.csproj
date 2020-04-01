@@ -32,7 +32,7 @@
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <OptimizePNGs>true</OptimizePNGs>
     <MtouchFastDev>true</MtouchFastDev>
-    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
+    <CodesignProvision>VS: kr.co.carefactory.ringer Development</CodesignProvision>
     <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
@@ -43,6 +43,8 @@
     <WarningLevel>4</WarningLevel>
     <MtouchLink>None</MtouchLink>
     <MtouchArch>x86_64</MtouchArch>
+    <CodesignProvision>VS: kr.co.carefactory.ringer Development</CodesignProvision>
+    <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhone' ">
     <DebugSymbols>true</DebugSymbols>
@@ -63,7 +65,7 @@
     <CodesignExtraArgs />
     <CodesignResourceRules />
     <MtouchNoSymbolStrip>true</MtouchNoSymbolStrip>
-    <CodesignProvision>Ringer Development Provisioning Profile</CodesignProvision>
+    <CodesignProvision>VS: kr.co.carefactory.ringer Development</CodesignProvision>
     <MtouchInterpreter>-all</MtouchInterpreter>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
   </PropertyGroup>
@@ -74,11 +76,11 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <MtouchArch>ARM64</MtouchArch>
-    <CodesignKey>Apple Distribution: CareFactory Corp. (583LP97227)</CodesignKey>
+    <CodesignKey>Apple Development: Shin Mobum (G6376FUPDP)</CodesignKey>
     <CodesignEntitlements>Info.plist</CodesignEntitlements>
     <MtouchExtraArgs>--optimize=experimental-xforms-product-type</MtouchExtraArgs>
     <MtouchI18n>cjk</MtouchI18n>
-    <CodesignProvision>Ringer Adhoc Provisioning Profile</CodesignProvision>
+    <CodesignProvision>VS: kr.co.carefactory.ringer Development</CodesignProvision>
     <MtouchFloat32>true</MtouchFloat32>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
@@ -213,7 +215,7 @@
       <Version>3.1.0</Version>
     </PackageReference>
     <PackageReference Include="Plugin.LocalNotification">
-      <Version>5.0.2</Version>
+      <Version>5.0.3</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.FFImageLoading">
       <Version>2.4.11.982</Version>

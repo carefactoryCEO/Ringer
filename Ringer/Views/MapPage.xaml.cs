@@ -79,7 +79,6 @@ namespace Ringer.Views
 
             MoveMap(consulate.Latitude, consulate.Longitude, consulate.KoreanName, consulate.Address);
         }
-
         private async void PermissionButton_Clicked(object sender, EventArgs e)
         {
             if (Device.RuntimePlatform is Device.iOS)
