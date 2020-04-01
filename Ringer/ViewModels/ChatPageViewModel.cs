@@ -166,6 +166,33 @@ namespace Ringer.ViewModels
             await _messaging.AddMessageAsync(message).ConfigureAwait(false);
             await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
         }
+        private async Task AddLogInMessageAsync(string body, int delay, bool sending = false)
+        {
+            var directionType = sending ? MessageTypes.Outgoing : MessageTypes.Incomming;
+            var sender = sending ? string.Empty : Constants.System;
+            var message = new MessageModel
+            {
+                Body = body,
+                Sender = sender,
+                MessageTypes = directionType | MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await Task.Delay(delay);
+
+            var lastMessage = Messages.LastOrDefault();
+
+            // 메시지 타입 수정
+            if (lastMessage?.Sender == message.Sender && Utility.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
+            {
+                lastMessage.MessageTypes ^= MessageTypes.Trailing;
+                message.MessageTypes ^= MessageTypes.Leading;
+            }
+            Messages.Add(message);
+            Utility.Trace(message.MessageTypes.ToString());
+
+            MessagingCenter.Send(this, "MessageAdded", (object)message);
+        }
         private async Task Reset()
         {
             MessagingCenter.Send(this, "ShowOrHideKeyboard", false);
@@ -256,14 +283,6 @@ namespace Ringer.ViewModels
                     await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
                     await _messaging.AddMessageAsync(message);
 
-                    //await Task.WhenAll(new Task[]
-                    //{
-                    //    // Upload to azure blob storage
-                    //    blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" }),
-                    //    // Display image message to view locally
-                    //    _messaging.AddMessageAsync(message)
-                    //});
-
                     mediaFile.Dispose();
 
                     IsBusy = false;
@@ -284,67 +303,64 @@ namespace Ringer.ViewModels
         }
         private async Task GalleryPhotoAsync()
         {
-            if (AttachingPhotoPermitted())
+            try
             {
-                try
+                App.IsCameraActivated = true;
+
+                if (!CrossMedia.Current.IsPickPhotoSupported)
                 {
-                    App.IsCameraActivated = true;
-
-                    if (!CrossMedia.Current.IsPickPhotoSupported)
-                    {
-                        await Shell.Current.DisplayAlert("사진 불러오기 실패", "사진 불러오기가 지원되지 않는 기기입니다. :(", "확인");
-                        return;
-                    }
-
-                    var mediaFile = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
-                    {
-                        CompressionQuality = 75,
-                        CustomPhotoSize = 50,
-                        PhotoSize = PhotoSize.MaxWidthHeight,
-                        MaxWidthHeight = 1000
-                    });
-
-
-                    if (mediaFile == null)
-                        return;
-
-                    IsBusy = true;
-
-                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
-                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-
-                    var message = new MessageModel
-                    {
-                        RoomId = App.RoomId,
-                        ServerId = -1,
-                        Body = blobClient.Uri.ToString(),
-                        Sender = App.UserName,
-                        SenderId = App.UserId,
-                        CreatedAt = DateTime.UtcNow,
-                        ReceivedAt = DateTime.UtcNow,
-                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
-                    };
-
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
-
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
-                    await _messaging.AddMessageAsync(message);
-
-                    mediaFile.Dispose();
-
-                    IsBusy = false;
-                    // send image message
-                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
-
+                    await Shell.Current.DisplayAlert("사진 불러오기 실패", "사진 불러오기가 지원되지 않는 기기입니다. :(", "확인");
+                    return;
                 }
-                catch (Exception ex)
+
+                var mediaFile = await CrossMedia.Current.PickPhotoAsync(new PickMediaOptions
                 {
-                    Debug.WriteLine(ex.Message);
-                }
-                finally
+                    CompressionQuality = 75,
+                    CustomPhotoSize = 50,
+                    PhotoSize = PhotoSize.MaxWidthHeight,
+                    MaxWidthHeight = 1000
+                });
+
+
+                if (mediaFile == null)
+                    return;
+
+                IsBusy = true;
+
+                var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
+                BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+
+                var message = new MessageModel
                 {
-                    App.IsCameraActivated = false;
-                }
+                    RoomId = App.RoomId,
+                    ServerId = -1,
+                    Body = blobClient.Uri.ToString(),
+                    Sender = App.UserName,
+                    SenderId = App.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow,
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
+                };
+
+                MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+
+                await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
+                await _messaging.AddMessageAsync(message);
+
+                mediaFile.Dispose();
+
+                IsBusy = false;
+
+                await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                App.IsCameraActivated = false;
             }
         }
         private async Task TakeVideoAsync()
@@ -395,13 +411,7 @@ namespace Ringer.ViewModels
                     await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
                     await _messaging.AddMessageAsync(message);
 
-                    await Task.WhenAll(new Task[]
-                    {
-
-                    }).ConfigureAwait(false);
-
                     mediaFile.Dispose();
-                    // Send Video message
 
                     IsBusy = false;
 
@@ -419,65 +429,62 @@ namespace Ringer.ViewModels
         }
         private async Task GalleryVideoAsync()
         {
-            if (AttachingVideoPermitted())
+            if (!CrossMedia.Current.IsPickVideoSupported)
             {
-                if (!CrossMedia.Current.IsPickVideoSupported)
-                {
-                    await Shell.Current.DisplayAlert("비디오 불러오기 실패", "비디오 접근 권한이 없습니다 :(", "확인");
+                await Shell.Current.DisplayAlert("비디오 불러오기 실패", "비디오 접근 권한이 없습니다 :(", "확인");
 
+                return;
+            }
+
+            try
+            {
+                App.IsCameraActivated = true;
+
+                var mediaFile = await CrossMedia.Current.PickVideoAsync();
+
+                if (mediaFile == null)
                     return;
-                }
 
-                try
+                IsBusy = true;
+                var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
+                BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+                var message = new MessageModel
                 {
-                    App.IsCameraActivated = true;
+                    RoomId = App.RoomId,
+                    ServerId = -1,
+                    Body = blobClient.Uri.ToString(),
+                    Sender = App.UserName,
+                    SenderId = App.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow,
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
+                };
 
-                    var mediaFile = await CrossMedia.Current.PickVideoAsync();
+                MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                    if (mediaFile == null)
-                        return;
+                await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
+                await _messaging.AddMessageAsync(message);
 
-                    IsBusy = true;
-                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
-                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-                    var message = new MessageModel
-                    {
-                        RoomId = App.RoomId,
-                        ServerId = -1,
-                        Body = blobClient.Uri.ToString(),
-                        Sender = App.UserName,
-                        SenderId = App.UserId,
-                        CreatedAt = DateTime.UtcNow,
-                        ReceivedAt = DateTime.UtcNow,
-                        MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
-                    };
+                mediaFile.Dispose();
 
-                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                IsBusy = false;
 
-                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
-                    await _messaging.AddMessageAsync(message);
-
-                    mediaFile.Dispose();
-
-                    IsBusy = false;
-
-                    await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
-                finally
-                {
-                    App.IsCameraActivated = false;
-                }
+                await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+            finally
+            {
+                App.IsCameraActivated = false;
             }
         }
         private async Task<bool> CheckPhotosPermissionsAsync()
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<PhotosPermission>();
 
-            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            if (status == PermissionStatus.Granted)
                 return true;
             else
             {
@@ -488,11 +495,11 @@ namespace Ringer.ViewModels
 
                 status = await CrossPermissions.Current.RequestPermissionAsync<PhotosPermission>();
 
-                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                if (status == PermissionStatus.Granted)
                     return true;
-                else if (status != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
+                else if (status != PermissionStatus.Unknown)
                 {
-                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+                    if (Device.RuntimePlatform == Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "사진 접근 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -508,8 +515,10 @@ namespace Ringer.ViewModels
         {
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<StoragePermission>();
 
-            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            if (status == PermissionStatus.Granted)
+            {
                 return true;
+            }
             else
             {
                 if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Storage))
@@ -517,25 +526,20 @@ namespace Ringer.ViewModels
 
                 status = await CrossPermissions.Current.RequestPermissionAsync<StoragePermission>();
 
-                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
-                    return true;
-
-                return false;
+                return status == PermissionStatus.Granted;
             }
         }
         private async Task<bool> CheckCameraPermissionAsync()
         {
-            // camera availability check
             if (!CrossMedia.Current.IsCameraAvailable)
             {
                 await Shell.Current.DisplayAlert("카메라 사용 불가", "사용 가능한 카메라가 없습니다 :(", "확인");
                 return false;
             }
 
-            // camera permission check
             var cameraPermissionStatus = await CrossPermissions.Current.CheckPermissionStatusAsync<CameraPermission>();
 
-            if (cameraPermissionStatus == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            if (cameraPermissionStatus == PermissionStatus.Granted)
                 return true;
             else
             {
@@ -546,11 +550,11 @@ namespace Ringer.ViewModels
 
                 cameraPermissionStatus = await CrossPermissions.Current.RequestPermissionAsync<CameraPermission>();
 
-                if (cameraPermissionStatus == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+                if (cameraPermissionStatus == PermissionStatus.Granted)
                     return true;
-                else if (cameraPermissionStatus != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
+                else if (cameraPermissionStatus != PermissionStatus.Unknown)
                 {
-                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+                    if (Device.RuntimePlatform == Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "카메라 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -564,15 +568,19 @@ namespace Ringer.ViewModels
         }
         private async Task<bool> CheckMicPermissionAsync()
         {
-            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
+            if (Device.RuntimePlatform == Device.Android)
+            {
                 return true;
+            }
 
             var status = await CrossPermissions.Current.CheckPermissionStatusAsync<MicrophonePermission>();
 
             Debug.WriteLine(status.ToString());
 
-            if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
+            if (status == PermissionStatus.Granted)
+            {
                 return true;
+            }
             else
             {
                 if (await CrossPermissions.Current.ShouldShowRequestPermissionRationaleAsync(Permission.Microphone))
@@ -586,11 +594,13 @@ namespace Ringer.ViewModels
 
                 Debug.WriteLine(status.ToString());
 
-                if (status == Plugin.Permissions.Abstractions.PermissionStatus.Granted)
-                    return true;
-                else if (status != Plugin.Permissions.Abstractions.PermissionStatus.Unknown)
+                if (status == PermissionStatus.Granted)
                 {
-                    if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+                    return true;
+                }
+                else if (status != PermissionStatus.Unknown)
+                {
+                    if (Device.RuntimePlatform == Device.iOS)
                     {
                         bool goSetting = await Shell.Current.DisplayAlert("권한이 필요합니다.", "마이크 사용 권한을 허용하지 않았습니다. 한 번 거부한 권한은 iOS설정에서만 변경할 수 있습니다.", "iOS설정 가기", "확인");
 
@@ -604,8 +614,6 @@ namespace Ringer.ViewModels
 
             return false;
         }
-        private bool AttachingPhotoPermitted() => true;
-        private bool AttachingVideoPermitted() => true;
         private async Task<bool> TakingPhotoPermittedAsync()
         {
             if (Device.RuntimePlatform == Device.iOS)
@@ -626,33 +634,6 @@ namespace Ringer.ViewModels
 
             else
                 return false;
-        }
-        private async Task AddLogInMessageAsync(string body, int delay, bool sending = false)
-        {
-            var directionType = sending ? MessageTypes.Outgoing : MessageTypes.Incomming;
-            var sender = sending ? string.Empty : Constants.System;
-            var message = new MessageModel
-            {
-                Body = body,
-                Sender = sender,
-                MessageTypes = directionType | MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await Task.Delay(delay);
-
-            var lastMessage = Messages.LastOrDefault();
-
-            // 메시지 타입 수정
-            if (lastMessage?.Sender == message.Sender && Utility.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
-            {
-                lastMessage.MessageTypes ^= MessageTypes.Trailing;
-                message.MessageTypes ^= MessageTypes.Leading;
-            }
-            Messages.Add(message);
-            Utility.Trace(message.MessageTypes.ToString());
-
-            MessagingCenter.Send(this, "MessageAdded", (object)message);
         }
         #endregion
         #endregion

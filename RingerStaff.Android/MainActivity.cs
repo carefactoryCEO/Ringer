@@ -50,6 +50,9 @@ namespace RingerStaff.Droid
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
+            // for media plugin
+            Plugin.Permissions.PermissionsImplementation.Current.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }

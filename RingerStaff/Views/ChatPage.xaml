@@ -59,6 +59,7 @@
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="Start"
                     Command="{Binding GoBackCommand}"
+                    WidthRequest="85"
                     Text="닫기"/>
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="CenterAndExpand"
@@ -68,6 +69,7 @@
             <Button Style="{StaticResource NavBarButtonsStyle}"
                     HorizontalOptions="End"
                     Command="{Binding OpenSessionsPageCommand}"
+                    WidthRequest="85"
                     Text="상담관리"/>
 
         </StackLayout>

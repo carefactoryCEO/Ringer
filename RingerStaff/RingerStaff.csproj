@@ -18,6 +18,8 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.1" />
     <PackageReference Include="Xamarin.FFImageLoading" Version="2.4.11.982" />
     <PackageReference Include="Xamarin.FFImageLoading.Transformations" Version="2.4.11.982" />
+    <PackageReference Include="Xam.Plugin.Media" Version="5.0.0-beta" />
+    <PackageReference Include="Plugin.Permissions" Version="6.0.0-beta" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Ringer.Core\Ringer.Core.csproj" />

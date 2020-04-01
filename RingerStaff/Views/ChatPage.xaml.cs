@@ -25,10 +25,10 @@ namespace RingerStaff.Views
 
             MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
             {
-                Device.BeginInvokeOnMainThread(async () =>
-                {
-                    await DisplayAlert("reconnecting", message, "닫기");
-                });
+                //Device.BeginInvokeOnMainThread(async () =>
+                //{
+                //    await DisplayAlert("reconnecting", message, "닫기");
+                //});
             });
         }
 
