@@ -10,6 +10,7 @@ using System;
 using Xamarin.Essentials;
 using System.Collections.ObjectModel;
 using RingerStaff.Models;
+using Microsoft.AppCenter.Distribute;
 
 namespace RingerStaff
 {
@@ -112,7 +113,8 @@ namespace RingerStaff
                 "android=2468e092-6b08-4ce9-a777-cc06f2d20408;",
                 typeof(Analytics),
                 typeof(Crashes),
-                typeof(Push));
+                typeof(Push),
+                typeof(Distribute));
 
             Analytics.TrackEvent("RingerStaff started");
 

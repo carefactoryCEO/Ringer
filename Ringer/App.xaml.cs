@@ -9,6 +9,7 @@ using Xamarin.Forms;
 using Ringer.Services;
 using Ringer.Helpers;
 using Plugin.LocalNotification;
+using Microsoft.AppCenter.Distribute;
 
 namespace Ringer
 {
@@ -161,7 +162,7 @@ namespace Ringer
             }
 
             AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS,
-                typeof(Analytics), typeof(Crashes), typeof(Push));
+                typeof(Analytics), typeof(Crashes), typeof(Push), typeof(Distribute));
 
             Analytics.TrackEvent("Ringer started");
 

@@ -40,6 +40,9 @@ namespace Ringer.PartnerWeb.Pages
 
             RingerUser.Gender = Gender;
             RingerUser.BirthDate = DateTime.Parse(BirthDateString);
+            RingerUser.CreatedAt = DateTime.UtcNow;
+            RingerUser.UpdatedAt = DateTime.UtcNow;
+
 
             _context.Users.Add(RingerUser);
             await _context.SaveChangesAsync();
