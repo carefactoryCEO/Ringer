@@ -3,18 +3,25 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             BackgroundColor="#00FFFFFF"
+             Shell.BackgroundColor="#00ffffff"
+             MinimumHeightRequest="500"
+             HeightRequest="500"
              mc:Ignorable="d"
              x:Class="RingerStaff.Views.SessionsPage">
-    <StackLayout HorizontalOptions="Center" VerticalOptions="FillAndExpand" Padding="20,88,20,34">
+    <StackLayout HorizontalOptions="Center" VerticalOptions="FillAndExpand" Padding="20,88,20,34"
+                 BackgroundColor="#00ffffff">
 
         <!--<Button Text="닫기" Clicked="CloseButton_Clicked" BackgroundColor="LightGray"/>-->
 
-        <StackLayout Orientation="Horizontal">
+        <StackLayout Orientation="Horizontal"
+                     BackgroundColor="Blue">
             <Button Text="상담시작" BackgroundColor="LightBlue" HorizontalOptions="EndAndExpand" Padding="20,5"/>
             <Button Text="상담종료" BackgroundColor="LightPink" VerticalOptions="EndAndExpand" Padding="20,5"/>
         </StackLayout>
 
-        <CollectionView VerticalOptions="FillAndExpand">
+        <CollectionView VerticalOptions="FillAndExpand"
+                        BackgroundColor="Pink">
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>

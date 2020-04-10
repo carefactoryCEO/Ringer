@@ -49,5 +49,7 @@
     <Folder Include="Types\" />
     <Folder Include="Converters\" />
     <Folder Include="Extensions\" />
+    <Folder Include="Views\Permission\" />
+    <Folder Include="Views\Intro\" />
   </ItemGroup>
 </Project>

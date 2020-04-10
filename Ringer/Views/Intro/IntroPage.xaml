@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             BackgroundColor="White"
+             NavigationPage.HasNavigationBar="False"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.Intro.IntroPage">
+    <ContentPage.Content>
+        <Grid>
+            <Image Source="https://meet-thelocals.com/wp-content/uploads/2019/10/Eiffel-Tower-view-Paris.jpg"
+                   Aspect="AspectFill"/>
+            <Grid Padding="30,0"
+              Visual="Material">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackLayout VerticalOptions="Center"
+                             HorizontalOptions="Center"
+                             Spacing="10"
+                             Padding="10"
+                             BackgroundColor="#77222222">
+
+                    <Label Text="건강한 여행, 링거" FontAttributes="Bold" FontSize="25" TextColor="White"/>
+                    <Label Text="링거는 어쩌고 저쩌고 블라블라합니다. 링거는 어쩌고 저쩌고라구요." TextColor="White"/>
+                </StackLayout>
+                <Button Text="시작하기"
+                    BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                    CornerRadius="10"
+                    Margin="0,0,0,80"
+                    VerticalOptions="EndAndExpand"
+                        Clicked="Button_Clicked"
+                    Padding="0,10"
+                    Grid.Row="1"/>
+            </Grid>
+        </Grid>
+
+    </ContentPage.Content>
+</ContentPage>

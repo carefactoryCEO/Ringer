@@ -10,6 +10,8 @@ using Ringer.Services;
 using Ringer.Helpers;
 using Plugin.LocalNotification;
 using Microsoft.AppCenter.Distribute;
+using Ringer.Views.Permission;
+using Ringer.Views.Intro;
 
 namespace Ringer
 {
@@ -81,7 +83,8 @@ namespace Ringer
             DependencyService.Register<IRESTService, RESTService>();
             DependencyService.Register<IMessaging, Messaging>();
             DependencyService.Register<ILocationService, LocationService>();
-            MainPage = new AppShell();
+
+            MainPage = new NavigationPage(new IntroPage());
 
             _messaging = DependencyService.Get<IMessaging>();
 

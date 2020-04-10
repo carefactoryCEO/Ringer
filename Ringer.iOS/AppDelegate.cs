@@ -28,6 +28,8 @@ namespace Ringer.iOS
             global::Xamarin.Forms.Forms.SetFlags("MediaElement_Experimental");
 
             global::Xamarin.Forms.Forms.Init();
+            global::Xamarin.Forms.FormsMaterial.Init();
+
 
             FFImageLoading.Forms.Platform.CachedImageRenderer.Init();
 

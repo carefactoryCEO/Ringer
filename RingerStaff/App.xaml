@@ -6,7 +6,6 @@
              xmlns:converters="clr-namespace:RingerStaff.Converters"
              xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
              android:Application.WindowSoftInputModeAdjust="Resize"
-
              mc:Ignorable="d"
              x:Class="RingerStaff.App">
 
