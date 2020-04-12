@@ -31,16 +31,26 @@ namespace Ringer.Views.Permission
             base.OnSizeAllocated(width, height);
         }
 
-        async void Button_Clicked(System.Object sender, System.EventArgs e)
+        void Button_Clicked(System.Object sender, System.EventArgs e)
         {
-            On<iOS>().SetUseSafeArea(false);
-            await PermissionView.TranslateTo(0, 0, 250);
+            Xamarin.Forms.Application.Current.MainPage = new AppShell();
         }
 
-        async void Button_Clicked_1(System.Object sender, System.EventArgs e)
+        void Button_Clicked_1(System.Object sender, System.EventArgs e)
         {
-            On<iOS>().SetUseSafeArea(true);
-            await PermissionView.TranslateTo(0, 1000, 250);
+            Xamarin.Forms.Application.Current.MainPage = new AppShell();
         }
+
+        //async void Button_Clicked(System.Object sender, System.EventArgs e)
+        //{
+        //    On<iOS>().SetUseSafeArea(false);
+        //    await PermissionView.TranslateTo(0, 0, 250);
+        //}
+
+        //async void Button_Clicked_1(System.Object sender, System.EventArgs e)
+        //{
+        //    On<iOS>().SetUseSafeArea(true);
+        //    await PermissionView.TranslateTo(0, 1000, 250);
+        //}
     }
 }

@@ -52,4 +52,9 @@
     <Folder Include="Views\Permission\" />
     <Folder Include="Views\Intro\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="Views\RegisterPage.xaml.cs">
+      <DependentUpon>RegisterPage.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

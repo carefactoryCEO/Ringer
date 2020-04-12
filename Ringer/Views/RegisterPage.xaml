@@ -1,0 +1,124 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.RegisterPage">
+    <ContentPage.Resources>
+        <Style TargetType="Entry">
+            <Setter Property="PlaceholderColor" Value="#9298A1"/>
+            <Setter Property="ClearButtonVisibility" Value="WhileEditing"/>
+            <Setter Property="IsTextPredictionEnabled" Value="False"/>
+            <Setter Property="BackgroundColor" Value="#FFFFFF"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="FontSize" Value="25"/>
+            <Setter Property="ReturnType" Value="Done"/>
+        </Style>
+        <Style x:Key="GenderLabelStyle" TargetType="Label">
+            <Setter Property="VerticalOptions" Value="Fill"/>
+            <Setter Property="HorizontalOptions" Value="Start"/>
+            <Setter Property="HorizontalTextAlignment" Value="Start"/>
+            <Setter Property="VerticalTextAlignment" Value="End"/>
+            <Setter Property="Margin" Value="{OnPlatform iOS='0,0,0,13', Android='0,0,0,15'}"/>
+        </Style>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <AbsoluteLayout Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
+            <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         AbsoluteLayout.LayoutFlags="All">
+
+                <Grid x:Name="MainContainer" Padding="20,0"
+                      BackgroundColor="#FFFFFF"
+                      RowSpacing="0"
+                      Visual="Material">
+
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Label x:Name="InstructionLabel" Text="비밀번호를 입력해주세요." FontSize="30" FontAttributes="Bold"
+                           VerticalOptions="Start"
+                           TextColor="Black"
+                           Margin="15,50,0,0"/>
+
+                    <StackLayout BackgroundColor="#FFFFFF"
+                                 VerticalOptions="FillAndExpand"
+                                 Grid.Row="1"
+                                 Spacing="0">
+
+                        <!--비밀번호-->
+                        <Entry Margin="0,20,0,0" Placeholder="비밀번호"
+                               Text="Passw0rd!"
+                               Keyboard="Plain"
+                               IsPassword="True"
+                               IsVisible="True"/>
+
+                        <!--이메일-->
+                        <Entry Margin="0,20,0,0" Placeholder="이메일"
+                               Keyboard="Email"
+                               Text="jhylmb@gmail.com"
+                               IsVisible="True"/>
+
+                        <!--생년월일성-->
+                        <StackLayout Margin="0,20,0,0" Orientation="Horizontal"
+                                     IsVisible="True">
+
+                            <Entry Placeholder="생년월일"
+                                   Text="760721"
+                                   Keyboard="Numeric"
+                                   HorizontalOptions="FillAndExpand"/>
+
+                            <Label Text="여자" Style="{StaticResource GenderLabelStyle}"/>
+
+                            <CheckBox VerticalOptions="End"/>
+
+                            <Label Text="남자" Style="{StaticResource GenderLabelStyle}"/>
+
+                            <CheckBox VerticalOptions="End"/>
+
+                        </StackLayout>
+
+                        <!--이름-->
+                        <Entry Margin="0,20,0,0" Placeholder="이름"
+                               Keyboard="Default"
+                               Text="신모범"/>
+                    </StackLayout>
+
+                    <Button Margin="0,30,0,50" Text="확인" BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                        Padding="8"
+                        CornerRadius="18"
+                        FontSize="25"
+                        VerticalOptions="EndAndExpand"
+                            Clicked="Button_Clicked"
+                        Grid.Row="2"/>
+                </Grid>
+            </ScrollView>
+
+            <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         AbsoluteLayout.LayoutFlags="All"
+                         IsVisible="True"
+                         TranslationY="1000"
+                         BackgroundColor="#cc222222"
+                         x:Name="PermissionView">
+
+                <Grid RowSpacing="0" ColumnSpacing="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Frame HasShadow="False"
+                           BackgroundColor="#FFFFFF"
+                           CornerRadius="30"
+                           TranslationY="30"
+                           Grid.Row="1">
+                        <StackLayout>
+                            <Label Text="aaa"/>
+                            <Label Text="bbb"/>
+                            <Button Text="Close" Clicked="Button_Clicked_1"/>
+                        </StackLayout>
+                    </Frame>
+                </Grid>
+            </ContentView>
+
+        </AbsoluteLayout>
+    </ContentPage.Content>
+</ContentPage>

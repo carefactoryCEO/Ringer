@@ -1,134 +1,214 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vs="clr-namespace:Ringer.ViewModels"
              x:Class="Ringer.Views.Permission.PermissionPage"
              NavigationPage.HasNavigationBar="False"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
-             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
-             android:Application.WindowSoftInputModeAdjust="Pan"
              BackgroundColor="#ffffff">
-
     <ContentPage.Resources>
-        <Style TargetType="Entry">
-            <Setter Property="PlaceholderColor" Value="#9298A1"/>
-            <Setter Property="ClearButtonVisibility" Value="WhileEditing"/>
-            <Setter Property="IsTextPredictionEnabled" Value="False"/>
-            <Setter Property="BackgroundColor" Value="#FFFFFF"/>
-            <Setter Property="FontAttributes" Value="Bold"/>
-            <Setter Property="FontSize" Value="25"/>
-            <Setter Property="ReturnType" Value="Done"/>
-        </Style>
-        <Style x:Key="GenderLabelStyle" TargetType="Label">
-            <Setter Property="VerticalOptions" Value="Fill"/>
-            <Setter Property="HorizontalOptions" Value="Start"/>
-            <Setter Property="HorizontalTextAlignment" Value="Start"/>
-            <Setter Property="VerticalTextAlignment" Value="End"/>
-            <Setter Property="Margin" Value="{OnPlatform iOS='0,0,0,13', Android='0,0,0,15'}"/>
+
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="#000000"/>
         </Style>
     </ContentPage.Resources>
-    <ContentPage.Content>
-        <AbsoluteLayout Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
-                         AbsoluteLayout.LayoutFlags="All">
+
+    <ContentPage.BindingContext>
+        <vs:PermissionPageViewModel x:Name="VM"/>
+    </ContentPage.BindingContext>
+
+    <StackLayout Padding="35" Spacing="0" Visual="Material"
+                 VerticalOptions="Center">
+
+        <Label FontSize="{OnPlatform iOS=24, Android=20}"
+               FontAttributes="Bold"
+               HorizontalTextAlignment="Start"
+               Margin="0,0,0,30">
+            <Label.Text>
+                링거는 다음과 같은 권한을 사용합니다. 앱 사용을 위해 허용해 주세요.
+            </Label.Text>
+        </Label>
+
+        <CollectionView ItemsSource="{Binding PermissionsList}"
+                        SelectionChangedCommand="{Binding OnSelectPermissionChangeCommand}"
+                        SelectedItem="{Binding PermissionSelected, Mode=TwoWay}"
+                        SelectionMode="Single">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,20">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="40"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="30"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Grid.RowSpan="2">
+                            <Image.Source>
+                                <FontImageSource
+                                    FontFamily="{StaticResource MaterialFontFamily}"
+                                    Size="15"
+                                    Color="Black"
+                                    Glyph="{Binding Icon}" />
+                            </Image.Source>
+                        </Image>
+
+                        <Label Text="{Binding Title}"
+                               Margin="10,0,0,0"
+                               FontAttributes="Bold"
+                               Grid.Column="1"/>
+                        <Label Text="{Binding Description}"
+                               Margin="10,0,0,0"
+                               LineBreakMode="CharacterWrap"
+                               Grid.Row="1"
+                               Grid.Column="1"/>
+                        <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+        </CollectionView>
 
 
-                <Grid x:Name="MainContainer" Padding="20,0"
-                      BackgroundColor="#FFFFFF"
-                      RowSpacing="0"
-                      Visual="Material">
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+        <!--<Grid Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
 
-                    <Label x:Name="InstructionLabel" Text="비밀번호를 입력해주세요." FontSize="30" FontAttributes="Bold"
-                           VerticalOptions="Start"
-                           TextColor="Black"
-                           Margin="15,50,0,0"/>
+            <Image Grid.RowSpan="2"
+                   Source="{FontImage
+                Glyph={StaticResource Location},
+                FontFamily={StaticResource MaterialFontFamily},
+                Size=15, Color=Black}"/>
 
-                    <StackLayout BackgroundColor="#FFFFFF"
-                                 VerticalOptions="FillAndExpand"
-                                 Grid.Row="1"
-                                 Spacing="0">
+            <Label Text="위치(필수)"
+                   Margin="10,0,0,0"
+                   FontAttributes="Bold"
+                   Grid.Column="1"/>
+            <Label Text="위치를 전송하고 주변의 공관 및 병원 등 정보를 위치 기반으로 수신합니다."
+                   Margin="10,0,0,0"
+                   LineBreakMode="CharacterWrap"
+                   Grid.Row="1"
+                   Grid.Column="1"/>
+            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
+        </Grid>
 
-                        <!--비밀번호-->
-                        <Entry Margin="0,20,0,0" Placeholder="비밀번호"
-                               Text="Passw0rd!"
-                               Keyboard="Plain"
-                               IsPassword="True"
-                               IsVisible="True"/>
+        <Grid Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
 
-                        <!--이메일-->
-                        <Entry Margin="0,20,0,0" Placeholder="이메일"
-                               Keyboard="Email"
-                               Text="jhylmb@gmail.com"
-                               IsVisible="True"/>
+            <Image Grid.RowSpan="2"
+                   Source="{FontImage
+                Glyph={StaticResource Camera},
+                FontFamily={StaticResource MaterialFontFamily},
+                Color=Black, Size=15}"/>
 
-                        <!--생년월일성-->
-                        <StackLayout Margin="0,20,0,0" Orientation="Horizontal"
-                                     IsVisible="True">
+            <Label Text="카메라"
+                   Margin="10,0,0,0"
+                   FontAttributes="Bold"
+                   Grid.Column="1"/>
+            <Label Text="사진과 비디오를 찍어 저장하거나 전송합니다."
+                   Margin="10,0,0,0"
+                   LineBreakMode="CharacterWrap"
+                   Grid.Row="1"
+                   Grid.Column="1"/>
+            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
+        </Grid>
 
-                            <Entry Placeholder="생년월일"
-                                   Text="760721"
-                                   Keyboard="Numeric"
-                                   HorizontalOptions="FillAndExpand"/>
+        <Grid Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
 
-                            <Label Text="여자" Style="{StaticResource GenderLabelStyle}"/>
+            <Image Grid.RowSpan="2">
+                <Image.Source>
+                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                     Glyph="{StaticResource Mic}"
+                                     Size="15" Color="Black"/>
+                </Image.Source>
+            </Image>
+            <Label Text="마이크"
+                   Margin="10,0,0,0"
+                   FontAttributes="Bold"
+                   Grid.Column="1"/>
+            <Label Text="비디오에 소리를 넣고 음성 채팅에 참여합니다."
+                   Margin="10,0,0,0"
+                   LineBreakMode="CharacterWrap"
+                   HorizontalOptions="StartAndExpand"
+                   Grid.Row="1"
+                   Grid.Column="1"/>
+            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
+        </Grid>
 
-                            <CheckBox VerticalOptions="End"/>
+        <Grid Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="40"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="30"/>
+            </Grid.ColumnDefinitions>
 
-                            <Label Text="남자" Style="{StaticResource GenderLabelStyle}"/>
+            <Image Grid.RowSpan="2">
+                <Image.Source>
+                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
+                                     Glyph="{StaticResource Gallery}"
+                                     Size="15" Color="Black"/>
+                </Image.Source>
+            </Image>
+            <Label Text="갤러리"
+                   Margin="10,0,0,0"
+                   FontAttributes="Bold"
+                   Grid.Column="1"/>
+            <Label Text="기기의 갤러리에 저장된 사진과 비디오를 저장하거나 갤러리에서 전송합니다."
+                   Margin="10,0,0,0"
+                   LineBreakMode="CharacterWrap"
+                   HorizontalOptions="StartAndExpand"
+                   Grid.Row="1"
+                   Grid.Column="1"/>
+            <CheckBox Grid.Column="2"
+                      Grid.RowSpan="2"/>
+        </Grid>-->
 
-                            <CheckBox VerticalOptions="End"/>
+        <Button Text="확인"
+                Clicked="Button_Clicked"
+                Visual="Material"
+                CornerRadius="15"
+                FontSize="20"
+                BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                Margin="0,30,0,0" />
 
-                        </StackLayout>
+        <Button Text="링거에 권한을 주지 않고 사용하기"
+                Clicked="Button_Clicked_1"
+                Visual="Default"
+                TextColor="Gray"
+                FontSize="12"
+                Margin="0"
+                BackgroundColor="Transparent" />
 
-                        <!--이름-->
-                        <Entry Margin="0,20,0,0" Placeholder="이름"
-                               Keyboard="Default"
-                               Text="신모범"/>
-                    </StackLayout>
-
-                    <Button Margin="0,30,0,50" Text="확인" BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
-                        Padding="8"
-                        CornerRadius="18"
-                        FontSize="25"
-                        VerticalOptions="EndAndExpand"
-                            Clicked="Button_Clicked"
-                        Grid.Row="2"/>
-                </Grid>
-            </ScrollView>
-
-            <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
-                         AbsoluteLayout.LayoutFlags="All"
-                         IsVisible="True"
-                         TranslationY="1000"
-                         BackgroundColor="#cc222222"
-                         x:Name="PermissionView">
-
-                <Grid RowSpacing="0" ColumnSpacing="0">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-
-                    <Frame HasShadow="False"
-                           BackgroundColor="#FFFFFF"
-                           CornerRadius="30"
-                           TranslationY="30"
-                           Grid.Row="1">
-                        <StackLayout>
-                            <Label Text="aaa"/>
-                            <Label Text="bbb"/>
-                            <Button Text="Close" Clicked="Button_Clicked_1"/>
-                        </StackLayout>
-                    </Frame>
-                </Grid>
-            </ContentView>
-
-        </AbsoluteLayout>
-    </ContentPage.Content>
+    </StackLayout>
 </ContentPage>

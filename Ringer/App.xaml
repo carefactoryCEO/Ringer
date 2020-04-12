@@ -47,6 +47,9 @@
 
             <!-- Input Accessory Buttons(ChatInputBarView) -->
             <x:String x:Key="Camera">&#xf100;</x:String>
+            <x:String x:Key="Mic">&#xf36c;</x:String>
+            <x:String x:Key="Location">&#xf34e;</x:String>
+            <x:String x:Key="Gallery">&#xf254;</x:String>
 
             <x:String x:Key="Image">&#xf2e9;</x:String>
             <x:String x:Key="FolderImage">&#xf24F;</x:String>
