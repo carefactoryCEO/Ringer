@@ -6,7 +6,6 @@
              NavigationPage.HasNavigationBar="False"
              BackgroundColor="#ffffff">
     <ContentPage.Resources>
-
         <Style TargetType="Label">
             <Setter Property="TextColor" Value="#000000"/>
         </Style>
@@ -30,8 +29,12 @@
 
         <CollectionView ItemsSource="{Binding PermissionsList}"
                         SelectionChangedCommand="{Binding OnSelectPermissionChangeCommand}"
+                        SelectionChanged="CollectionView_SelectionChanged"
                         SelectedItem="{Binding PermissionSelected, Mode=TwoWay}"
-                        SelectionMode="Single">
+                        SelectionMode="None"
+                        VerticalScrollBarVisibility="Never"
+                        IsVisible="True">
+
             <CollectionView.ItemTemplate>
                 <DataTemplate>
                     <Grid Margin="0,0,0,20">
@@ -48,10 +51,9 @@
                         <Image Grid.RowSpan="2">
                             <Image.Source>
                                 <FontImageSource
+                                    Glyph="{Binding Icon}"
                                     FontFamily="{StaticResource MaterialFontFamily}"
-                                    Size="15"
-                                    Color="Black"
-                                    Glyph="{Binding Icon}" />
+                                    Size="15" Color="Black"/>
                             </Image.Source>
                         </Image>
 
@@ -64,145 +66,23 @@
                                LineBreakMode="CharacterWrap"
                                Grid.Row="1"
                                Grid.Column="1"/>
-                        <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
+                        <CheckBox Grid.Column="2" Grid.RowSpan="2" IsChecked="{Binding IsGranted}"
+                                  InputTransparent="True" />
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
         </CollectionView>
 
-
-
-        <!--<Grid Margin="0,0,0,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="30"/>
-            </Grid.ColumnDefinitions>
-
-            <Image Grid.RowSpan="2"
-                   Source="{FontImage
-                Glyph={StaticResource Location},
-                FontFamily={StaticResource MaterialFontFamily},
-                Size=15, Color=Black}"/>
-
-            <Label Text="위치(필수)"
-                   Margin="10,0,0,0"
-                   FontAttributes="Bold"
-                   Grid.Column="1"/>
-            <Label Text="위치를 전송하고 주변의 공관 및 병원 등 정보를 위치 기반으로 수신합니다."
-                   Margin="10,0,0,0"
-                   LineBreakMode="CharacterWrap"
-                   Grid.Row="1"
-                   Grid.Column="1"/>
-            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
-        </Grid>
-
-        <Grid Margin="0,0,0,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="30"/>
-            </Grid.ColumnDefinitions>
-
-            <Image Grid.RowSpan="2"
-                   Source="{FontImage
-                Glyph={StaticResource Camera},
-                FontFamily={StaticResource MaterialFontFamily},
-                Color=Black, Size=15}"/>
-
-            <Label Text="카메라"
-                   Margin="10,0,0,0"
-                   FontAttributes="Bold"
-                   Grid.Column="1"/>
-            <Label Text="사진과 비디오를 찍어 저장하거나 전송합니다."
-                   Margin="10,0,0,0"
-                   LineBreakMode="CharacterWrap"
-                   Grid.Row="1"
-                   Grid.Column="1"/>
-            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
-        </Grid>
-
-        <Grid Margin="0,0,0,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="30"/>
-            </Grid.ColumnDefinitions>
-
-            <Image Grid.RowSpan="2">
-                <Image.Source>
-                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
-                                     Glyph="{StaticResource Mic}"
-                                     Size="15" Color="Black"/>
-                </Image.Source>
-            </Image>
-            <Label Text="마이크"
-                   Margin="10,0,0,0"
-                   FontAttributes="Bold"
-                   Grid.Column="1"/>
-            <Label Text="비디오에 소리를 넣고 음성 채팅에 참여합니다."
-                   Margin="10,0,0,0"
-                   LineBreakMode="CharacterWrap"
-                   HorizontalOptions="StartAndExpand"
-                   Grid.Row="1"
-                   Grid.Column="1"/>
-            <CheckBox Grid.Column="2" Grid.RowSpan="2"/>
-        </Grid>
-
-        <Grid Margin="0,0,0,20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="40"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="30"/>
-            </Grid.ColumnDefinitions>
-
-            <Image Grid.RowSpan="2">
-                <Image.Source>
-                    <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"
-                                     Glyph="{StaticResource Gallery}"
-                                     Size="15" Color="Black"/>
-                </Image.Source>
-            </Image>
-            <Label Text="갤러리"
-                   Margin="10,0,0,0"
-                   FontAttributes="Bold"
-                   Grid.Column="1"/>
-            <Label Text="기기의 갤러리에 저장된 사진과 비디오를 저장하거나 갤러리에서 전송합니다."
-                   Margin="10,0,0,0"
-                   LineBreakMode="CharacterWrap"
-                   HorizontalOptions="StartAndExpand"
-                   Grid.Row="1"
-                   Grid.Column="1"/>
-            <CheckBox Grid.Column="2"
-                      Grid.RowSpan="2"/>
-        </Grid>-->
-
-        <Button Text="확인"
-                Clicked="Button_Clicked"
+        <Button Text="계속"
+                Command="{Binding ContinueCommand}"
                 Visual="Material"
                 CornerRadius="15"
                 FontSize="20"
                 BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
-                Margin="0,30,0,0" />
+                Margin="0,0,0,0" />
 
-        <Button Text="링거에 권한을 주지 않고 사용하기"
+        <Button Text="링거에 권한을 주지 않고 계속하기"
                 Clicked="Button_Clicked_1"
                 Visual="Default"
                 TextColor="Gray"

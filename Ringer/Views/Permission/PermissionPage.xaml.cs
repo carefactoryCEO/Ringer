@@ -41,6 +41,12 @@ namespace Ringer.Views.Permission
             Xamarin.Forms.Application.Current.MainPage = new AppShell();
         }
 
+        void CollectionView_SelectionChanged(System.Object sender, Xamarin.Forms.SelectionChangedEventArgs e)
+        {
+            var collectionView = sender as CollectionView;
+            collectionView.SelectedItem = null;
+
+        }
         //async void Button_Clicked(System.Object sender, System.EventArgs e)
         //{
         //    On<iOS>().SetUseSafeArea(false);

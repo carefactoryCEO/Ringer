@@ -16,7 +16,7 @@ namespace Ringer.Views.Intro
 
         async void Button_Clicked(System.Object sender, System.EventArgs e)
         {
-            await Navigation.PushAsync(new PermissionPage());
+            await Navigation.PushModalAsync(new PermissionPage());
         }
     }
 }
