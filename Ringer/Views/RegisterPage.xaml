@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.RegisterPage">
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             Shell.PresentationMode="Modal"
+             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
+             android:Application.WindowSoftInputModeAdjust="Pan"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.RegisterPage">
     <ContentPage.Resources>
         <Style TargetType="Entry">
             <Setter Property="PlaceholderColor" Value="#9298A1"/>
@@ -21,7 +25,8 @@
     <ContentPage.Content>
         <AbsoluteLayout Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
             <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
-                         AbsoluteLayout.LayoutFlags="All">
+                        AbsoluteLayout.LayoutFlags="All"
+                        x:Name="ScrollContainer">
 
                 <Grid x:Name="MainContainer" Padding="20,0"
                       BackgroundColor="#FFFFFF"
@@ -46,7 +51,6 @@
 
                         <!--비밀번호-->
                         <Entry Margin="0,20,0,0" Placeholder="비밀번호"
-                               Text="Passw0rd!"
                                Keyboard="Plain"
                                IsPassword="True"
                                IsVisible="True"/>
@@ -54,38 +58,71 @@
                         <!--이메일-->
                         <Entry Margin="0,20,0,0" Placeholder="이메일"
                                Keyboard="Email"
-                               Text="jhylmb@gmail.com"
                                IsVisible="True"/>
 
                         <!--생년월일성-->
                         <StackLayout Margin="0,20,0,0" Orientation="Horizontal"
                                      IsVisible="True">
 
-                            <Entry Placeholder="생년월일"
-                                   Text="760721"
+                            <Entry Placeholder="주민등록번호"
                                    Keyboard="Numeric"
                                    HorizontalOptions="FillAndExpand"/>
 
-                            <Label Text="여자" Style="{StaticResource GenderLabelStyle}"/>
+                            <Label Text="-"
+                                   TextColor="#9298A1"
+                                   FontSize="40"
+                                   VerticalOptions="End"
+                                   VerticalTextAlignment="End"/>
+
+
+                            <Entry Placeholder="성"
+                                   MaxLength="1"
+                                   WidthRequest="60"
+                                   Keyboard="Numeric"/>
+
+                            <StackLayout Orientation="Horizontal"
+                                         VerticalOptions="End"
+                                         TranslationY="-12"
+                                         Spacing="-4">
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
+                                    ,Size=25, Color=#9298A1}"/>
+                            </StackLayout>
+                            <!--<Label Text="******"
+                                   TextColor="#9298A1"
+                                   FontSize="40"
+                                   VerticalOptions="End"
+                                   VerticalTextAlignment="End"/>-->
+
+                            <!--<Label Text="여자" Style="{StaticResource GenderLabelStyle}"/>
 
                             <CheckBox VerticalOptions="End"/>
 
                             <Label Text="남자" Style="{StaticResource GenderLabelStyle}"/>
 
-                            <CheckBox VerticalOptions="End"/>
+                            <CheckBox VerticalOptions="End"/>-->
 
                         </StackLayout>
 
                         <!--이름-->
                         <Entry Margin="0,20,0,0" Placeholder="이름"
-                               Keyboard="Default"
-                               Text="신모범"/>
+                               Keyboard="Default"/>
                     </StackLayout>
 
-                    <Button Margin="0,30,0,50" Text="확인" BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                    <Button Margin="0,30,0,50" Text="계속"
+                            BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
                         Padding="8"
                         CornerRadius="18"
-                        FontSize="25"
+                        FontSize="{OnPlatform iOS=25, Android=22}"
                         VerticalOptions="EndAndExpand"
                             Clicked="Button_Clicked"
                         Grid.Row="2"/>
@@ -109,11 +146,119 @@
                            BackgroundColor="#FFFFFF"
                            CornerRadius="30"
                            TranslationY="30"
+                           Padding="20"
                            Grid.Row="1">
-                        <StackLayout>
-                            <Label Text="aaa"/>
-                            <Label Text="bbb"/>
-                            <Button Text="Close" Clicked="Button_Clicked_1"/>
+                        <StackLayout Spacing="0">
+                            <Frame HasShadow="False"
+                                   BorderColor="LightGray"
+                                   CornerRadius="10"
+                                   Padding="10,15"
+                                   Margin="0,0,0,5">
+                                <StackLayout Orientation="Horizontal">
+
+                                    <Image Source="{
+                                        FontImage
+                                        Glyph={StaticResource CheckCircle},
+                                        FontFamily={StaticResource MaterialFontFamily},
+                                        Color={StaticResource LargeButtonBackgroundColor}, Size=50}"/>
+
+                                    <Label Text="약관에 모두 동의" FontAttributes="Bold"
+                                           FontSize="{OnPlatform iOS=23, Android=21}"
+                                           TextColor="Black"
+                                           VerticalOptions="Center"
+                                           VerticalTextAlignment="Center"
+                                           Margin="5,0,0,0"/>
+                                </StackLayout>
+                            </Frame>
+
+                            <StackLayout Orientation="Horizontal"
+                                         Margin="0,10,0,0">
+                                <Image Source="{
+                                    FontImage
+                                    Glyph={StaticResource Check},
+                                    FontFamily={StaticResource MaterialFontFamily},
+                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
+                                    }"
+                                       Margin="13,0,10,0"/>
+                                <Label Text="서비스 동의"
+                                       FontSize="{OnPlatform iOS=20, Android=18}"
+                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                                <ImageButton Source="{
+                                        FontImage
+                                        Glyph={StaticResource RightChevron},
+                                        FontFamily={StaticResource MaterialFontFamily},
+                                        Color=#6F7585,Size=50}"
+                                       BackgroundColor="Transparent"
+                                       HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="{
+                                    FontImage
+                                    Glyph={StaticResource Check},
+                                    FontFamily={StaticResource MaterialFontFamily},
+                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
+                                    }"
+                                       Margin="13,0,10,0"/>
+                                <Label Text="위치 동의"
+                                       FontSize="{OnPlatform iOS=20, Android=18}"
+                                       TextColor="Black"
+                                       VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                                <ImageButton Source="{
+                                        FontImage
+                                        Glyph={StaticResource RightChevron},
+                                        FontFamily={StaticResource MaterialFontFamily},
+                                        Color=#6F7585,Size=50}"
+                                             BackgroundColor="Transparent"
+                                       HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="{
+                                    FontImage
+                                    Glyph={StaticResource Check},
+                                    FontFamily={StaticResource MaterialFontFamily},
+                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
+                                    }"
+                                       Margin="13,0,10,0"/>
+                                <Label Text="맞춤형 서비스 안내 동의 (선택)" FontSize="{OnPlatform iOS=20, Android=18}"
+                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                                <ImageButton Source="{
+                                        FontImage
+                                        Glyph={StaticResource RightChevron},
+                                        FontFamily={StaticResource MaterialFontFamily},
+                                        Color=#6F7585,Size=50}"
+                                             BackgroundColor="Transparent"
+                                       HorizontalOptions="EndAndExpand"/>
+                            </StackLayout>
+
+                            <StackLayout Orientation="Horizontal">
+                                <Image Source="{
+                                    FontImage
+                                    Glyph={StaticResource Check},
+                                    FontFamily={StaticResource MaterialFontFamily},
+                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
+                                    }"
+                                       Margin="13,0,10,0"/>
+                                <Label Text="마케팅 정보 수신 동의 (선택)" FontSize="{OnPlatform iOS=20, Android=18}"
+                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
+                                <ImageButton Source="{
+                                        FontImage
+                                        Glyph={StaticResource RightChevron},
+                                        FontFamily={StaticResource MaterialFontFamily},
+                                        Color=#6F7585,Size=50}"
+                                       HorizontalOptions="EndAndExpand"
+                                             BackgroundColor="Transparent"/>
+                            </StackLayout>
+
+                            <Button Text="확인" Clicked="Button_Clicked_1"
+                                    Visual="Material"
+                                    CornerRadius="15"
+                                    FontSize="{OnPlatform iOS=20, Android=18}"
+                                    Padding="0,5"
+                                    BackgroundColor="{StaticResource LargeButtonBackgroundColor}"
+                                    Margin="0,35,0,60"/>
+
                         </StackLayout>
                     </Frame>
                 </Grid>

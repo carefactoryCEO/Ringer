@@ -49,7 +49,13 @@ namespace Ringer.ViewModels
                 permissionInfo.IsGranted = await permissionInfo.Permission.RequestAsync() == PermissionStatus.Granted;
             }
 
-            Application.Current.MainPage = new AppShell();
+            await Task.Delay(20).ContinueWith(t =>
+            {
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    Application.Current.MainPage = new AppShell();
+                });
+            });
         }
 
         async Task LoadPermissions()

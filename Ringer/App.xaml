@@ -50,6 +50,10 @@
             <x:String x:Key="Mic">&#xf36c;</x:String>
             <x:String x:Key="Location">&#xf34e;</x:String>
             <x:String x:Key="Gallery">&#xf254;</x:String>
+            <x:String x:Key="Check">&#xf12C;</x:String>
+            <x:String x:Key="CheckCircle">&#xf5E0;</x:String>
+            <x:String x:Key="RightChevron">&#xf142;</x:String>
+            <x:String x:Key="MoonFull">&#xf12F;</x:String>
 
             <x:String x:Key="Image">&#xf2e9;</x:String>
             <x:String x:Key="FolderImage">&#xf24F;</x:String>

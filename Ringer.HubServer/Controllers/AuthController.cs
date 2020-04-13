@@ -32,6 +32,21 @@ namespace Ringer.HubServer.Controllers
             _configuration = configuration;
         }
 
+        [HttpGet("password")]
+        public async Task<ActionResult> InitializePassword()
+        {
+            var users = _userService.GetAll().ToList();
+
+            foreach (var user in users.Where(u => u.Password != null))
+            {
+                user.Password = null;
+                await _userService.UpdateAsync(user, null);
+            }
+
+            return Ok();
+        }
+
+        // delete
         [HttpGet("user/{id}")]
         public async Task<ActionResult<User>> GetUserByIdAsync(int id)
         {
@@ -54,57 +69,6 @@ namespace Ringer.HubServer.Controllers
         {
             var messages = await _dbContext.Messages.ToListAsync();
             return Ok(messages);
-        }
-
-        [HttpGet("json")]
-        public async Task<IActionResult> Json()
-        {
-            var messages = await _dbContext.Messages.ToListAsync();
-            var response = JsonSerializer.Serialize<List<Message>>(messages);
-            return Ok(messages);
-        }
-
-        [HttpGet("people")]
-        public List<Person> People()
-        {
-            return new List<Person>
-            {
-                new Person(44, "Mobum"),
-                new Person(46, "Mose"),
-                new Person(39, "Eunmi"),
-                new Person(8, "Loc Shin"),
-            };
-        }
-        public class Person
-        {
-            public Person(int age, string name)
-            {
-                Age = age;
-                Name = name;
-            }
-            public int Age { get; set; }
-            public string Name { get; set; }
-
-        }
-
-        [HttpPost("report")]
-        public async Task<ActionResult> ReportStatusAsync(DeviceReport report)
-        {
-            var device = await _dbContext.Devices.FindAsync(report.DeviceId);
-
-            if (device == null)
-                return NotFound();
-
-            if (device.DeviceType == DeviceType.iOS || device.DeviceType == DeviceType.Android)
-            {
-                device.IsOn = report.Status;
-
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogWarning($"Device [{device.Id}]({device.DeviceType}) is On:{device.IsOn}");
-            }
-
-            return Ok();
         }
 
         //[HttpGet("list")]
@@ -182,7 +146,6 @@ namespace Ringer.HubServer.Controllers
 
             return Ok(response);
         }
-
 
         [HttpPost("login")]
         public async Task<ActionResult<string>> UserLoginAsync([FromBody]LoginInfo loginInfo)

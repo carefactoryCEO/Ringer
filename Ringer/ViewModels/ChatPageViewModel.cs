@@ -21,8 +21,19 @@ using Xamarin.Forms;
 
 namespace Ringer.ViewModels
 {
-    class ChatPageViewModel : INotifyPropertyChanged
+    [QueryProperty("From", "from")]
+    public class ChatPageViewModel : INotifyPropertyChanged
     {
+        string from;
+        public string From
+        {
+            get => from;
+            set
+            {
+                from = value;
+            }
+        }
+
         #region private members
         private readonly IMessaging _messaging;
         private readonly IRESTService _restService;

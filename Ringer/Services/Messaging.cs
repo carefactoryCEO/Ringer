@@ -329,7 +329,7 @@ namespace Ringer.Services
                     Title = message.Sender,
                     Description = message.Body,
                     ReturningData = $"server id: {message.ServerId}", // Returning data when tapped on notification.
-                    //NotifyTime = DateTime.Now.AddSeconds(0.2), // Used for Scheduling local notification, if not specified notification will show immediately.
+                    NotifyTime = DateTime.Now.AddSeconds(5), // Used for Scheduling local notification, if not specified notification will show immediately.
                     //Sound = Device.RuntimePlatform == Device.Android ? "filling_your_inbox" : "filling_your_inbox.m4r",
                     //Sound = Device.RuntimePlatform == Device.Android ? "good_things_happen" : "good_things_happen.mp3",
                 };

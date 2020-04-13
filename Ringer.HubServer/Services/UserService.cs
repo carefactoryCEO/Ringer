@@ -62,6 +62,8 @@ namespace Ringer.HubServer.Services
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
+            user.CreatedAt = user.UpdatedAt = DateTime.UtcNow;
+
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync().ConfigureAwait(false);
@@ -96,7 +98,7 @@ namespace Ringer.HubServer.Services
             if (user == null)
                 throw new Exception("User not found");
 
-            // update username if it has changed
+            // update email if it has changed
             if (!string.IsNullOrWhiteSpace(userParam.Email) && userParam.Email != user.Email)
             {
                 // throw error if the new username is already taken

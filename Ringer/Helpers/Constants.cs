@@ -13,7 +13,6 @@ namespace Ringer.Helpers
         public static readonly string PendingUrl = BaseUrl + "/message/pending";
         public static readonly string HubUrl = BaseUrl + "/hubs/chat";
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
-        public static readonly string ReportUrl = BaseUrl + "/auth/report";
         public static readonly string InformationUrl = BaseUrl + "/information";
         public static readonly string ConsulateUrl = InformationUrl + "/consulates";
         public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");

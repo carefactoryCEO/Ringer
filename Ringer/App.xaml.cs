@@ -40,7 +40,6 @@ namespace Ringer
             get => Preferences.Get(nameof(Token), null);
             set => Preferences.Set(nameof(Token), value);
         }
-
         public static int UserId
         {
             get => Preferences.Get(nameof(UserId), -1);
@@ -84,8 +83,6 @@ namespace Ringer
             DependencyService.Register<IMessaging, Messaging>();
             DependencyService.Register<ILocationService, LocationService>();
 
-            MainPage = new NavigationPage(new IntroPage());
-
             _messaging = DependencyService.Get<IMessaging>();
 
             // Local Notification
@@ -103,6 +100,9 @@ namespace Ringer
             _messaging.Reconnecting += (s, e) => Utility.Trace(e.Message);
             _messaging.Reconnected += (s, e) => Utility.Trace(e.Message);
             _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
+
+
+            MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
         }
         #endregion
 
@@ -122,7 +122,7 @@ namespace Ringer
 
             IsOn = true;
 
-            if (DesignMode.IsDesignModeEnabled)
+            if (DesignMode.IsDesignModeEnabled || VersionTracking.IsFirstLaunchEver)
                 return;
 
             #region AppCenter
@@ -191,29 +191,32 @@ namespace Ringer
         }
         protected override void OnSleep()
         {
-            Utility.Trace("-------------OnSleep-------------");
-
             IsOn = false;
 
-            LastConnectionId = _messaging.ConnectionId;
+            if (IsLoggedIn)
+            {
+                LastConnectionId = _messaging.ConnectionId;
 
-            if (Utility.iOS)
-                _messaging.DisconnectAsync();
+                if (Utility.iOS)
+                {
+                    _messaging.DisconnectAsync();
+                }
+            }
 
             base.OnSleep();
         }
         protected override async void OnResume()
         {
-            Utility.Trace("------------OnResume------------");
-
             base.OnResume();
-
-            MessagingCenter.Send(this, "Resumed");
 
             IsOn = true;
 
-            await _messaging.FetchRemoteMessagesAsync();
-            await _messaging.EnsureConnected();
+            if (IsLoggedIn)
+            {
+                MessagingCenter.Send(this, "Resumed");
+                await _messaging.FetchRemoteMessagesAsync();
+                await _messaging.EnsureConnected();
+            }
 
         }
         #endregion

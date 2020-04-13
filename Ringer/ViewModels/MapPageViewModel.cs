@@ -11,6 +11,7 @@ using System;
 using Ringer.Core.Models;
 using System.Collections.Generic;
 using Ringer.Helpers;
+using Ringer.Views;
 
 namespace Ringer.ViewModels
 {
@@ -148,7 +149,10 @@ namespace Ringer.ViewModels
         }
         private void GoToChatPage()
         {
-            Shell.Current.GoToAsync("chatpage?room=fromMap");
+            if (App.IsLoggedIn)
+                Shell.Current.GoToAsync("chatpage?room=fromMap");
+            else
+                Shell.Current.GoToAsync(nameof(RegisterPage));
         }
         private async Task OpenMap(Consulate consulate)
         {
