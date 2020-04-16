@@ -75,12 +75,8 @@
         </CollectionView>
 
         <Button Text="계속"
-                Command="{Binding ContinueCommand}"
-                Visual="Material"
-                CornerRadius="15"
-                FontSize="20"
-                BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
-                Margin="0,0,0,0" />
+                Style="{StaticResource LargeButtonStyle}"
+                Command="{Binding ContinueCommand}"/>
 
         <Button Text="링거에 권한을 주지 않고 계속하기"
                 Clicked="Button_Clicked_1"

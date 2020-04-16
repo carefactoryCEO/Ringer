@@ -24,13 +24,11 @@
                     <Label Text="링거는 어쩌고 저쩌고 블라블라합니다. 링거는 어쩌고 저쩌고라구요." TextColor="White"/>
                 </StackLayout>
                 <Button Text="시작하기"
-                    BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
-                    CornerRadius="10"
-                    Margin="0,0,0,80"
-                    VerticalOptions="EndAndExpand"
+                        Style="{StaticResource LargeButtonStyle}"
+                        Margin="0,0,0,80"
+                        VerticalOptions="EndAndExpand"
                         Clicked="Button_Clicked"
-                    Padding="0,10"
-                    Grid.Row="1"/>
+                        Grid.Row="1"/>
             </Grid>
         </Grid>
 

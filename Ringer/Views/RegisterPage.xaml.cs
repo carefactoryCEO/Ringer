@@ -38,7 +38,6 @@ namespace Ringer.Views
             await Task.Delay(100);
 
             NameEntry.Focus();
-
         }
 
         bool _isBottomSetted = false;
@@ -75,6 +74,10 @@ namespace Ringer.Views
 
         void Entry_Focused(object sender, FocusEventArgs e)
         {
+            // hide Continue button
+
+            // show confirm button if text length is greater then 0
+            // var entry = sender as Xamarin.Forms.Entry;
         }
 
         void Entry_Unfocused(object sender, FocusEventArgs e)
@@ -83,6 +86,28 @@ namespace Ringer.Views
 
         void ConfirmButton_Cllicked(object sender, EventArgs e)
         {
+            ConfirmButton.IsVisible = false;
+        }
+
+        void Entry_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var entry = sender as Xamarin.Forms.Entry;
+
+            if (entry.ClassId == "BirthDate")
+            {
+                if (e.NewTextValue.Length == 6)
+                    SexEntry.Focus();
+            }
+            else if (entry.ClassId == "Sex")
+            {
+                if (e.NewTextValue.Length == 1)
+                    EmailEntry.Focus();
+            }
+            else
+            {
+                ConfirmButton.IsVisible = entry.Text.Length > 0;
+            }
+
         }
     }
 }
