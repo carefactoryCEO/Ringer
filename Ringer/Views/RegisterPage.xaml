@@ -1,9 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Ringer.Views.Controls"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             xmlns:vm="clr-namespace:Ringer.ViewModels"
              Shell.PresentationMode="Modal"
-             xmlns:android="clr-namespace:Xamarin.Forms.PlatformConfiguration.AndroidSpecific;assembly=Xamarin.Forms.Core"
-             android:Application.WindowSoftInputModeAdjust="Pan"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.RegisterPage">
+             x:Class="Ringer.Views.RegisterPage">
     <ContentPage.Resources>
         <Style TargetType="Entry">
             <Setter Property="PlaceholderColor" Value="#9298A1"/>
@@ -11,8 +13,7 @@
             <Setter Property="IsTextPredictionEnabled" Value="False"/>
             <Setter Property="BackgroundColor" Value="#FFFFFF"/>
             <Setter Property="FontAttributes" Value="Bold"/>
-            <Setter Property="FontSize" Value="25"/>
-            <Setter Property="ReturnType" Value="Done"/>
+            <Setter Property="FontSize" Value="{OnPlatform iOS=22, Android=20}"/>
         </Style>
         <Style x:Key="GenderLabelStyle" TargetType="Label">
             <Setter Property="VerticalOptions" Value="Fill"/>
@@ -22,112 +23,148 @@
             <Setter Property="Margin" Value="{OnPlatform iOS='0,0,0,13', Android='0,0,0,15'}"/>
         </Style>
     </ContentPage.Resources>
+    <ContentPage.BindingContext>
+        <vm:RegisterPageViewModel/>
+    </ContentPage.BindingContext>
     <ContentPage.Content>
-        <AbsoluteLayout Padding="0" HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">
-            <ScrollView AbsoluteLayout.LayoutBounds="0,0,1,1"
-                        AbsoluteLayout.LayoutFlags="All"
-                        x:Name="ScrollContainer">
+        <AbsoluteLayout Padding="0"
+                        HorizontalOptions="FillAndExpand"
+                        VerticalOptions="FillAndExpand">
 
-                <Grid x:Name="MainContainer" Padding="20,0"
-                      BackgroundColor="#FFFFFF"
-                      RowSpacing="0"
-                      Visual="Material">
+            <controls:KeyboardGrid x:Name="MainContainer"
+                                   AbsoluteLayout.LayoutBounds="0,0,1,1"
+                                   AbsoluteLayout.LayoutFlags="All"
+                                   BackgroundColor="#FFF"
+                                   Padding="20,0"
+                                   RowSpacing="20"
+                                   Visual="Material">
 
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                    <Label x:Name="InstructionLabel" Text="비밀번호를 입력해주세요." FontSize="30" FontAttributes="Bold"
-                           VerticalOptions="Start"
-                           TextColor="Black"
-                           Margin="15,50,0,0"/>
+                <!--Title-->
+                <Label x:Name="InstructionLabel" Text="{Binding Title}"
+                       FontSize="25"
+                       FontAttributes="Bold"
+                       VerticalOptions="Start"
+                       TextColor="Black"
+                       Margin="15,50,0,0"/>
+
+                <ScrollView Grid.Row="1"
+                            VerticalScrollBarVisibility="Never">
 
                     <StackLayout BackgroundColor="#FFFFFF"
                                  VerticalOptions="FillAndExpand"
-                                 Grid.Row="1"
-                                 Spacing="0">
+                                 Spacing="10">
 
                         <!--비밀번호-->
-                        <Entry Margin="0,20,0,0" Placeholder="비밀번호"
+                        <Entry Placeholder="비밀번호"
+                               x:Name="PasswordEntry"
                                Keyboard="Plain"
                                IsPassword="True"
-                               IsVisible="True"/>
+                               Focused="Entry_Focused"
+                               Unfocused="Entry_Unfocused"
+                               IsVisible="{Binding IsPasswordVisible}"
+                               Text="{Binding Password}"/>
 
                         <!--이메일-->
-                        <Entry Margin="0,20,0,0" Placeholder="이메일"
+                        <Entry Placeholder="이메일"
+                               x:Name="EmailEntry"
                                Keyboard="Email"
-                               IsVisible="True"/>
+                               Focused="Entry_Focused"
+                               Unfocused="Entry_Unfocused"
+                               Text="{Binding Email}"
+                               IsVisible="{Binding IsEmailVisible}"/>
 
-                        <!--생년월일성-->
-                        <StackLayout Margin="0,20,0,0" Orientation="Horizontal"
-                                     IsVisible="True">
+                        <!--생년월일-성-->
+                        <StackLayout Orientation="Horizontal"
+                                     IsVisible="{Binding IsBirthDateVisible}">
 
                             <Entry Placeholder="주민등록번호"
+                                   x:Name="BirthDateEntry"
                                    Keyboard="Numeric"
-                                   HorizontalOptions="FillAndExpand"/>
+                                   MaxLength="6"
+                                   ClearButtonVisibility="Never"
+                                   HorizontalOptions="FillAndExpand"
+                                   Focused="Entry_Focused"
+                                   Unfocused="Entry_Unfocused"
+                                   Text="{Binding BirthDate}"/>
 
                             <Label Text="-"
                                    TextColor="#9298A1"
-                                   FontSize="40"
+                                   FontSize="25"
+                                   FontAttributes="None"
                                    VerticalOptions="End"
-                                   VerticalTextAlignment="End"/>
-
+                                   VerticalTextAlignment="End"
+                                   TranslationY="-5"/>
 
                             <Entry Placeholder="성"
+                                   x:Name="SexEntry"
                                    MaxLength="1"
-                                   WidthRequest="60"
-                                   Keyboard="Numeric"/>
+                                   ClearButtonVisibility="Never"
+                                   WidthRequest="40"
+                                   Keyboard="Numeric"
+                                   Focused="Entry_Focused"
+                                   Unfocused="Entry_Unfocused"
+                                   Text="{Binding Sex}"/>
 
                             <StackLayout Orientation="Horizontal"
                                          VerticalOptions="End"
                                          TranslationY="-12"
-                                         Spacing="-4">
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
-                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}
-                                    ,Size=25, Color=#9298A1}"/>
+                                         Spacing="-2">
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
+                                <Image Source="{FontImage Glyph={StaticResource MoonFull}, FontFamily={StaticResource MaterialFontFamily}, Size=20, Color=#9298A1}"/>
                             </StackLayout>
-                            <!--<Label Text="******"
-                                   TextColor="#9298A1"
-                                   FontSize="40"
-                                   VerticalOptions="End"
-                                   VerticalTextAlignment="End"/>-->
-
-                            <!--<Label Text="여자" Style="{StaticResource GenderLabelStyle}"/>
-
-                            <CheckBox VerticalOptions="End"/>
-
-                            <Label Text="남자" Style="{StaticResource GenderLabelStyle}"/>
-
-                            <CheckBox VerticalOptions="End"/>-->
 
                         </StackLayout>
 
                         <!--이름-->
-                        <Entry Margin="0,20,0,0" Placeholder="이름"
+                        <Entry Placeholder="이름"
+                               Text="{Binding Name}"
+                               x:Name="NameEntry"
+                               Focused="Entry_Focused"
+                               Unfocused="Entry_Unfocused"
                                Keyboard="Default"/>
                     </StackLayout>
+                </ScrollView>
 
-                    <Button Margin="0,30,0,50" Text="계속"
-                            BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                <!--확인버튼-->
+                <Button Text="확인"
+                        x:Name="ConfirmButton"
+                        Grid.Row="2"
+                        Margin="-20,0,-20,0"
+                        CornerRadius="0"
+                        IsVisible="{Binding IsConfirmButtonVisible}"
+                        FontSize="{OnPlatform iOS=18, Android=16}"
+                        FontAttributes="Bold"
+                        InputTransparent="False"
+                        Padding="{OnPlatform iOS=5}"
+                        Clicked="ConfirmButton_Cllicked"
+                        BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
+                        Command="{Binding ConfirmCommand}"
+                        VerticalOptions="EndAndExpand">
+                </Button>
+
+                <!--계속 버튼-->
+                <Button Text="계속"
+                        x:Name="ContinueButton"
+                        IsVisible="{Binding IsNextButtonVisible}"
+                        Margin="0,30,0,50"
+                        BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
                         Padding="8"
                         CornerRadius="18"
                         FontSize="{OnPlatform iOS=25, Android=22}"
                         VerticalOptions="EndAndExpand"
-                            Clicked="Button_Clicked"
+                        Clicked="ContinueButton_Clicked"
                         Grid.Row="2"/>
-                </Grid>
-            </ScrollView>
+            </controls:KeyboardGrid>
 
             <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
                          AbsoluteLayout.LayoutFlags="All"

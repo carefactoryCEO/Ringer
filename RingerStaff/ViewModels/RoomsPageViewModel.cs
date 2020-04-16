@@ -65,7 +65,7 @@ namespace RingerStaff.ViewModels
             UnreadCounts[model.Id] = 0;
             App.RoomId = model.Id;
             App.RoomTitle = model.Title;
-            await Shell.Current.GoToAsync("chatpage");
+            await Shell.Current.GoToAsync(nameof(ChatPage));
         }
 
         private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)

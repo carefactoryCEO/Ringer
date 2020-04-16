@@ -12,6 +12,7 @@ using Ringer.Core.Models;
 using System.Collections.Generic;
 using Ringer.Helpers;
 using Ringer.Views;
+using System.Globalization;
 
 namespace Ringer.ViewModels
 {
@@ -53,7 +54,6 @@ namespace Ringer.ViewModels
             OpenSiteCommand = new Command<ConsulateModel>(async consulate => await OpenSite(consulate));
             PhoneCallCommand = new Command<string>(number => PhoneCall(number));
             OpenMapCommand = new Command<ConsulateModel>(async consulate => await OpenMap(consulate));
-
         }
 
         private void Messaging_FetchingStateChanged(object sender, Types.FetchingState e)
@@ -136,21 +136,21 @@ namespace Ringer.ViewModels
             }
             catch (ArgumentNullException anEx)
             {
-                // Number was null or white space
+                Utility.Trace($"{anEx}\nNumberFormatInfo was null or white space");
             }
-            catch (FeatureNotSupportedException ex)
+            catch (FeatureNotSupportedException fnsEx)
             {
-                // Phone Dialer is not supported on this device.
+                Utility.Trace($"{fnsEx}\nPhone Dialer is not supported on this device.");
             }
             catch (Exception ex)
             {
-                // Other error has occurred.
+                Utility.Trace($"{ex}\nOther error has occurred");
             }
         }
         private void GoToChatPage()
         {
             if (App.IsLoggedIn)
-                Shell.Current.GoToAsync("chatpage?room=fromMap");
+                Shell.Current.GoToAsync($"{nameof(ChatPage)}?room=fromMap");
             else
                 Shell.Current.GoToAsync(nameof(RegisterPage));
         }

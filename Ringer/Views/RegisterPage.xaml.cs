@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using Ringer.ViewModels;
 using Xamarin.Forms;
 using Xamarin.Forms.PlatformConfiguration;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
@@ -9,31 +10,79 @@ namespace Ringer.Views
 {
     public partial class RegisterPage : ContentPage
     {
-        private Thickness _inset;
 
         public RegisterPage()
         {
             InitializeComponent();
-            On<iOS>().SetUseSafeArea(true);
+
+            MessagingCenter.Subscribe<RegisterPageViewModel, string>(this, "FocusEntry", async (vm, entryName) =>
+            {
+                var entry = this.FindByName<Xamarin.Forms.Entry>(entryName);
+
+                await Task.Delay(100);
+
+                entry.Focus();
+            });
+
+            MessagingCenter.Subscribe<RegisterPageViewModel, string>(this, "UnfocusEntry", (vm, entryName) =>
+            {
+                var entry = this.FindByName<Xamarin.Forms.Entry>(entryName);
+                entry.Unfocus();
+            });
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+
+            await Task.Delay(100);
+
+            NameEntry.Focus();
 
         }
 
-        async void Button_Clicked(System.Object sender, System.EventArgs e)
+        bool _isBottomSetted = false;
+
+        protected override void OnSizeAllocated(double width, double height)
         {
-            _inset = On<iOS>().SafeAreaInsets();
+            base.OnSizeAllocated(width, height);
 
-            On<iOS>().SetUseSafeArea(false);
-            ScrollContainer.Margin = _inset;
+            if (!_isBottomSetted)
+            {
+                _isBottomSetted = true;
 
+                var insets = On<iOS>().SafeAreaInsets();
+
+                if (insets != default)
+                {
+                    var pad = MainContainer.Padding;
+                    pad.Top += insets.Top;
+
+                    MainContainer.Padding = pad;
+                }
+            }
+        }
+
+        async void ContinueButton_Clicked(object sender, EventArgs e)
+        {
             await PermissionView.TranslateTo(0, 0, 250);
         }
 
-        async void Button_Clicked_1(System.Object sender, System.EventArgs e)
+        async void Button_Clicked_1(object sender, EventArgs e)
         {
-            On<iOS>().SetUseSafeArea(true);
-
-            ScrollContainer.Margin = default;
             await PermissionView.TranslateTo(0, 1000, 250);
+        }
+
+        void Entry_Focused(object sender, FocusEventArgs e)
+        {
+        }
+
+        void Entry_Unfocused(object sender, FocusEventArgs e)
+        {
+        }
+
+        void ConfirmButton_Cllicked(object sender, EventArgs e)
+        {
         }
     }
 }

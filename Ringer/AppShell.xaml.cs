@@ -19,7 +19,7 @@ namespace Ringer
         {
             InitializeComponent();
 
-            Routing.RegisterRoute("chatpage", typeof(ChatPage));
+            Routing.RegisterRoute(nameof(ChatPage), typeof(ChatPage));
             Routing.RegisterRoute("permissionspage", typeof(PermissionsPage));
             Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
         }
