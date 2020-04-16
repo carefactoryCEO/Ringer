@@ -9,104 +9,21 @@ namespace Ringer.ViewModels
     public class RegisterPageViewModel : INotifyPropertyChanged
     {
         public string Title { get; set; } = "이름을 입력해주세요.";
+        public string Name { get; set; }
+        public string BirthDate { get; set; }
+        public string Sex { get; set; }
+        public string Email { get; set; }
+        public string Password { get; set; }
 
-        private string name;
-        private string birthDate;
-        private string sex;
-        private string email;
-        private string password;
+        //public bool IsConfirmButtonVisible { get; set; } = false;
 
-        public string Name
-        {
-            get => name;
-            set
-            {
-                if (name == value)
-                    return;
+        //public bool IsNextButtonVisible { get; set; } = false;
 
-                name = value;
+        //public bool IsBirthDateVisible { get; set; }
 
-                IsConfirmButtonVisible = name.Length > 0;
+        //public bool IsEmailVisible { get; set; }
 
-                OnPropertyChanged();
-            }
-        }
-
-        public string BirthDate
-        {
-            get => birthDate;
-            set
-            {
-                if (birthDate == value)
-                    return;
-
-                birthDate = value;
-
-                OnPropertyChanged();
-
-                if (birthDate.Length == 6)
-                    MessagingCenter.Send(this, "FocusEntry", "SexEntry");
-            }
-        }
-
-        public string Sex
-        {
-            get => sex;
-            set
-            {
-                if (sex == value)
-                    return;
-
-                sex = value;
-
-                OnPropertyChanged();
-
-                if (sex.Length > 0)
-                    ConfirmCommand.Execute(null);
-            }
-        }
-
-        public string Email
-        {
-            get => email;
-            set
-            {
-                if (email == value)
-                    return;
-
-                email = value;
-
-                IsConfirmButtonVisible = email.Length > 0;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public string Password
-        {
-            get => password;
-            set
-            {
-                if (password == value)
-                    return;
-
-                password = value;
-
-                IsConfirmButtonVisible = password.Length > 7;
-
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsConfirmButtonVisible { get; set; } = false;
-
-        public bool IsNextButtonVisible { get; set; } = false;
-
-        public bool IsBirthDateVisible { get; set; }
-
-        public bool IsEmailVisible { get; set; }
-
-        public bool IsPasswordVisible { get; set; }
+        //public bool IsPasswordVisible { get; set; }
 
         public ICommand ConfirmCommand { get; set; }
 
@@ -130,48 +47,48 @@ namespace Ringer.ViewModels
 
         private void Confirm()
         {
-            if (!IsBirthDateVisible)
-            {
-                IsBirthDateVisible = true;
-                IsConfirmButtonVisible = false;
+            //if (!IsBirthDateVisible)
+            //{
+            //    IsBirthDateVisible = true;
+            //    IsConfirmButtonVisible = false;
 
-                MessagingCenter.Send(this, "FocusEntry", "BirthDateEntry");
+            //    MessagingCenter.Send(this, "FocusEntry", "BirthDateEntry");
 
-                Title = "주민등록번호를 입력해주세요.";
+            //    Title = "주민등록번호를 입력해주세요.";
 
-                return;
-            }
+            //    return;
+            //}
 
-            if (!IsEmailVisible)
-            {
-                IsEmailVisible = true;
-                IsConfirmButtonVisible = false;
+            //if (!IsEmailVisible)
+            //{
+            //    IsEmailVisible = true;
+            //    IsConfirmButtonVisible = false;
 
-                MessagingCenter.Send(this, "FocusEntry", "EmailEntry");
+            //    MessagingCenter.Send(this, "FocusEntry", "EmailEntry");
 
-                Title = "이메일을 입력해주세요.";
+            //    Title = "이메일을 입력해주세요.";
 
-                return;
-            }
+            //    return;
+            //}
 
-            if (!IsPasswordVisible)
-            {
-                IsPasswordVisible = true;
-                IsConfirmButtonVisible = false;
+            //if (!IsPasswordVisible)
+            //{
+            //    IsPasswordVisible = true;
+            //    IsConfirmButtonVisible = false;
 
-                MessagingCenter.Send(this, "FocusEntry", "PasswordEntry");
+            //    MessagingCenter.Send(this, "FocusEntry", "PasswordEntry");
 
-                Title = "비밀번호를 입력해주세요.";
+            //    Title = "비밀번호를 입력해주세요.";
 
-                return;
-            }
+            //    return;
+            //}
 
-            IsNextButtonVisible = true;
-            IsConfirmButtonVisible = false;
+            //IsNextButtonVisible = true;
+            //IsConfirmButtonVisible = false;
 
-            MessagingCenter.Send(this, "UnFocusEntry", "PasswordEntry");
+            //MessagingCenter.Send(this, "UnFocusEntry", "PasswordEntry");
 
-            Title = "입력한 내용을 확인해주세요.";
+            //Title = "입력한 내용을 확인해주세요.";
         }
     }
 
