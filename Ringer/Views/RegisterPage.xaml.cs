@@ -16,6 +16,8 @@ namespace Ringer.Views
         public RegisterPage()
         {
             InitializeComponent();
+
+            MessagingCenter.Subscribe<RegisterPageViewModel>(this, "ShowTermsView", async sender => await ShowTermsViewAsync());
         }
 
         protected override async void OnAppearing()
@@ -49,9 +51,9 @@ namespace Ringer.Views
             }
         }
 
-        async void ContinueButton_Clicked(object sender, EventArgs e)
+        private Task<bool> ShowTermsViewAsync()
         {
-            await PermissionView.TranslateTo(0, 0, 250);
+            return PermissionView.TranslateTo(0, 0, 250);
         }
 
         async void Button_Clicked_1(object sender, EventArgs e)
@@ -65,23 +67,25 @@ namespace Ringer.Views
 
             lastElement = entry.ClassId;
 
+            ConfirmButton.IsVisible =
+                isCircuitCompleted ?
+                    entry.Text?.Length > 0 :
+                    entry.ClassId == "BirthDateEntry" || entry.ClassId == "SexEntry" ?
+                        false :
+                        entry.Text?.Length > 0;
+
             if (lastElement == "SexEntry")
                 entry.Text = string.Empty;
 
-            ConfirmButton.IsVisible = entry.ClassId == "BirthDateEntry" || entry.ClassId == "SexEntry" ? false : entry.Text?.Length > 0;
-
             ContinueButton.IsVisible = false;
-
-            // hide Continue button
-
-            // show confirm button if text length is greater then 0
-            // var entry = sender as Xamarin.Forms.Entry;
         }
 
         void Entry_Unfocused(object sender, FocusEventArgs e)
         {
-            ContinueButton.IsVisible = true;
             ConfirmButton.IsVisible = false;
+
+            if (isCircuitCompleted)
+                ContinueButton.IsVisible = true;
         }
 
         void ConfirmButton_Cllicked(object sender, EventArgs e)
@@ -112,6 +116,7 @@ namespace Ringer.Views
                 case "PasswordEntry":
                     {
                         isCircuitCompleted = true;
+                        ContinueButton.IsVisible = true;
                         InstructionLabel.Text = "입력 내용을 확인해주세요.";
                         break;
                     }
@@ -125,14 +130,44 @@ namespace Ringer.Views
         {
             var entry = sender as Xamarin.Forms.Entry;
 
+            if (isCircuitCompleted)
+            {
+                ConfirmButton.IsVisible = entry.Text?.Length > 0;
+            }
+            else
+            {
+                if (entry.ClassId == "BirthDateEntry")
+                {
+                    if (e.NewTextValue?.Length == 6)
+                        SexEntry.Focus();
+                }
+                else if (entry.ClassId == "SexEntry")
+                {
+                    if (e.NewTextValue?.Length == 1)
+                    {
+                        EmailEntry.IsVisible = true;
+                        await Task.Delay(100);
+                        EmailEntry.Focus();
+
+                        InstructionLabel.Text = "이메일을 입력해주세요.";
+                    }
+                }
+                else
+                {
+                    ConfirmButton.IsVisible = entry.Text?.Length > 0;
+                }
+            }
+
+            return;
+
             if (entry.ClassId == "BirthDateEntry")
             {
-                if (e.NewTextValue.Length == 6 && !isCircuitCompleted)
+                if (e.NewTextValue?.Length == 6 && !isCircuitCompleted)
                     SexEntry.Focus();
             }
             else if (entry.ClassId == "SexEntry" && !isCircuitCompleted)
             {
-                if (e.NewTextValue.Length == 1)
+                if (e.NewTextValue?.Length == 1)
                 {
                     EmailEntry.IsVisible = true;
 
@@ -145,9 +180,14 @@ namespace Ringer.Views
             }
             else
             {
-                ConfirmButton.IsVisible = entry.Text.Length > 0 && entry.ClassId != "SexEntry";
+                ConfirmButton.IsVisible = entry.Text?.Length > 0 && entry.ClassId != "SexEntry";
             }
 
+        }
+
+        void Entry_Completed(object sender, EventArgs e)
+        {
+            ConfirmButton_Cllicked(sender, e);
         }
     }
 }

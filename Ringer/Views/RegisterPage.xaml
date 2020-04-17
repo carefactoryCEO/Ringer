@@ -4,8 +4,7 @@
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              xmlns:vm="clr-namespace:Ringer.ViewModels"
-             ios:Page.ModalPresentationStyle="FormSheet"
-             Shell.PresentationMode="Modal"
+             Shell.PresentationMode="ModalAnimated"
              x:Class="Ringer.Views.RegisterPage">
     <ContentPage.Resources>
         <Style TargetType="Entry">
@@ -30,7 +29,6 @@
                                    AbsoluteLayout.LayoutFlags="All"
                                    BackgroundColor="#FFF"
                                    Padding="20,0"
-                                   RowSpacing="20"
                                    Visual="Material">
 
                 <Grid.RowDefinitions>
@@ -50,9 +48,9 @@
                 <ScrollView Grid.Row="1"
                             VerticalScrollBarVisibility="Never">
 
-                    <StackLayout BackgroundColor="#FFFFFF"
-                                 VerticalOptions="FillAndExpand"
-                                 Spacing="10">
+                    <StackLayout VerticalOptions="FillAndExpand"
+                                 Margin="0,25,0,0"
+                                 Spacing="20">
 
                         <!--비밀번호-->
                         <Entry Placeholder="비밀번호"
@@ -60,6 +58,7 @@
                                x:Name="PasswordEntry"
                                Keyboard="Plain"
                                IsPassword="True"
+                               Completed="Entry_Completed"
                                TextChanged="Entry_TextChanged"
                                Focused="Entry_Focused"
                                Unfocused="Entry_Unfocused"
@@ -71,6 +70,7 @@
                                ClassId="EmailEntry"
                                x:Name="EmailEntry"
                                Keyboard="Email"
+                               Completed="Entry_Completed"
                                TextChanged="Entry_TextChanged"
                                Focused="Entry_Focused"
                                Unfocused="Entry_Unfocused"
@@ -88,7 +88,6 @@
                                    x:Name="BirthDateEntry"
                                    Keyboard="Numeric"
                                    MaxLength="6"
-                                   ClearButtonVisibility="Never"
                                    HorizontalOptions="FillAndExpand"
                                    TextChanged="Entry_TextChanged"
                                    Focused="Entry_Focused"
@@ -134,6 +133,7 @@
                                Text="{Binding Name}"
                                ClassId="NameEntry"
                                x:Name="NameEntry"
+                               Completed="Entry_Completed"
                                TextChanged="Entry_TextChanged"
                                Focused="Entry_Focused"
                                Unfocused="Entry_Unfocused"
@@ -145,17 +145,15 @@
                 <Button Text="확인"
                         x:Name="ConfirmButton"
                         Grid.Row="2"
-                        Margin="-20,0,-20,0"
-                        CornerRadius="0"
                         IsVisible="False"
-                        FontSize="{OnPlatform iOS=18, Android=18}"
+                        Padding="8"
+                        CornerRadius="0"
+                        FontSize="18"
+                        Margin="-20,0,-20,0"
                         FontAttributes="Bold"
-                        InputTransparent="False"
-                        Padding="{OnPlatform iOS=8, Android=8}"
+                        VerticalOptions="EndAndExpand"
                         Clicked="ConfirmButton_Cllicked"
-                        BackgroundColor="{x:StaticResource LargeButtonBackgroundColor}"
-                        Command="{Binding ConfirmCommand}"
-                        VerticalOptions="EndAndExpand">
+                        BackgroundColor="{StaticResource LargeButtonBackgroundColor}">
                 </Button>
 
                 <!--계속 버튼-->
@@ -164,8 +162,9 @@
                         Grid.Row="2"
                         Margin="0,30,0,50"
                         VerticalOptions="EndAndExpand"
-                        Clicked="ContinueButton_Clicked"
                         IsVisible="False"
+                        IsEnabled="{Binding IsContinueButtonEnabled}"
+                        Command="{Binding ValidateCommand}"
                         Style="{StaticResource LargeButtonStyle}"/>
 
             </controls:KeyboardGrid>
@@ -288,6 +287,7 @@
                                     Margin="0,30,0,60"
                                     Visual="Material"
                                     VerticalOptions="EndAndExpand"
+                                    Command="{Binding NextCommand}"
                                     Style="{StaticResource LargeButtonStyle}"/>
 
                         </StackLayout>
