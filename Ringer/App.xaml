@@ -136,6 +136,7 @@
             <converters:MessageTypesToColorConverter x:Key="MessageTypesToColorConverter"/>
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
             <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter"/>
+            <converters:BooleanToAgreeColorConverter x:Key="BooleanToAgreeColorConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

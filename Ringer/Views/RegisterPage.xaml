@@ -2,10 +2,10 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
-             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              xmlns:vm="clr-namespace:Ringer.ViewModels"
              Shell.PresentationMode="ModalAnimated"
-             x:Class="Ringer.Views.RegisterPage">
+             x:Class="Ringer.Views.RegisterPage"
+             x:Name="Register">
     <ContentPage.Resources>
         <Style TargetType="Entry">
             <Setter Property="PlaceholderColor" Value="#9298A1"/>
@@ -24,6 +24,7 @@
                         HorizontalOptions="FillAndExpand"
                         VerticalOptions="FillAndExpand">
 
+            <!--Register View-->
             <controls:KeyboardGrid x:Name="MainContainer"
                                    AbsoluteLayout.LayoutBounds="0,0,1,1"
                                    AbsoluteLayout.LayoutFlags="All"
@@ -169,10 +170,11 @@
 
             </controls:KeyboardGrid>
 
+            <!--Terms View-->
             <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
                          AbsoluteLayout.LayoutFlags="All"
                          IsVisible="True"
-                         TranslationY="1000"
+                         TranslationY="0"
                          BackgroundColor="#99222222"
                          x:Name="PermissionView">
 
@@ -183,105 +185,85 @@
                     </Grid.RowDefinitions>
 
                     <Frame HasShadow="False"
-                           BackgroundColor="#FFFFFF"
+                           BackgroundColor="#ffffff"
                            CornerRadius="30"
                            TranslationY="30"
                            Padding="20"
                            Grid.Row="1">
+
                         <StackLayout Spacing="0">
+
+                            <!--약관에 모두 동의-->
                             <Frame HasShadow="False"
                                    BorderColor="LightGray"
                                    CornerRadius="10"
                                    Padding="10,15"
                                    Margin="0,0,0,5">
                                 <StackLayout Orientation="Horizontal">
+                                    <Image>
+                                        <Image.Source>
+                                            <FontImageSource Glyph="{StaticResource CheckCircle}"
+                                                             FontFamily="{StaticResource MaterialFontFamily}"
+                                                             Size="50"
+                                                             Color="{Binding AllAgreed, Converter={StaticResource BooleanToAgreeColorConverter}}"/>
+                                        </Image.Source>
+                                    </Image>
 
-                                    <Image Source="{
-                                        FontImage
-                                        Glyph={StaticResource CheckCircle},
-                                        FontFamily={StaticResource MaterialFontFamily},
-                                        Color={StaticResource LargeButtonBackgroundColor}, Size=50}"/>
-
-                                    <Label Text="약관에 모두 동의" FontAttributes="Bold"
+                                    <Label Text="약관에 모두 동의"
+                                           FontAttributes="Bold"
                                            FontSize="{OnPlatform iOS=23, Android=21}"
                                            TextColor="Black"
                                            VerticalOptions="Center"
                                            VerticalTextAlignment="Center"
                                            Margin="5,0,0,0"/>
+
                                 </StackLayout>
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ToggleAgreeAllCommand}"/>
+                                </Frame.GestureRecognizers>
                             </Frame>
 
-                            <StackLayout Orientation="Horizontal"
-                                         Margin="0,10,0,0">
-                                <Image Source="{
-                                    FontImage
-                                    Glyph={StaticResource Check},
-                                    FontFamily={StaticResource MaterialFontFamily},
-                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
-                                    }"
-                                       Margin="13,0,10,0"/>
-                                <Label Text="서비스 동의"
-                                       FontSize="{OnPlatform iOS=20, Android=18}"
-                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
-                                <ImageButton Source="{
-                                        FontImage
-                                        Glyph={StaticResource RightChevron},
-                                        FontFamily={StaticResource MaterialFontFamily},
-                                        Color=#6F7585,Size=50}"
-                                       BackgroundColor="Transparent"
-                                       HorizontalOptions="EndAndExpand"/>
-                            </StackLayout>
+                            <!--동의 목록-->
+                            <StackLayout BindableLayout.ItemsSource="{Binding TermsList}"
+                                         Spacing="0">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackLayout Orientation="Horizontal"
+                                                     Margin="0,10,0,0">
 
-                            <StackLayout Orientation="Horizontal">
-                                <Image Source="{
-                                    FontImage
-                                    Glyph={StaticResource Check},
-                                    FontFamily={StaticResource MaterialFontFamily},
-                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
-                                    }"
-                                       Margin="13,0,10,0"/>
-                                <Label Text="위치 동의"
-                                       FontSize="{OnPlatform iOS=20, Android=18}"
-                                       TextColor="Black"
-                                       VerticalOptions="Center" VerticalTextAlignment="Center"/>
-                                <ImageButton Source="{
-                                        FontImage
-                                        Glyph={StaticResource RightChevron},
-                                        FontFamily={StaticResource MaterialFontFamily},
-                                        Color=#6F7585,Size=50}"
-                                             BackgroundColor="Transparent"
-                                       HorizontalOptions="EndAndExpand"/>
-                            </StackLayout>
+                                            <Image Margin="13,0,10,0">
+                                                <Image.Source>
+                                                    <FontImageSource Glyph="{StaticResource Check}"
+                                                                     FontFamily="{StaticResource MaterialFontFamily}"
+                                                                     Color="{Binding Agreed, Converter={StaticResource BooleanToAgreeColorConverter}}"
+                                                                     Size="35"/>
+                                                </Image.Source>
+                                            </Image>
 
-                            <StackLayout Orientation="Horizontal">
-                                <Image Source="{
-                                    FontImage
-                                    Glyph={StaticResource Check},
-                                    FontFamily={StaticResource MaterialFontFamily},
-                                    Color={StaticResource LargeButtonBackgroundColor}, Size=35
-                                    }"
-                                       Margin="13,0,10,0"/>
-                                <Label Text="맞춤형 서비스 안내 동의 (선택)" FontSize="{OnPlatform iOS=20, Android=18}"
-                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
-                                <ImageButton Source="{
-                                        FontImage
-                                        Glyph={StaticResource RightChevron},
-                                        FontFamily={StaticResource MaterialFontFamily},
-                                        Color=#6F7585,Size=50}"
-                                             BackgroundColor="Transparent"
-                                       HorizontalOptions="EndAndExpand"/>
-                            </StackLayout>
+                                            <Label Text="{Binding Title}"
+                                                   FontSize="{OnPlatform iOS=20, Android=18}"
+                                                   TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
 
-                            <StackLayout Orientation="Horizontal">
-                                <Image Source="{FontImage Glyph={StaticResource Check}, FontFamily={StaticResource MaterialFontFamily}, Color={StaticResource LargeButtonBackgroundColor}, Size=35}"
-                                       Margin="13,0,10,0"/>
-                                <Label Text="마케팅 정보 수신 동의 (선택)" FontSize="{OnPlatform iOS=20, Android=18}"
-                                       TextColor="Black" VerticalOptions="Center" VerticalTextAlignment="Center"/>
-                                <ImageButton Source="{FontImage Glyph={StaticResource RightChevron}, FontFamily={StaticResource MaterialFontFamily}, Color=#6F7585,Size=50}"
-                                             HorizontalOptions="EndAndExpand"
-                                             BackgroundColor="Transparent"/>
-                            </StackLayout>
+                                            <ImageButton Source="{
+                                                    FontImage
+                                                    Glyph={StaticResource RightChevron},
+                                                    FontFamily={StaticResource MaterialFontFamily},
+                                                    Color=#6F7585,Size=50}"
+                                                         Command="{Binding BindingContext.ShowTermDetailsCommand, Source={x:Reference Register}}"
+                                                         CommandParameter="{Binding .}"
+                                                         BackgroundColor="Transparent"
+                                                         HorizontalOptions="EndAndExpand"/>
 
+                                            <StackLayout.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding BindingContext.ToggleAgreeCommand, Source={x:Reference Register}}"
+                                                                      CommandParameter="{Binding .}"/>
+                                            </StackLayout.GestureRecognizers>
+
+                                        </StackLayout>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </StackLayout>
+                            <!--확인 버튼-->
                             <Button Text="확인"
                                     Clicked="Button_Clicked_1"
                                     Margin="0,30,0,60"
@@ -291,6 +273,7 @@
                                     Style="{StaticResource LargeButtonStyle}"/>
 
                         </StackLayout>
+
                     </Frame>
                 </Grid>
             </ContentView>

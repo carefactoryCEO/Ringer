@@ -26,7 +26,7 @@ namespace Ringer.Views
 
             await Task.Delay(100);
 
-            NameEntry.Focus();
+            //NameEntry.Focus();
         }
 
         bool _isBottomSetted = false;

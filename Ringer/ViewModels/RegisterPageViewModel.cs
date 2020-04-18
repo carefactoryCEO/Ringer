@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ringer.Core.Data;
 using Ringer.Extensions;
-using Ringer.Helpers;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Ringer.ViewModels
@@ -15,6 +19,7 @@ namespace Ringer.ViewModels
     {
         private DateTime _birthDate;
         private GenderType _sex;
+        private bool allAgreed;
 
         public string Title { get; set; } = "이름을 입력해주세요.";
 
@@ -31,8 +36,6 @@ namespace Ringer.ViewModels
             !string.IsNullOrWhiteSpace(Email) &&
             !string.IsNullOrWhiteSpace(Password);
 
-        public ICommand ValidateCommand { get; set; }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
@@ -47,6 +50,52 @@ namespace Ringer.ViewModels
         public RegisterPageViewModel()
         {
             ValidateCommand = new Command(async () => await Validate());
+            ToggleAgreeAllCommand = new Command(() => ToggleAgreeAll());
+            ToggleAgreeCommand = new Command<Term>(term => ToggleAgree(term));
+            ShowTermDetailsCommand = new Command<Term>(async term => await ShowTermDetails(term));
+
+            TermsList = new ObservableCollection<Term>
+            {
+                new Term{Title="서비스 동의", Required= true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/84"},
+                new Term{Title="위치 정보 동의", Required = true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/85"},
+                new Term{Title="맞춤형 서비스 안내 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/86"},
+                new Term{Title="마케팅 정보 수신 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/87"}
+            };
+        }
+
+        public ICommand ValidateCommand { get; private set; }
+        public ICommand ToggleAgreeAllCommand { get; private set; }
+        public ICommand ToggleAgreeCommand { get; private set; }
+        public ICommand ShowTermDetailsCommand { get; private set; }
+
+        private Task ShowTermDetails(Term term)
+        {
+            var launchOptions = new BrowserLaunchOptions
+            {
+                Flags = BrowserLaunchFlags.PresentAsFormSheet | BrowserLaunchFlags.LaunchAdjacent,
+                //Flags = BrowserLaunchFlags.PresentAsFormSheet,
+                TitleMode = BrowserTitleMode.Show,
+                LaunchMode = BrowserLaunchMode.SystemPreferred
+            };
+            return Browser.OpenAsync(term.DetailUrl, launchOptions);
+        }
+
+        private void ToggleAgree(Term selectedTerm)
+        {
+            selectedTerm.Agreed = !selectedTerm.Agreed;
+            AllAgreed = TermsList.All(t => t.Agreed);
+        }
+
+        private void ToggleAgreeAll()
+        {
+            var agreed = !AllAgreed;
+
+            foreach (var term in TermsList)
+            {
+                term.Agreed = agreed;
+            }
+
+            AllAgreed = agreed;
         }
 
         private async Task Validate()
@@ -129,6 +178,20 @@ namespace Ringer.ViewModels
 
             return true;
         }
+
+        public bool AllAgreed { get; set; }
+
+        public ObservableCollection<Term> TermsList { get; set; }
+    }
+
+    public class Term : INotifyPropertyChanged
+    {
+        public string Title { get; set; }
+        public bool Agreed { get; set; }
+        public bool Required { get; set; }
+        public string DetailUrl { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
 
 }
