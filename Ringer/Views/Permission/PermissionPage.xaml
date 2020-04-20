@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:vs="clr-namespace:Ringer.ViewModels"
+             xmlns:vm="clr-namespace:Ringer.ViewModels"
              x:Class="Ringer.Views.Permission.PermissionPage"
              NavigationPage.HasNavigationBar="False"
              BackgroundColor="#ffffff">
@@ -12,7 +12,7 @@
     </ContentPage.Resources>
 
     <ContentPage.BindingContext>
-        <vs:PermissionPageViewModel x:Name="VM"/>
+        <vm:PermissionPageViewModel x:Name="VM"/>
     </ContentPage.BindingContext>
 
     <StackLayout Padding="35" Spacing="0" Visual="Material"
@@ -28,12 +28,7 @@
         </Label>
 
         <CollectionView ItemsSource="{Binding PermissionsList}"
-                        SelectionChangedCommand="{Binding OnSelectPermissionChangeCommand}"
-                        SelectionChanged="CollectionView_SelectionChanged"
-                        SelectedItem="{Binding PermissionSelected, Mode=TwoWay}"
-                        SelectionMode="None"
-                        VerticalScrollBarVisibility="Never"
-                        IsVisible="True">
+                        VerticalScrollBarVisibility="Never">
 
             <CollectionView.ItemTemplate>
                 <DataTemplate>
@@ -77,14 +72,6 @@
         <Button Text="계속"
                 Style="{StaticResource LargeButtonStyle}"
                 Command="{Binding ContinueCommand}"/>
-
-        <Button Text="링거에 권한을 주지 않고 계속하기"
-                Clicked="Button_Clicked_1"
-                Visual="Default"
-                TextColor="Gray"
-                FontSize="12"
-                Margin="0"
-                BackgroundColor="Transparent" />
 
     </StackLayout>
 </ContentPage>

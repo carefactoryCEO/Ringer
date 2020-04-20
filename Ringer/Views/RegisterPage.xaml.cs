@@ -10,8 +10,9 @@ namespace Ringer.Views
 {
     public partial class RegisterPage : ContentPage
     {
-        string lastElement;
-        bool isCircuitCompleted;
+        string _lastElement;
+        bool _isCircuitCompleted;
+        bool _isBottomSet = false;
 
         public RegisterPage()
         {
@@ -26,18 +27,16 @@ namespace Ringer.Views
 
             await Task.Delay(100);
 
-            //NameEntry.Focus();
+            NameEntry.Focus();
         }
-
-        bool _isBottomSetted = false;
 
         protected override void OnSizeAllocated(double width, double height)
         {
             base.OnSizeAllocated(width, height);
 
-            if (!_isBottomSetted)
+            if (!_isBottomSet)
             {
-                _isBottomSetted = true;
+                _isBottomSet = true;
 
                 var insets = On<iOS>().SafeAreaInsets();
 
@@ -53,28 +52,23 @@ namespace Ringer.Views
 
         private Task<bool> ShowTermsViewAsync()
         {
-            return PermissionView.TranslateTo(0, 0, 250);
-        }
-
-        async void Button_Clicked_1(object sender, EventArgs e)
-        {
-            await PermissionView.TranslateTo(0, 1000, 250);
+            return TermsView.TranslateTo(0, 0, 250);
         }
 
         void Entry_Focused(object sender, FocusEventArgs e)
         {
             var entry = sender as Xamarin.Forms.Entry;
 
-            lastElement = entry.ClassId;
+            _lastElement = entry.ClassId;
 
             ConfirmButton.IsVisible =
-                isCircuitCompleted ?
+                _isCircuitCompleted ?
                     entry.Text?.Length > 0 :
                     entry.ClassId == "BirthDateEntry" || entry.ClassId == "SexEntry" ?
                         false :
                         entry.Text?.Length > 0;
 
-            if (lastElement == "SexEntry")
+            if (_lastElement == "SexEntry")
                 entry.Text = string.Empty;
 
             ContinueButton.IsVisible = false;
@@ -84,7 +78,7 @@ namespace Ringer.Views
         {
             ConfirmButton.IsVisible = false;
 
-            if (isCircuitCompleted)
+            if (_isCircuitCompleted)
                 ContinueButton.IsVisible = true;
         }
 
@@ -92,10 +86,10 @@ namespace Ringer.Views
         {
             ConfirmButton.IsVisible = false;
 
-            if (isCircuitCompleted)
+            if (_isCircuitCompleted)
                 return;
 
-            switch (lastElement)
+            switch (_lastElement)
             {
                 case "NameEntry":
                     {
@@ -115,7 +109,7 @@ namespace Ringer.Views
 
                 case "PasswordEntry":
                     {
-                        isCircuitCompleted = true;
+                        _isCircuitCompleted = true;
                         ContinueButton.IsVisible = true;
                         InstructionLabel.Text = "입력 내용을 확인해주세요.";
                         break;
@@ -130,7 +124,7 @@ namespace Ringer.Views
         {
             var entry = sender as Xamarin.Forms.Entry;
 
-            if (isCircuitCompleted)
+            if (_isCircuitCompleted)
             {
                 ConfirmButton.IsVisible = entry.Text?.Length > 0;
             }
@@ -157,32 +151,6 @@ namespace Ringer.Views
                     ConfirmButton.IsVisible = entry.Text?.Length > 0;
                 }
             }
-
-            return;
-
-            if (entry.ClassId == "BirthDateEntry")
-            {
-                if (e.NewTextValue?.Length == 6 && !isCircuitCompleted)
-                    SexEntry.Focus();
-            }
-            else if (entry.ClassId == "SexEntry" && !isCircuitCompleted)
-            {
-                if (e.NewTextValue?.Length == 1)
-                {
-                    EmailEntry.IsVisible = true;
-
-                    await Task.Delay(100);
-
-                    EmailEntry.Focus();
-
-                    InstructionLabel.Text = "이메일을 입력해주세요.";
-                }
-            }
-            else
-            {
-                ConfirmButton.IsVisible = entry.Text?.Length > 0 && entry.ClassId != "SexEntry";
-            }
-
         }
 
         void Entry_Completed(object sender, EventArgs e)

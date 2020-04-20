@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Ringer.Core.Data;
 using Ringer.Extensions;
+using Ringer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -19,9 +20,6 @@ namespace Ringer.ViewModels
     {
         private DateTime _birthDate;
         private GenderType _sex;
-        private bool allAgreed;
-
-        public string Title { get; set; } = "이름을 입력해주세요.";
 
         public string Name { get; set; }
         public string BirthDate { get; set; }
@@ -53,6 +51,7 @@ namespace Ringer.ViewModels
             ToggleAgreeAllCommand = new Command(() => ToggleAgreeAll());
             ToggleAgreeCommand = new Command<Term>(term => ToggleAgree(term));
             ShowTermDetailsCommand = new Command<Term>(async term => await ShowTermDetails(term));
+            NextCommand = new Command(async () => await Next());
 
             TermsList = new ObservableCollection<Term>
             {
@@ -67,6 +66,26 @@ namespace Ringer.ViewModels
         public ICommand ToggleAgreeAllCommand { get; private set; }
         public ICommand ToggleAgreeCommand { get; private set; }
         public ICommand ShowTermDetailsCommand { get; private set; }
+        public ICommand NextCommand { get; private set; }
+
+        private Task Next()
+        {
+            var UnAgreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
+
+            if (UnAgreedTerms.Any())
+            {
+                foreach (var term in UnAgreedTerms)
+                {
+                    Shell.Current.DisplayAlert(null, $"{term.Title}는 필수 사항입니다.", "확인");
+                }
+
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+            }
+        }
 
         private Task ShowTermDetails(Term term)
         {

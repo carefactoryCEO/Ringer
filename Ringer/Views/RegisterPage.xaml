@@ -174,9 +174,9 @@
             <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
                          AbsoluteLayout.LayoutFlags="All"
                          IsVisible="True"
-                         TranslationY="0"
+                         TranslationY="1000"
                          BackgroundColor="#99222222"
-                         x:Name="PermissionView">
+                         x:Name="TermsView">
 
                 <Grid RowSpacing="0" ColumnSpacing="0">
                     <Grid.RowDefinitions>
@@ -265,7 +265,6 @@
                             </StackLayout>
                             <!--확인 버튼-->
                             <Button Text="확인"
-                                    Clicked="Button_Clicked_1"
                                     Margin="0,30,0,60"
                                     Visual="Material"
                                     VerticalOptions="EndAndExpand"

@@ -102,7 +102,8 @@ namespace Ringer
             _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
 
 
-            MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
+            //MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
+            MainPage = new NavigationPage(new IntroPage());
         }
         #endregion
 
