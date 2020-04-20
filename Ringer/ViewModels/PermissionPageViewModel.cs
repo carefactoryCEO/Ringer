@@ -14,32 +14,16 @@ namespace Ringer.ViewModels
 {
     public class PermissionPageViewModel
     {
-        public ICommand OnSelectPermissionChangeCommand { get; set; }
-        public ICommand GoHomeCommand { get; set; }
         public ICommand LoadPermissionCommand { get; set; }
         public ICommand ContinueCommand { get; set; }
         public List<PermissionInfo> PermissionsList { get; set; }
-        public PermissionInfo PermissionSelected { get; set; }
 
         public PermissionPageViewModel()
         {
             LoadPermissionCommand = new Command(async () => await LoadPermissions());
             LoadPermissionCommand.Execute(null);
 
-            OnSelectPermissionChangeCommand = new Command(async () =>
-            {
-                if (PermissionSelected != null)
-                {
-                    PermissionSelected.IsGranted = await CheckAndRequestPermissionAsync(PermissionSelected.Permission) == PermissionStatus.Granted;
-                }
-            });
-
             ContinueCommand = new Command(async () => await ContinueAsync());
-
-            GoHomeCommand = new Command(async () =>
-            {
-                await App.Current.MainPage.DisplayAlert("Hey", "Welcome to my App", "Ok");
-            });
         }
 
         private async Task ContinueAsync()
@@ -63,7 +47,7 @@ namespace Ringer.ViewModels
 
             PermissionsList = new List<PermissionInfo>();
 
-            if (Xamarin.Forms.Device.RuntimePlatform == Device.iOS)
+            if (Device.RuntimePlatform == Device.iOS)
             {
                 var noti = new Notification();
                 var notiInfo = new PermissionInfo()
@@ -126,7 +110,6 @@ namespace Ringer.ViewModels
             {
                 notificationPermission = DependencyService.Get<INotificationPermissionService>();
             }
-
 
             public override async Task<PermissionStatus> CheckStatusAsync()
             {
