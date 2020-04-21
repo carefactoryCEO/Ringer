@@ -71,15 +71,6 @@ namespace Ringer.HubServer.Controllers
             return Ok(messages);
         }
 
-        //[HttpGet("list")]
-        //public async Task<ActionResult<string>> GetListAsync()
-        //{
-        //    var rooms = await _dbContext.Rooms.ToListAsync();
-        //    var response = JsonSerializer.Serialize<List<Room>>(rooms);
-
-        //    return Ok(response);
-        //}
-
         [HttpPost("register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterInfo registerInfo)
         {
@@ -145,6 +136,78 @@ namespace Ringer.HubServer.Controllers
             };
 
             return Ok(response);
+        }
+
+        [HttpPost("register-consumer")]
+        public async Task<ActionResult> RegisterConsumerAsync([FromBody]RegisterConsumerRequest req)
+        {
+            var secretKey = _configuration["SecurityKey"];
+            var device = req.Device;
+
+            var user = await _userService.LogInAsync(req.User.Email, req.User.Password);
+
+            if (user != null) // user already exists...
+            {
+                user = await _dbContext.Users
+                    .Include(u => u.Devices)
+                    .Include(u => u.Enrollments)
+                    .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+                user.Devices.Clear();
+                user.Devices.Add(device);
+
+                if (user.Enrollments.FirstOrDefault() is Enrollment enrollment)
+                {
+
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                var roomId = user.Enrollments?.FirstOrDefault()?.RoomId;
+
+                return Ok(new RegisterConsumerResponse
+                {
+                    RoomId = roomId,
+                    UserId = user.Id,
+                    UserName = user.Name,
+                    Success = true,
+                    Token = user.JwtToken(new LoginInfo
+                    {
+                        DeviceId = device.Id,
+                        DeviceType = device.DeviceType
+                    }, secretKey)
+                });
+            }
+            else
+            {
+                user = await _userService.CreateAsync(req.User, req.User.Password);
+
+                user = await _dbContext.Users
+                    .Include(u => u.Devices)
+                    .Include(u => u.Enrollments)
+                    .FirstOrDefaultAsync(u => u.Id == user.Id);
+
+                var roomId = Guid.NewGuid().ToString();
+                user.Devices.Add(device);
+                user.Enrollments.Add(new Enrollment { Room = new Room { Id = roomId, Name = user.Name } });
+
+                await _dbContext.SaveChangesAsync();
+
+                return Ok(new RegisterConsumerResponse
+                {
+                    RoomId = roomId,
+                    UserId = user.Id,
+                    UserName = user.Name,
+                    Success = true,
+                    Token = user.JwtToken(new LoginInfo
+                    {
+                        DeviceId = device.Id,
+                        DeviceType = device.DeviceType
+
+                    }, secretKey)
+                });
+            }
+
         }
 
         [HttpPost("login")]

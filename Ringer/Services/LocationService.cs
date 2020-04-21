@@ -57,6 +57,11 @@ namespace Ringer.Services
                 //if (lastLocation != null && location.CalculateDistance(lastLocation, DistanceUnits.Kilometers) < 100)
                 //    return;
 
+                double dx = Math.Abs(location.Latitude - CurrentLatitude);
+                double dy = Math.Abs(location.Longitude - CurrentLongitude);
+
+                var locationChanged = dx >= 0.1d || dy >= 0.1d;
+
                 CurrentLatitude = location.Latitude;
                 CurrentLongitude = location.Longitude;
 
@@ -90,9 +95,17 @@ namespace Ringer.Services
                     CurrentCountryCode = placemark.CountryCode;
                 }
 
-
-
                 Consulates = await api.GetConsulatesByCoordinateAsync(CurrentLatitude, CurrentLongitude);
+
+                if (App.IsLoggedIn && locationChanged)
+                    await api.RecordFootPrintAsync(new FootPrint
+                    {
+                        UserId = App.UserId,
+                        Latitude = CurrentLatitude,
+                        Longitude = CurrentLongitude,
+                        Address = CurrentAddress,
+                        CountryCode = CurrentCountryCode
+                    });
 
                 LocationUpdated?.Invoke(this, new EventArgs());
             }

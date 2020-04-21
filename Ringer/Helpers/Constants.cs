@@ -13,6 +13,8 @@ namespace Ringer.Helpers
         public static readonly string PendingUrl = BaseUrl + "/message/pending";
         public static readonly string HubUrl = BaseUrl + "/hubs/chat";
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
+        public static readonly string RegisterConsumerUrl = BaseUrl + "/auth/register-consumer";
+
         public static readonly string InformationUrl = BaseUrl + "/information";
         public static readonly string ConsulateUrl = InformationUrl + "/consulates";
         public static readonly string DbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ringer.db3");
@@ -44,5 +46,6 @@ namespace Ringer.Helpers
         public static readonly string RingerPhoneNumber = "+82-10-2922-7428";
         public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";
 
+        public static readonly string FootPrintUrl = InformationUrl + "/foot-print";
     }
 }

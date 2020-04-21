@@ -60,10 +60,10 @@ namespace Ringer.HubServer.Services
 
             CreatePasswordHash(password, out byte[] passwordHash, out byte[] passwordSalt);
 
+            user.Password = null;
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
             user.CreatedAt = user.UpdatedAt = DateTime.UtcNow;
-
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync().ConfigureAwait(false);

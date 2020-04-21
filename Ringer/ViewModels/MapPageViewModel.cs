@@ -115,7 +115,7 @@ namespace Ringer.ViewModels
                 firstConsulate.IsHeader = true;
                 Consulates.Add(firstConsulate);
 
-                foreach (var model in location.Consulates.Take(15))
+                foreach (var model in location.Consulates)
                     Consulates.Add(model);
             }
 
