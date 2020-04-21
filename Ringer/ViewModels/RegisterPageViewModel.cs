@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Plugin.Permissions;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.Extensions;
@@ -108,8 +109,12 @@ namespace Ringer.ViewModels
                 {
                     // init messaging
                     var messaging = DependencyService.Get<IMessaging>();
-
                     await messaging.InitAsync(Constants.HubUrl, App.Token);
+
+                    // record foot print
+                    var location = DependencyService.Get<ILocationService>();
+                    await location.RecordFootPrintAsync();
+
                     // go to chatpage
                     await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
                 }

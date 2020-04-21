@@ -156,11 +156,6 @@ namespace Ringer.HubServer.Controllers
                 user.Devices.Clear();
                 user.Devices.Add(device);
 
-                if (user.Enrollments.FirstOrDefault() is Enrollment enrollment)
-                {
-
-                }
-
                 await _dbContext.SaveChangesAsync();
 
                 var roomId = user.Enrollments?.FirstOrDefault()?.RoomId;
@@ -187,15 +182,28 @@ namespace Ringer.HubServer.Controllers
                     .Include(u => u.Enrollments)
                     .FirstOrDefaultAsync(u => u.Id == user.Id);
 
-                var roomId = Guid.NewGuid().ToString();
+                // add device
                 user.Devices.Add(device);
-                user.Enrollments.Add(new Enrollment { Room = new Room { Id = roomId, Name = user.Name } });
+
+                // add enrollment / room
+                var room = new Room
+                {
+                    //신모범
+                    //신모범(44/M)[US]몸살감기
+                    Id = Guid.NewGuid().ToString(),
+                    Name = user.Name
+                };
+
+                user.Enrollments.Add(new Enrollment
+                {
+                    Room = room
+                });
 
                 await _dbContext.SaveChangesAsync();
 
                 return Ok(new RegisterConsumerResponse
                 {
-                    RoomId = roomId,
+                    RoomId = room.Id,
                     UserId = user.Id,
                     UserName = user.Name,
                     Success = true,

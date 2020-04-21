@@ -62,8 +62,8 @@ namespace Ringer.Views.Controls
             if (e.ItemIndex == 0 && lastAppearedItemIndex > e.ItemIndex && !IsLoading)
                 LoadCommand?.Execute(e.Item);
 
-            var direction = lastAppearedItemIndex > e.ItemIndex ? "upward" : "downward";
-            Utility.Trace($"last index: {lastAppearedItemIndex}, index: {e.ItemIndex}, direction: {direction}");
+            //var direction = lastAppearedItemIndex > e.ItemIndex ? "upward" : "downward";
+            //Utility.Trace($"last index: {lastAppearedItemIndex}, index: {e.ItemIndex}, direction: {direction}");
 
             lastAppearedItemIndex = (IsLoading) ? -1 : e.ItemIndex;
         }

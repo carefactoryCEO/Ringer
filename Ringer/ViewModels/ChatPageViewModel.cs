@@ -11,8 +11,6 @@ using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
-using Ringer.Core.Data;
-using Ringer.Extensions;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
@@ -24,23 +22,24 @@ namespace Ringer.ViewModels
     [QueryProperty("From", "from")]
     public class ChatPageViewModel : INotifyPropertyChanged
     {
-        string from;
-        public string From
-        {
-            get => from;
-            set
-            {
-                from = value;
-            }
-        }
-
         #region private members
         private readonly IMessaging _messaging;
-        private readonly IRESTService _restService;
         private readonly BlobContainerClient _blobContainer;
-        private UserInfoType _userInfoToQuery = UserInfoType.None;
-        private string _name;
         #endregion
+
+        public string From
+        {
+            set
+            {
+                if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
+                {
+                    Device.InvokeOnMainThreadAsync(async () =>
+                    {
+                        await EnsureMessageLoaded();
+                    });
+                }
+            }
+        }
 
         #region public Commands
         public ICommand SendMessageCommand { get; }
@@ -59,16 +58,11 @@ namespace Ringer.ViewModels
 
         #region Public Properties
         public string TextToSend { get; set; } = string.Empty;
-        public string NavBarTitle { get; set; } = App.IsLoggedIn ? App.UserName : "로그인";
-        public string Title { get; set; } = "링거 상담실";
         public double NavBarHeight { get; set; }
-        public Keyboard Keyboard { get; set; } = Keyboard.Chat;
         public Thickness BottomPadding { get; set; }
+        public Keyboard Keyboard { get; set; } = Keyboard.Chat;
         public ObservableCollection<MessageModel> Messages { get; set; }
         public bool IsBusy { get; set; }
-        public bool KeyboardShouldBeShown { get; set; }
-        public bool IsProcessingLogin { get; set; }
-        public bool Retrying { get; set; }
         #endregion
 
         #region Constructor
@@ -77,21 +71,19 @@ namespace Ringer.ViewModels
             _blobContainer = new BlobContainerClient(Constants.BlobStorageConnectionString, Constants.BlobContainerName);
 
             _messaging = DependencyService.Resolve<IMessaging>();
-            _restService = DependencyService.Resolve<IRESTService>();
-
             _messaging.MessageAdded += OnMessageAdded;
             _messaging.MessageUpdated += OnMessageUpdated;
             _messaging.FetchingStateChanged += OnFetchingStateChanged;
             _messaging.MessagesFetched += OnMessagesFetched;
 
-            SendMessageCommand = new Command(async () => await SendMessageAsync());
-            TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
+            RefreshCommand = new Command(async () => await RefreshMessageAsync());
+            GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
             TakingVideoCommand = new Command(async () => await TakeVideoAsync());
             GalleryPhotoCommand = new Command(async () => await GalleryPhotoAsync());
-            GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
+            TakingPhotoCommand = new Command(async () => await TakePhotoAsync());
             ResetCommand = new Command(async () => await Reset());
+            SendMessageCommand = new Command(async () => await SendMessageAsync());
             LoadBufferCommand = new Command(() => LoadBuffer());
-            RefreshCommand = new Command(async () => await RefreshMessageAsync());
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
             _messaging.BufferMessages();
@@ -99,7 +91,6 @@ namespace Ringer.ViewModels
         #endregion
 
         #region Private Methods
-
         private void OnMessagesFetched(object sender, MessageModel[] fetchedMessages)
         {
             if (fetchedMessages.Any())
@@ -129,6 +120,7 @@ namespace Ringer.ViewModels
             Messages.Add(newMessage);
             MessagingCenter.Send(this, "MessageAdded", (object)newMessage);
         }
+
         private void LoadBuffer()
         {
             if (!_messaging.Messages.Any() || Messages.Count == _messaging.Messages.Count)
@@ -153,7 +145,6 @@ namespace Ringer.ViewModels
 
             if (!App.IsLoggedIn)
             {
-                await LogInProcessAsync();
                 return;
             }
 
@@ -177,33 +168,6 @@ namespace Ringer.ViewModels
             await _messaging.AddMessageAsync(message).ConfigureAwait(false);
             await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
         }
-        private async Task AddLogInMessageAsync(string body, int delay, bool sending = false)
-        {
-            var directionType = sending ? MessageTypes.Outgoing : MessageTypes.Incomming;
-            var sender = sending ? string.Empty : Constants.System;
-            var message = new MessageModel
-            {
-                Body = body,
-                Sender = sender,
-                MessageTypes = directionType | MessageTypes.Text | MessageTypes.Leading | MessageTypes.Trailing,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await Task.Delay(delay);
-
-            var lastMessage = Messages.LastOrDefault();
-
-            // 메시지 타입 수정
-            if (lastMessage?.Sender == message.Sender && Utility.InSameMinute(message.CreatedAt, lastMessage.CreatedAt))
-            {
-                lastMessage.MessageTypes ^= MessageTypes.Trailing;
-                message.MessageTypes ^= MessageTypes.Leading;
-            }
-            Messages.Add(message);
-            Utility.Trace(message.MessageTypes.ToString());
-
-            MessagingCenter.Send(this, "MessageAdded", (object)message);
-        }
         private async Task Reset()
         {
             MessagingCenter.Send(this, "ShowOrHideKeyboard", false);
@@ -212,34 +176,11 @@ namespace Ringer.ViewModels
             App.RoomId = null;
             App.UserName = null;
             App.LastServerMessageId = 0;
-            _userInfoToQuery = UserInfoType.None;
-            NavBarTitle = "로그인";
-            Retrying = false;
 
             await _messaging.Clear();
             await _messaging.DisconnectAsync();
-            await LogInProcessAsync();
         }
-        private async Task HideKeyboard(int delay = 1000)
-        {
-            await Task.Delay(delay);
 
-            IsProcessingLogin = true;
-            IsBusy = true;
-
-            MessagingCenter.Send(this, "ShowOrHideKeyboard", false);
-        }
-        private async Task ShowKeyboard(Keyboard keyboard = default, int delayBefore = 1000)
-        {
-            Keyboard = keyboard;
-
-            await Task.Delay(delayBefore);
-
-            IsProcessingLogin = false;
-            IsBusy = false;
-
-            MessagingCenter.Send(this, "ShowOrHideKeyboard", true);
-        }
         #region camera actions
         private async Task TakePhotoAsync()
         {
@@ -657,174 +598,6 @@ namespace Ringer.ViewModels
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
             MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
             IsBusy = false;
-        }
-        public async Task LogInProcessAsync()
-        {
-            if (App.IsLoggedIn)
-                return;
-
-            TextToSend = TextToSend.RemoveWhiteSpaces();
-
-            switch (_userInfoToQuery)
-            {
-                case UserInfoType.None:
-                    {
-                        if (!Retrying)
-                        {
-                            Messages.Clear();
-                            await HideKeyboard(0);
-
-                            await AddLogInMessageAsync("안녕하세요? 건강한 여행의 동반자 링거입니다.", 1000);
-                            await AddLogInMessageAsync("정확한 상담을 위해 이름, 생년월일, 성별을 알려주세요", 1500);
-                            await AddLogInMessageAsync("한 번만 입력하면 다음부터는 링거 상담팀과 곧바로 대화할 수 있습니다. 정보 입력은 두 가지 질문에 답하는 형식으로 진행됩니다.", 1500);
-                            await AddLogInMessageAsync("그럼 입력을 시작하겠습니다.", 1750);
-                        }
-                        await AddLogInMessageAsync("이름을 입력하세요.", 1500);
-
-                        await ShowKeyboard(Keyboard.Chat, 1000);
-
-                        _userInfoToQuery = UserInfoType.Name;
-
-                        break;
-                    }
-                case UserInfoType.Name:
-                    {
-                        _name = TextToSend;
-                        TextToSend = string.Empty;
-
-                        await AddLogInMessageAsync(_name, delay: 0, sending: true);
-
-                        #region validate name input
-
-                        // 이름 포맷 체크
-                        if (!_name.IsKoreanOnly())
-                        {
-                            await AddLogInMessageAsync($"입력하신 \"{_name}\"은 한글 이름이 아닌 것 같습니다. 다시 입력해주세요.", 1000);
-                            return;
-                        }
-
-                        // 이름 체크 통과
-
-                        #endregion
-
-                        if (!Retrying)
-                        {
-                            await HideKeyboard(1000);
-                            await AddLogInMessageAsync($"{_name}님 반갑습니다.", 1000);
-                        }
-
-                        await AddLogInMessageAsync("생년월일 6자리와 성별 번호 1자리를 연속해서 입력해주세요.", 1000);
-                        await AddLogInMessageAsync($"성별 번호는\n2000년 이전에 태어난\n  남자는 1, 여자는 2\n2000년 이후에 태어난\n  남자는 3, 여자는 4\n입니다.", 1500);
-
-                        if (!Retrying)
-                        {
-                            await AddLogInMessageAsync("예를 들어 1999년 3월 20일에 태어난 여자라면 9903202라고 입력하시면 됩니다.", 2000);
-                            await AddLogInMessageAsync("7자리 숫자를 입력하세요.", 1500);
-                        }
-
-                        await ShowKeyboard(Keyboard.Numeric, 1500);
-
-                        _userInfoToQuery = UserInfoType.BirthDate;
-
-                        break;
-                    }
-                case UserInfoType.BirthDate:
-                    {
-                        string numericInput = TextToSend;
-                        TextToSend = string.Empty;
-
-                        await AddLogInMessageAsync(numericInput, 0, true);
-
-                        // validate numeric input
-
-                        // confirm the input has exactly 7 numeric digit
-                        if (!numericInput.IsSevenNumericDigit())
-                        {
-                            await AddLogInMessageAsync("숫자 7개만 입력하셔야 해요..", 1500);
-
-                            return;
-                        }
-
-                        // 3. confirm birth date and sex format
-                        if (!numericInput.IsValidBirthDateAndSex(out var birthDate, out GenderType gender))
-                        {
-                            await AddLogInMessageAsync($"생년월일과 성별을 나타내는 숫자 7자리를 정확하게 입력하셔야 합니다.", 1000);
-
-                            return;
-                        }
-
-                        // 생년월일, 성별 체크 통과
-                        await HideKeyboard(1000);
-
-
-                        //DateTime birthDate = new DateTime(year, month, day);
-                        string genderString = gender == GenderType.Female ? "여자" : "남자";
-
-                        await AddLogInMessageAsync($"생일이 {birthDate.Year}년 {birthDate.Month}월 {birthDate.Day}일인 {genderString} {_name}님으로 조회합니다.", 1000);
-                        await AddLogInMessageAsync($"잠시만 기다려주세요.", 1000);
-
-                        MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                        if (await _restService.LogInAsync(_name, birthDate, gender))
-                        {
-                            await Task.Delay(1000);
-                            IsProcessingLogin = false;
-
-                            App.LastConnectionId = await _messaging.InitAsync(Constants.HubUrl, App.Token);
-                            NavBarTitle = App.UserName;
-
-                            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-                            _messaging.BufferMessages();
-
-                            if (Messages.Any())
-                                MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-
-                            await ShowKeyboard(Keyboard.Chat);
-                        }
-                        else
-                        {
-                            Retrying = false;
-
-                            await AddLogInMessageAsync("입력하신 정보는 링거에 등록되지 않은 정보입니다. 잘못 입력하셨나요?", 1000);
-                            await AddLogInMessageAsync($"다시 입력하시려면 15초 안에 \"다시\"라고 입력하세요.", 2000);
-
-                            await ShowKeyboard(Keyboard.Chat, 1000);
-
-                            _userInfoToQuery = UserInfoType.Retry;
-
-                            // 최종 실패
-                            await Task.Delay(15000);
-
-                            if (!Retrying)
-                            {
-                                await AddLogInMessageAsync("곧 링거 서포트팀에서 다음 절차를 안내해드리겠습니다. 잠시만 기다리세요.", 0);
-
-                                await HideKeyboard(500);
-                            }
-                        }
-                        break;
-                    }
-                case UserInfoType.Retry:
-                    {
-                        var retryString = TextToSend;
-                        TextToSend = string.Empty;
-
-                        await AddLogInMessageAsync(retryString, 0, true);
-
-                        if (retryString == "다시")
-                        {
-                            Retrying = true;
-
-                            await AddLogInMessageAsync("다시 시도하겠습니다. 차분히 입력해주세요.", 1500);
-
-                            _userInfoToQuery = UserInfoType.None;
-
-                            LogInProcessAsync();
-                        }
-
-                        break;
-                    }
-            }
         }
         public async Task RefreshMessageAsync()
         {

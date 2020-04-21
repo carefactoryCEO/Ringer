@@ -13,6 +13,7 @@ using Ringer.Core.Models;
 using Geolocation;
 using System;
 using Microsoft.Extensions.Logging;
+using Ringer.Core.Data;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -34,13 +35,8 @@ namespace Ringer.HubServer.Controllers
         {
             footPrint.TimeStamp = DateTime.UtcNow;
             _dbContext.FootPrints.Add(footPrint);
+
             await _dbContext.SaveChangesAsync();
-
-            var user = await _dbContext.Users
-                .Include(u => u.FootPrints)
-                .FirstOrDefaultAsync(u => u.Id == footPrint.UserId);
-
-            var result = user.FootPrints.Contains(footPrint);
 
             return Ok();
         }

@@ -7,7 +7,7 @@
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
              x:Class="Ringer.Views.ChatPage"
              x:Name="ChatContentPage"
-             Title="{Binding Title}"
+             Title="링거"
              Shell.BackgroundColor="Black"
              Shell.NavBarIsVisible="False"
              Shell.TabBarIsVisible="False"
@@ -78,13 +78,7 @@
                    Padding="0,13"
                    x:Name="TitleLabel"
                    BackgroundColor="Transparent"
-                   Text="{Binding NavBarTitle}"/>
-            <!--<Button Text="Video" Clicked="Button_Clicked"/>-->
-
-            <!--<Button Style="{StaticResource NavBarButtonsStyle}"
-                    HorizontalOptions="End"
-                    Command="{Binding ResetCommand}"
-                    Text="Reset"/>-->
+                   Text="링거"/>
 
             <ImageButton Source="{FontImage Glyph={StaticResource IconReload},
                                             FontFamily={StaticResource MaterialFontFamily},
@@ -113,8 +107,7 @@
                     ios:DatePicker.UpdateMode="WhenFinished"/>
 
         <!-- Activity Indicator -->
-        <ContentView Opacity="{Binding IsProcessingLogin, Converter={StaticResource BooleanToOpacityConverter}}"
-                     IsVisible="{Binding IsBusy}"
+        <ContentView IsVisible="{Binding IsBusy}"
                      Grid.RowSpan="2"
                      BackgroundColor="#7000">
             <ActivityIndicator IsEnabled="{Binding IsBusy}"

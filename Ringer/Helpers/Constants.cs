@@ -40,8 +40,8 @@ namespace Ringer.Helpers
 
         public static readonly string PushNotificationString = "pushNotification";
         public static readonly string LocalNotificationString = "localNotification";
-        public static readonly string ChatPageUriFromLocalNotification = $"//mappage/chatpage?from={LocalNotificationString}";
-        public static readonly string ChatPageUriFromPushNotification = $"//mappage/chatpage?from={PushNotificationString}";
+        public static readonly string ChatPageUriFromLocalNotification = $"//MapPage/ChatPage?from={LocalNotificationString}";
+        public static readonly string ChatPageUriFromPushNotification = $"//MapPage/ChatPage?from={PushNotificationString}";
 
         public static readonly string RingerPhoneNumber = "+82-10-2922-7428";
         public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";

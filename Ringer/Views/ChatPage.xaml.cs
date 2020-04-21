@@ -12,7 +12,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Ringer.Views
 {
-    [QueryProperty("From", "from")]
+    //[QueryProperty("From", "from")]
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class ChatPage : ContentPage
     {
@@ -31,35 +31,35 @@ namespace Ringer.Views
         }
         #endregion
 
-        #region Query properties
-        public string From
-        {
-            set
-            {
-                notificationCalled = true;
+        //#region Query properties
+        //public string From
+        //{
+        //    set
+        //    {
+        //        notificationCalled = true;
 
-                if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
-                {
-                    Device.InvokeOnMainThreadAsync(() =>
-                    {
-                        vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
-                    });
-                }
-            }
-        }
-        #endregion
+        //        if (value == Constants.PushNotificationString || value == Constants.LocalNotificationString)
+        //        {
+        //            Device.InvokeOnMainThreadAsync(() =>
+        //            {
+        //                vm.EnsureMessageLoaded().ContinueWith(t => MessageFeed.ScrollToLast());
+        //            });
+        //        }
+        //    }
+        //}
+        //#endregion
 
         #region override methods
-        protected override async void OnAppearing()
+        protected override void OnAppearing()
         {
             base.OnAppearing();
 
-            if (notificationCalled)
-            {
-                notificationCalled = false;
-                await vm.RefreshMessageAsync();
-                MessageFeed.ScrollToLast();
-            }
+            //if (notificationCalled)
+            //{
+            //    notificationCalled = false;
+            //    await vm.RefreshMessageAsync();
+            //    MessageFeed.ScrollToLast();
+            //}
 
             App.IsChatPage = true;
 
@@ -93,7 +93,6 @@ namespace Ringer.Views
                     Utility.Trace(((MessageModel)message).Body);
                 });
             });
-            await vm.LogInProcessAsync();
         }
         protected override void OnDisappearing()
         {

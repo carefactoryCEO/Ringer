@@ -25,6 +25,7 @@ namespace Ringer.Services
         Task RefreshAsync();
         Task<PermissionStatus> CheckAndRequestPermissionAsync<T>() where T : BasePermission, new();
         Task<bool> CheckPermissionAsync<T>() where T : BasePermission, new();
+        Task RecordFootPrintAsync();
     }
 
     public class LocationService : ILocationService
@@ -97,15 +98,8 @@ namespace Ringer.Services
 
                 Consulates = await api.GetConsulatesByCoordinateAsync(CurrentLatitude, CurrentLongitude);
 
-                if (App.IsLoggedIn && locationChanged)
-                    await api.RecordFootPrintAsync(new FootPrint
-                    {
-                        UserId = App.UserId,
-                        Latitude = CurrentLatitude,
-                        Longitude = CurrentLongitude,
-                        Address = CurrentAddress,
-                        CountryCode = CurrentCountryCode
-                    });
+                if (locationChanged)
+                    await RecordFootPrintAsync();
 
                 LocationUpdated?.Invoke(this, new EventArgs());
             }
@@ -125,6 +119,21 @@ namespace Ringer.Services
             {
                 Debug.WriteLine(ex.Message);
             }
+        }
+
+        public async Task RecordFootPrintAsync()
+        {
+            if (!App.IsLoggedIn)
+                return;
+
+            await api.RecordFootPrintAsync(new FootPrint
+            {
+                UserId = App.UserId,
+                Latitude = CurrentLatitude,
+                Longitude = CurrentLongitude,
+                Address = CurrentAddress,
+                CountryCode = CurrentCountryCode
+            });
         }
 
         public async Task<PermissionStatus> CheckAndRequestPermissionAsync<T>()
