@@ -35,9 +35,9 @@ namespace Ringer.ViewModels
 
             await Task.Delay(20).ContinueWith(t =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
+                MainThread.BeginInvokeOnMainThread(async () =>
                 {
-                    Application.Current.MainPage = new AppShell();
+                    Application.Current.MainPage = await AppShell.GetInstance();
                 });
             });
         }

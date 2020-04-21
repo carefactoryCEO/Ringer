@@ -72,8 +72,6 @@ namespace Ringer
             AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS,
                 typeof(Analytics), typeof(Crashes), typeof(Push), typeof(Distribute));
 
-            Analytics.TrackEvent("Ringer started");
-
             if (await Push.IsEnabledAsync())
             {
                 Guid? id = await AppCenter.GetInstallIdAsync();
@@ -85,6 +83,9 @@ namespace Ringer
                 if (id != null)
                     App.DeviceId = id?.ToString();
             }
+
+            Analytics.TrackEvent($"Ringer.{Xamarin.Forms.Device.RuntimePlatform} started for the first Time. device id: {App.DeviceId}");
+
             #endregion
 
             return new AppShell();

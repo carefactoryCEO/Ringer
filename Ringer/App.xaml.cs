@@ -102,8 +102,8 @@ namespace Ringer
             _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
 
 
-            //MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
-            MainPage = new NavigationPage(new IntroPage());
+            MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
+            //MainPage = new NavigationPage(new IntroPage());
         }
         #endregion
 
@@ -168,8 +168,6 @@ namespace Ringer
             AppCenter.Start(Constants.AppCenterAndroid + Constants.AppCenteriOS,
                 typeof(Analytics), typeof(Crashes), typeof(Push), typeof(Distribute));
 
-            Analytics.TrackEvent("Ringer started");
-
             if (await Push.IsEnabledAsync())
             {
                 Guid? id = await AppCenter.GetInstallIdAsync();
@@ -181,6 +179,8 @@ namespace Ringer
                 if (id != null)
                     DeviceId = id?.ToString();
             }
+
+            Analytics.TrackEvent($"Ringer.{Xamarin.Forms.Device.RuntimePlatform} started. device id: {DeviceId}");
             #endregion
 
             #region Connect and load messages

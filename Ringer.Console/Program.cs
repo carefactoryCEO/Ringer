@@ -163,6 +163,8 @@ namespace Ringer.ConsoleApp
             responseString = await response.Content.ReadAsStringAsync();
             List<Room> rooms = JsonSerializer.Deserialize<List<Room>>(responseString);
 
+            roomList.Clear();
+
             foreach (var room in rooms)
             {
                 if (!roomList.ContainsKey(room.Name))

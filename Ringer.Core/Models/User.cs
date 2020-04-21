@@ -41,6 +41,8 @@ namespace Ringer.Core.Models
         [InverseProperty("Owner")]
         public ICollection<Device> Devices { get; set; }
 
+        public ICollection<FootPrint> FootPrints { get; set; }
+
         public ICollection<Enrollment> Enrollments { get; set; }
     }
 }

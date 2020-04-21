@@ -9,7 +9,10 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Ringer.Core.Data;
+using Ringer.Core.Models;
 using Ringer.Extensions;
+using Ringer.Helpers;
+using Ringer.Services;
 using Ringer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -68,7 +71,7 @@ namespace Ringer.ViewModels
         public ICommand ShowTermDetailsCommand { get; private set; }
         public ICommand NextCommand { get; private set; }
 
-        private Task Next()
+        private async Task Next()
         {
             var UnAgreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
 
@@ -76,14 +79,44 @@ namespace Ringer.ViewModels
             {
                 foreach (var term in UnAgreedTerms)
                 {
-                    Shell.Current.DisplayAlert(null, $"{term.Title}는 필수 사항입니다.", "확인");
+                    await Shell.Current.DisplayAlert(null, $"{term.Title}는 필수 사항입니다.", "확인");
                 }
-
-                return Task.CompletedTask;
             }
             else
             {
-                return Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+                var rest = DependencyService.Get<IRESTService>();
+
+                // register
+                var user = new User
+                {
+                    Name = Name,
+                    UserType = UserType.Consumer,
+                    BirthDate = _birthDate,
+                    Gender = _sex,
+                    Email = Email,
+                    Password = Password,
+                };
+
+                var device = new Core.Models.Device
+                {
+                    Id = App.DeviceId,
+                    DeviceType = Utility.iOS ? Core.Data.DeviceType.iOS : Core.Data.DeviceType.Android,
+                    IsOn = true
+                };
+
+                if (await rest.RegisterConsumerAsync(user, device))
+                {
+                    // init messaging
+                    var messaging = DependencyService.Get<IMessaging>();
+
+                    await messaging.InitAsync(Constants.HubUrl, App.Token);
+                    // go to chatpage
+                    await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+                }
+                else
+                {
+                    await Shell.Current.DisplayAlert(null, $"회원등록에 실패했습니다. 다시 시도해보세요.", "확인");
+                }
             }
         }
 

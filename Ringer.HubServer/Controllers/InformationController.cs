@@ -29,6 +29,22 @@ namespace Ringer.HubServer.Controllers
             _logger = logger;
         }
 
+        [HttpPost("foot-print")]
+        public async Task<IActionResult> RecordFootPrintAsync([FromBody]FootPrint footPrint)
+        {
+            footPrint.TimeStamp = DateTime.UtcNow;
+            _dbContext.FootPrints.Add(footPrint);
+            await _dbContext.SaveChangesAsync();
+
+            var user = await _dbContext.Users
+                .Include(u => u.FootPrints)
+                .FirstOrDefaultAsync(u => u.Id == footPrint.UserId);
+
+            var result = user.FootPrints.Contains(footPrint);
+
+            return Ok();
+        }
+
         [HttpGet("consulates/{lat}/{lon}")]
         public async Task<IActionResult> GetConsulateByCoordinates(double lat, double lon)
         {
@@ -40,7 +56,7 @@ namespace Ringer.HubServer.Controllers
                 con.Distance = GeoCalculator.GetDistance(origin, new Coordinate(con.Latitude, con.Longitude), 1, DistanceUnit.Kilometers);
             }
 
-            return Ok(consulates.OrderBy(c => c.Distance));
+            return Ok(consulates.OrderBy(c => c.Distance).Take(5));
         }
 
         [HttpGet("consulates")]

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Ringer.HubServer.Data;
 
 namespace Ringer.HubServer.Migrations
 {
     [DbContext(typeof(RingerDbContext))]
-    partial class RingerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200421072410_add-FootPrint")]
+    partial class addFootPrint
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

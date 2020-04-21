@@ -76,7 +76,7 @@ namespace Ringer.HubServer.Hubs
             _logger.LogWarning($"User {userName} removed from room. [room id: {roomId}]");
             await Clients.Group(roomId).SendAsync("Left", userName);
 
-            room.Enrollments.Remove(en);
+            _dbContext.Remove(en);
             await _dbContext.SaveChangesAsync();
         }
         #endregion

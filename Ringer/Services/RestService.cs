@@ -19,17 +19,21 @@ namespace Ringer.Services
     {
         Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token);
         Task<bool> LogInAsync(string name, DateTime birthDate, GenderType genderType);
+        Task<bool> RegisterConsumerAsync(User user, Device device);
         Task<List<ConsulateModel>> GetConsulatesByCoordinateAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
         Task SetCountryCodeAsync(int id, string countryCode);
+        Task RecordFootPrintAsync(FootPrint footPrint);
     }
 
     public class RESTService : IRESTService
     {
         private readonly HttpClient _client;
+        private readonly JsonSerializerOptions serilizeOptions;
 
         public RESTService()
         {
             _client = new HttpClient();
+            serilizeOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         }
 
         public async Task<List<PendingMessage>> PullPendingMessagesAsync(string roomId, int lastMessageId, string token)
@@ -119,10 +123,7 @@ namespace Ringer.Services
                 throw new HttpRequestException("request failed");
 
             var consultesJson = await response.Content.ReadAsStringAsync();
-            var consulateList = JsonSerializer.Deserialize<List<ConsulateModel>>(consultesJson, options: new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
+            var consulateList = JsonSerializer.Deserialize<List<ConsulateModel>>(consultesJson, serilizeOptions);
 
             return consulateList;
         }
@@ -130,6 +131,53 @@ namespace Ringer.Services
         public Task SetCountryCodeAsync(int id, string countryCode)
         {
             return _client.GetAsync(Constants.InformationUrl + $"/set-countrycode/{id}/{countryCode}");
+        }
+
+        public async Task<bool> RegisterConsumerAsync(User user, Device device)
+        {
+            var registerConsumerRequest = new RegisterConsumerRequest
+            {
+                User = user,
+                Device = device
+            };
+
+            var reqJson = JsonSerializer.Serialize(registerConsumerRequest, serilizeOptions);
+
+            HttpResponseMessage response = await _client.PostAsync(Constants.RegisterConsumerUrl, new StringContent(reqJson, Encoding.UTF8, "application/json"));
+
+            // 전송 실패
+            if (response.StatusCode != HttpStatusCode.OK)
+                Debug.WriteLine(await response.Content.ReadAsStringAsync());
+
+            var resJson = await response.Content.ReadAsStringAsync();
+
+            if (JsonSerializer.Deserialize<RegisterConsumerResponse>(resJson, serilizeOptions) is RegisterConsumerResponse registerResponse)
+            {
+                if (registerResponse.Success)
+                {
+                    Analytics.TrackEvent("Registration Succeeded", new Dictionary<string, string>
+                    {
+                        {"roomId", registerResponse.RoomId},
+                        {"userId", registerResponse.UserId.ToString()},
+                        {"userName", registerResponse.UserName}
+                    });
+
+                    App.Token = registerResponse.Token;
+                    App.RoomId = registerResponse.RoomId;
+                    App.UserId = registerResponse.UserId;
+                    App.UserName = registerResponse.UserName;
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public async Task RecordFootPrintAsync(FootPrint footPrint)
+        {
+            var footPrintReq = JsonSerializer.Serialize(footPrint, serilizeOptions);
+            await _client.PostAsync(Constants.FootPrintUrl, new StringContent(footPrintReq, Encoding.UTF8, "application/json"));
         }
     }
 }

@@ -14,16 +14,6 @@ namespace Ringer.Core.Models
         public bool IsClosed { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; }
-
-        //[Key]
-        //[DatabaseGenerated(DatabaseGeneratedOption.None)]
-        //public string Id { get; set; }
-        //public string Name { get; set; }
-        //public string Description { get; set; }
-        //public bool IsActive { get; set; }
-        //public DateTime CreatedAt { get; set; }
-        //public DateTime ActivatedAt { get; set; }
-
-        //public ICollection<Enrollment> Enrollments { get; set; }
+        public ICollection<Message> Messages { get; set; }
     }
 }

@@ -18,9 +18,13 @@ namespace Ringer.HubServer.Data
         public DbSet<Device> Devices { get; set; }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Consulate> Consulates { get; set; }
+        public DbSet<FootPrint> FootPrints { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<FootPrint>()
+                .ToTable("FootPrint");
+
             // User
             modelBuilder.Entity<User>()
                 .Property(p => p.Gender)
