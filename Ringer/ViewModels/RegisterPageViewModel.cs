@@ -71,27 +71,6 @@ namespace Ringer.ViewModels
         public ICommand ShowTermDetailsCommand { get; private set; }
         public ICommand NextCommand { get; private set; }
 
-        private Task Next()
-        {
-            var UnAgreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
-
-            if (UnAgreedTerms.Any())
-            {
-                foreach (var term in UnAgreedTerms)
-                {
-                    Shell.Current.DisplayAlert(null, $"{term.Title}는 필수 사항입니다.", "확인");
-                }
-
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
-            }
-        }
-
-        public ICommand NextCommand { get; private set; }
-
         private async Task Next()
         {
             var UnAgreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
