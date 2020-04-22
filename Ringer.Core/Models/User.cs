@@ -44,5 +44,7 @@ namespace Ringer.Core.Models
         public ICollection<FootPrint> FootPrints { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; }
+
+        public ICollection<Agreement> Agreements { get; set; }
     }
 }

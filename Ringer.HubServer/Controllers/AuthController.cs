@@ -138,84 +138,126 @@ namespace Ringer.HubServer.Controllers
             return Ok(response);
         }
 
+        [HttpGet("terms/{id}")]
+        public async Task<Terms> GetTermsById(int id)
+        {
+            return await _dbContext.Terms.FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        [HttpPost("terms")]
+        public async Task SetAgreements([FromBody]List<Agreement> agreements)
+        {
+            _dbContext.AddRange(agreements);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        [HttpGet("terms")]
+        public async Task<IEnumerable<Terms>> GetTermsListAsync()
+        {
+            return await _dbContext.Terms.Where(t => t.IsCurrent).ToListAsync();
+        }
+
         [HttpPost("register-consumer")]
         public async Task<ActionResult> RegisterConsumerAsync([FromBody]RegisterConsumerRequest req)
         {
-            var secretKey = _configuration["SecurityKey"];
-            var device = req.Device;
-
-            var user = await _userService.LogInAsync(req.User.Email, req.User.Password);
-
-            if (user != null) // user already exists...
+            try
             {
-                user = await _dbContext.Users
+                var secretKey = _configuration["SecurityKey"];
+                var device = req.Device;
+                device.IsActive = true;
+                string roomId = Guid.NewGuid().ToString();
+                var tokenInfo = new LoginInfo { DeviceId = device.Id, DeviceType = device.DeviceType };
+                var user = await _dbContext.Users
+                    .Where(u => u.Name == req.User.Name)
+                    .Where(u => u.BirthDate.Date == req.User.BirthDate.Date)
+                    .Where(u => u.Gender == req.User.Gender)
+                    .Where(u => u.Email == req.User.Email)
                     .Include(u => u.Devices)
                     .Include(u => u.Enrollments)
-                    .FirstOrDefaultAsync(u => u.Id == user.Id);
+                    .FirstOrDefaultAsync();
 
-                user.Devices.Clear();
-                user.Devices.Add(device);
-
-                await _dbContext.SaveChangesAsync();
-
-                var roomId = user.Enrollments?.FirstOrDefault()?.RoomId;
-
-                return Ok(new RegisterConsumerResponse
+                if (user != null) // user already exists...
                 {
-                    RoomId = roomId,
-                    UserId = user.Id,
-                    UserName = user.Name,
-                    Success = true,
-                    Token = user.JwtToken(new LoginInfo
+                    // 방금 입력한 비밀번호로 로그인 되면
+                    if (_userService.VerifyPasswordHash(req.User.Password, user.PasswordHash, user.PasswordSalt))
                     {
-                        DeviceId = device.Id,
-                        DeviceType = device.DeviceType
-                    }, secretKey)
-                });
+                        // 이전 기기들 비활성화
+                        foreach (var d in user.Devices)
+                            d.IsActive = false;
+
+                        // 로그인한 기기 활성화
+                        user.Devices.Add(device);
+
+                        if (user.Enrollments.Any())
+                        {
+                            roomId = user.Enrollments.First().RoomId;
+                        }
+                        else
+                        {
+                            var room = new Room { Name = user.Name, Id = roomId };
+                            user.Enrollments.Add(new Enrollment { Room = room });
+                        }
+
+                        await _dbContext.SaveChangesAsync();
+
+                        return Ok(new RegisterConsumerResponse
+                        {
+                            RoomId = roomId,
+                            UserId = user.Id,
+                            UserName = user.Name,
+                            Success = true,
+                            Token = user.JwtToken(tokenInfo, secretKey)
+                        });
+
+                        // TODO: App.Startup()에서 Device의 활성 상태 검증
+                        // 비활성 기기면 재로그인
+                    }
+                    else // Name, BirthDate, Sex, Email은 일치하지만 비번이 틀림
+                    {
+                        // TODO: 비밀번호 재입력 및 재설정 안내
+                        // 신모법님은 링거에 가입되어 있지만 비밀번호가 틀렸습니다. 정확한 비밀번호를 입력하세요.
+                        // 여기를 누르면 계정이메일(jhylmb@gmail.com)으로 비밀번호 재설정 링크를 발송합니다.
+                        // jhylmb@gmail.com으로 비밀번호 재설정 링크를 발송했습니다.
+                        return Unauthorized(new RegisterConsumerResponse
+                        {
+                            Success = false,
+                            RequireLogin = true
+                        }); ;
+                    }
+                }
+                else
+                {
+                    var createdUser = await _userService.CreateAsync(req.User, req.User.Password);
+
+                    user = await _dbContext.Users
+                        .Include(u => u.Devices)
+                        .Include(u => u.Enrollments)
+                        .FirstOrDefaultAsync(u => u.Id == createdUser.Id);
+
+                    // add device
+                    user.Devices.Add(device);
+
+                    // add enrollment / room
+                    var room = new Room { Id = roomId, Name = user.Name };
+                    user.Enrollments.Add(new Enrollment { Room = room });
+
+                    await _dbContext.SaveChangesAsync();
+
+                    return Ok(new RegisterConsumerResponse
+                    {
+                        RoomId = room.Id,
+                        UserId = user.Id,
+                        UserName = user.Name,
+                        Success = true,
+                        Token = user.JwtToken(tokenInfo, secretKey)
+                    });
+                }
             }
-            else
+            catch (Exception ex)
             {
-                user = await _userService.CreateAsync(req.User, req.User.Password);
-
-                user = await _dbContext.Users
-                    .Include(u => u.Devices)
-                    .Include(u => u.Enrollments)
-                    .FirstOrDefaultAsync(u => u.Id == user.Id);
-
-                // add device
-                user.Devices.Add(device);
-
-                // add enrollment / room
-                var room = new Room
-                {
-                    //신모범
-                    //신모범(44/M)[US]몸살감기
-                    Id = Guid.NewGuid().ToString(),
-                    Name = user.Name
-                };
-
-                user.Enrollments.Add(new Enrollment
-                {
-                    Room = room
-                });
-
-                await _dbContext.SaveChangesAsync();
-
-                return Ok(new RegisterConsumerResponse
-                {
-                    RoomId = room.Id,
-                    UserId = user.Id,
-                    UserName = user.Name,
-                    Success = true,
-                    Token = user.JwtToken(new LoginInfo
-                    {
-                        DeviceId = device.Id,
-                        DeviceType = device.DeviceType
-
-                    }, secretKey)
-                });
+                _logger.LogError(ex.Message, "Consumer Registration Throws", req);
+                return StatusCode(500);
             }
-
         }
 
         [HttpPost("login")]

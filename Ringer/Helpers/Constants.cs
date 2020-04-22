@@ -47,5 +47,7 @@ namespace Ringer.Helpers
         public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";
 
         public static readonly string FootPrintUrl = InformationUrl + "/foot-print";
+        public static readonly string TermsUrl = BaseUrl + "/auth/terms";
+
     }
 }

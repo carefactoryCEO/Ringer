@@ -17,6 +17,7 @@ namespace Ringer.HubServer.Services
         IEnumerable<User> GetAll();
         ValueTask<User> GetByIdAsync(int id);
         Task<User> UpdateAsync(User user, string password = null);
+        bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt);
     }
 
     public class UserService : IUserService
@@ -142,7 +143,7 @@ namespace Ringer.HubServer.Services
             passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
 
-        private bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
+        public bool VerifyPasswordHash(string password, byte[] storedHash, byte[] storedSalt)
         {
             if (password == null) throw new ArgumentNullException(nameof(password));
             if (string.IsNullOrWhiteSpace(password)) throw new ArgumentException("Value cannot be empty or whitespace only string.", nameof(password));

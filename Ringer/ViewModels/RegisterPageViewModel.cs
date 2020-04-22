@@ -53,17 +53,40 @@ namespace Ringer.ViewModels
         {
             ValidateCommand = new Command(async () => await Validate());
             ToggleAgreeAllCommand = new Command(() => ToggleAgreeAll());
-            ToggleAgreeCommand = new Command<Term>(term => ToggleAgree(term));
-            ShowTermDetailsCommand = new Command<Term>(async term => await ShowTermDetails(term));
+            ToggleAgreeCommand = new Command<TermsModel>(term => ToggleAgree(term));
+            ShowTermDetailsCommand = new Command<TermsModel>(async term => await ShowTermDetails(term));
             NextCommand = new Command(async () => await Next());
+            LoadTermsCommand = new Command(async () => await LoadTerm());
 
-            TermsList = new ObservableCollection<Term>
-            {
-                new Term{Title="서비스 동의", Required= true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/84"},
-                new Term{Title="위치 정보 동의", Required = true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/85"},
-                new Term{Title="맞춤형 서비스 안내 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/86"},
-                new Term{Title="마케팅 정보 수신 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/87"}
-            };
+            LoadTermsCommand.Execute(null);
+        }
+
+        private async Task LoadTerm()
+        {
+            TermsList = new ObservableCollection<TermsModel>();
+
+            var api = DependencyService.Get<IRESTService>();
+
+            var termsList = await api.GetTermsListAsync();
+
+            foreach (var terms in termsList)
+                TermsList.Add(new TermsModel
+                {
+                    Id = terms.Id,
+                    Required = terms.Required,
+                    Title = terms.Title,
+                    DetailUrl = $"{Constants.TermsUrl}/{terms.Id}"
+                });
+
+            //TermsList = new ObservableCollection<TermsModel>
+            //{
+            //    new TermsModel{Title="서비스 동의", Required= true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/84"},
+            //    new TermsModel{Title="위치 정보 동의", Required = true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/85"},
+            //    new TermsModel{Title="맞춤형 서비스 안내 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/86"},
+            //    new TermsModel{Title="마케팅 정보 수신 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/87"}
+            //};
+
+            //await Task.Delay(0);
         }
 
         public ICommand ValidateCommand { get; private set; }
@@ -71,19 +94,75 @@ namespace Ringer.ViewModels
         public ICommand ToggleAgreeCommand { get; private set; }
         public ICommand ShowTermDetailsCommand { get; private set; }
         public ICommand NextCommand { get; private set; }
+        public ICommand LoadTermsCommand { get; private set; }
 
+        // 동의화면 후
         private async Task Next()
         {
-            var UnAgreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
-
-            if (UnAgreedTerms.Any())
+            var disagreedTerms = TermsList.Where(t => t.Required && !t.Agreed);
+            if (disagreedTerms.Any())
             {
-                foreach (var term in UnAgreedTerms)
+                foreach (var term in disagreedTerms)
                 {
                     await Shell.Current.DisplayAlert(null, $"{term.Title}는 필수 사항입니다.", "확인");
                 }
             }
             else
+            {
+                var agreementList = TermsList.Where(t => t.Agreed)
+                    .Select(t => new Agreement
+                    {
+                        AgreedAt = DateTime.UtcNow,
+                        UserId = App.UserId,
+                        TermsId = t.Id
+                    })
+                    .ToList();
+
+                if (agreementList.Any())
+                {
+                    var api = DependencyService.Get<IRESTService>();
+                    await api.PostAgreements(agreementList);
+                }
+                // send agreement list to server
+
+                // go to chatpage
+                await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+            }
+        }
+
+        private Task ShowTermDetails(TermsModel term)
+        {
+            var launchOptions = new BrowserLaunchOptions
+            {
+                Flags = BrowserLaunchFlags.PresentAsFormSheet | BrowserLaunchFlags.LaunchAdjacent,
+                //Flags = BrowserLaunchFlags.PresentAsFormSheet,
+                TitleMode = BrowserTitleMode.Show,
+                LaunchMode = BrowserLaunchMode.SystemPreferred
+            };
+            return Browser.OpenAsync(term.DetailUrl, launchOptions);
+        }
+
+        private void ToggleAgree(TermsModel selectedTerm)
+        {
+            selectedTerm.Agreed = !selectedTerm.Agreed;
+            AllAgreed = TermsList.All(t => t.Agreed);
+        }
+
+        private void ToggleAgreeAll()
+        {
+            var agreed = !AllAgreed;
+
+            foreach (var term in TermsList)
+            {
+                term.Agreed = agreed;
+            }
+
+            AllAgreed = agreed;
+        }
+
+        private async Task Validate()
+        {
+            if (await ValidateNameAsync() && await ValidateBirthDateAndSexAsync() && await ValidateEmailAsync() && await ValidatePasswordAsync())
             {
                 var rest = DependencyService.Get<IRESTService>();
 
@@ -105,7 +184,9 @@ namespace Ringer.ViewModels
                     IsOn = true
                 };
 
-                if (await rest.RegisterConsumerAsync(user, device))
+                var result = await rest.RegisterConsumerAsync(user, device);
+
+                if (result == AuthResult.Succeed)
                 {
                     // init messaging
                     var messaging = DependencyService.Get<IMessaging>();
@@ -115,55 +196,16 @@ namespace Ringer.ViewModels
                     var location = DependencyService.Get<ILocationService>();
                     await location.RecordFootPrintAsync();
 
-                    // go to chatpage
-                    await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+                    MessagingCenter.Send(this, "ShowTermsView");
                 }
-                else
+                else if (result == AuthResult.ServerError || result == AuthResult.Unknown)
                 {
-                    await Shell.Current.DisplayAlert(null, $"회원등록에 실패했습니다. 다시 시도해보세요.", "확인");
+                    await Shell.Current.DisplayAlert("앗!", $"회원등록에 실패했습니다.\n접속 환경이 이유일 수 있습니다.\n다시 시도해보세요.", "확인");
                 }
-            }
-        }
-
-        private Task ShowTermDetails(Term term)
-        {
-            var launchOptions = new BrowserLaunchOptions
-            {
-                Flags = BrowserLaunchFlags.PresentAsFormSheet | BrowserLaunchFlags.LaunchAdjacent,
-                //Flags = BrowserLaunchFlags.PresentAsFormSheet,
-                TitleMode = BrowserTitleMode.Show,
-                LaunchMode = BrowserLaunchMode.SystemPreferred
-            };
-            return Browser.OpenAsync(term.DetailUrl, launchOptions);
-        }
-
-        private void ToggleAgree(Term selectedTerm)
-        {
-            selectedTerm.Agreed = !selectedTerm.Agreed;
-            AllAgreed = TermsList.All(t => t.Agreed);
-        }
-
-        private void ToggleAgreeAll()
-        {
-            var agreed = !AllAgreed;
-
-            foreach (var term in TermsList)
-            {
-                term.Agreed = agreed;
-            }
-
-            AllAgreed = agreed;
-        }
-
-        private async Task Validate()
-        {
-            if (await ValidateNameAsync()
-                && await ValidateBirthDateAndSexAsync()
-                && await ValidateEmailAsync()
-                && await ValidatePasswordAsync()
-                )
-            {
-                MessagingCenter.Send(this, "ShowTermsView");
+                else if (result == AuthResult.LoginFailed)
+                {
+                    await Shell.Current.DisplayAlert("앗!", $"가입했는데 비번이 틀림", "확인");
+                }
             }
         }
 
@@ -238,14 +280,12 @@ namespace Ringer.ViewModels
 
         public bool AllAgreed { get; set; }
 
-        public ObservableCollection<Term> TermsList { get; set; }
+        public ObservableCollection<TermsModel> TermsList { get; set; }
     }
 
-    public class Term : INotifyPropertyChanged
+    public class TermsModel : Terms, INotifyPropertyChanged
     {
-        public string Title { get; set; }
         public bool Agreed { get; set; }
-        public bool Required { get; set; }
         public string DetailUrl { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -10,6 +10,7 @@ namespace Ringer.Core.Models
         public string Id { get; set; }
         public DeviceType DeviceType { get; set; }
         public bool IsOn { get; set; }
+        public bool IsActive { get; set; }
         public string ConnectionId { get; set; }
 
         public int OwnerId { get; set; }

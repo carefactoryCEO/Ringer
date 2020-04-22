@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Ringer.HubServer.Data;
 
 namespace Ringer.HubServer.Migrations
 {
     [DbContext(typeof(RingerDbContext))]
-    partial class RingerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20200422091059_Add-Terms")]
+    partial class AddTerms
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -248,9 +250,6 @@ namespace Ringer.HubServer.Migrations
                     b.Property<bool>("IsCurrent")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("Required")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Title")
                         .HasColumnType("nvarchar(max)");
 
@@ -318,7 +317,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 1,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 4, 22, 10, 33, 20, 362, DateTimeKind.Utc).AddTicks(2820),
+                            CreatedAt = new DateTime(2020, 4, 22, 9, 10, 59, 471, DateTimeKind.Utc).AddTicks(10),
                             Gender = "Male",
                             Name = "Admin",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -328,7 +327,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 2,
                             BirthDate = new DateTime(1976, 7, 21, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 4, 22, 10, 33, 20, 362, DateTimeKind.Utc).AddTicks(3680),
+                            CreatedAt = new DateTime(2020, 4, 22, 9, 10, 59, 471, DateTimeKind.Utc).AddTicks(810),
                             Gender = "Male",
                             Name = "신모범",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -338,7 +337,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 3,
                             BirthDate = new DateTime(1981, 6, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 4, 22, 10, 33, 20, 362, DateTimeKind.Utc).AddTicks(3700),
+                            CreatedAt = new DateTime(2020, 4, 22, 9, 10, 59, 471, DateTimeKind.Utc).AddTicks(830),
                             Gender = "Female",
                             Name = "김은미",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -348,7 +347,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 4,
                             BirthDate = new DateTime(1980, 7, 4, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 4, 22, 10, 33, 20, 362, DateTimeKind.Utc).AddTicks(3700),
+                            CreatedAt = new DateTime(2020, 4, 22, 9, 10, 59, 471, DateTimeKind.Utc).AddTicks(830),
                             Gender = "Male",
                             Name = "김순용",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -358,7 +357,7 @@ namespace Ringer.HubServer.Migrations
                         {
                             Id = 5,
                             BirthDate = new DateTime(1981, 12, 25, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            CreatedAt = new DateTime(2020, 4, 22, 10, 33, 20, 362, DateTimeKind.Utc).AddTicks(3710),
+                            CreatedAt = new DateTime(2020, 4, 22, 9, 10, 59, 471, DateTimeKind.Utc).AddTicks(840),
                             Gender = "Female",
                             Name = "함주희",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),

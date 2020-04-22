@@ -112,7 +112,7 @@ namespace Ringer.ViewModels
             if (targetMessage != null)
             {
                 targetMessage.MessageTypes = updatedMessage.MessageTypes;
-                MessagingCenter.Send(this, "MessageAdded", (object)targetMessage);
+                //MessagingCenter.Send(this, "MessageAdded", (object)targetMessage);
             }
         }
         private void OnMessageAdded(object sender, MessageModel newMessage)

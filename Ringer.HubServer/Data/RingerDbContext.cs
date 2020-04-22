@@ -19,9 +19,15 @@ namespace Ringer.HubServer.Data
         public DbSet<Room> Rooms { get; set; }
         public DbSet<Consulate> Consulates { get; set; }
         public DbSet<FootPrint> FootPrints { get; set; }
+        public DbSet<Terms> Terms { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Terms
+            modelBuilder.Entity<Terms>()
+                .ToTable("Terms");
+
+            // FootPrint
             modelBuilder.Entity<FootPrint>()
                 .ToTable("FootPrint");
 

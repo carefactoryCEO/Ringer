@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Ringer.Helpers;
 using Ringer.Models;
@@ -73,14 +74,13 @@ namespace Ringer.Views
                 });
             });
 
-            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", (sender, message) =>
+            MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageAdded", async (sender, message) =>
             {
-                MainThread.BeginInvokeOnMainThread(() =>
+                await MainThread.InvokeOnMainThreadAsync(() =>
                 {
-                    if (Device.RuntimePlatform == Device.Android)
-                        InvalidateMeasure();
+                    MessageFeed.ScrollTo(message, ScrollToPosition.MakeVisible, animated: false);
 
-                    MessageFeed.ScrollTo(message, ScrollToPosition.End, animated: false);
+                    //MessageFeed.ScrollToLast();
                 });
             });
 
@@ -88,7 +88,7 @@ namespace Ringer.Views
             {
                 Device.BeginInvokeOnMainThread(() =>
                 {
-                    MessageFeed.ScrollTo(message, position: ScrollToPosition.Start, animated: false);
+                    MessageFeed.ScrollTo(message, position: ScrollToPosition.MakeVisible, animated: false);
 
                     Utility.Trace(((MessageModel)message).Body);
                 });

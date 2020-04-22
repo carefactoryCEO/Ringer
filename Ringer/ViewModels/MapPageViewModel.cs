@@ -67,6 +67,11 @@ namespace Ringer.ViewModels
 
         public async Task<bool> RefreshConsulatesAsync()
         {
+            // TODO: 매번 api 때리지 말고,
+            // 1. 이전 지점과의 거리가 500미터를 넘거나
+            // 2. 체크한 지 10분이 지나면
+            // 이 조건이 충족되지 않으면 이전 정보 그대로 보여줌.
+
             if (refreshing)
             {
                 refreshing = false;

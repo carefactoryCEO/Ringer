@@ -206,8 +206,9 @@ namespace Ringer.Services
                     Sender = Constants.System,
                     MessageTypes = MessageTypes.EntranceNotice,
                     CreatedAt = DateTime.UtcNow,
-                    ReceivedAt = DateTime.UtcNow
-                }).ConfigureAwait(false);
+                    ReceivedAt = DateTime.UtcNow,
+                    RoomId = App.RoomId
+                });
 
             Utility.Trace(e.Message);
         }
@@ -220,8 +221,9 @@ namespace Ringer.Services
                     Sender = Constants.System,
                     MessageTypes = MessageTypes.EntranceNotice,
                     CreatedAt = DateTime.UtcNow,
-                    ReceivedAt = DateTime.UtcNow
-                }).ConfigureAwait(false);
+                    ReceivedAt = DateTime.UtcNow,
+                    RoomId = App.RoomId
+                });
 
             Utility.Trace(e.Message);
         }
@@ -310,14 +312,14 @@ namespace Ringer.Services
         public async Task AddMessageAsync(MessageModel message)
         {
             // 직전 메시지 저장, 뷰 업데이트
-            if (await UpdateLastMessageAsync(message).ConfigureAwait(false) is MessageModel updatedMessage)
+            if (await UpdateLastMessageAsync(message) is MessageModel updatedMessage)
                 MessageUpdated?.Invoke(this, updatedMessage);
 
             // 메시지 저장, 뷰 추가, 스크롤
-            if (await SaveToLocalDbAsync(message).ConfigureAwait(false) is MessageModel addedMessage)
+            if (await SaveToLocalDbAsync(message) is MessageModel addedMessage)
             {
-                MessageAdded?.Invoke(this, addedMessage);
                 Messages.Add(addedMessage);
+                MessageAdded?.Invoke(this, addedMessage);
             }
 
             if (!Utility.IsChatActive && message.SenderId != App.UserId && !Utility.AndroidCameraActivated)

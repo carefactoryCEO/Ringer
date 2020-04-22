@@ -40,8 +40,23 @@ namespace Ringer.Services
             api = DependencyService.Get<IRESTService>();
         }
 
-        public double CurrentLatitude { get; private set; }
-        public double CurrentLongitude { get; private set; }
+        public double CurrentLatitude
+        {
+            get => Preferences.Get(nameof(CurrentLatitude), default(double));
+            private set => Preferences.Set(nameof(CurrentLatitude), value);
+        }
+        public double CurrentLongitude
+        {
+            get => Preferences.Get(nameof(CurrentLongitude), default(double));
+            private set => Preferences.Set(nameof(CurrentLongitude), value);
+        }
+
+        public DateTime LastLocationTimeStamp
+        {
+            get => Preferences.Get(nameof(LastLocationTimeStamp), DateTime.UtcNow);
+            set => Preferences.Set(nameof(LastLocationTimeStamp), value);
+        }
+
         public string CurrentAddress { get; private set; }
         public string CurrentCountryCode { get; private set; }
         public List<ConsulateModel> Consulates { get; private set; }
@@ -99,9 +114,11 @@ namespace Ringer.Services
                 Consulates = await api.GetConsulatesByCoordinateAsync(CurrentLatitude, CurrentLongitude);
 
                 if (locationChanged)
+                {
                     await RecordFootPrintAsync();
+                    LocationUpdated?.Invoke(this, new EventArgs());
+                }
 
-                LocationUpdated?.Invoke(this, new EventArgs());
             }
             catch (FeatureNotSupportedException fnsEx)
             {
