@@ -112,11 +112,11 @@ namespace Ringer.Services
                 }
 
                 Consulates = await api.GetConsulatesByCoordinateAsync(CurrentLatitude, CurrentLongitude);
+                LocationUpdated?.Invoke(this, new EventArgs());
 
                 if (locationChanged)
                 {
                     await RecordFootPrintAsync();
-                    LocationUpdated?.Invoke(this, new EventArgs());
                 }
 
             }
