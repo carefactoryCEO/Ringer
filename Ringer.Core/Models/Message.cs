@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Ringer.Core.Models
 {
@@ -15,6 +16,7 @@ namespace Ringer.Core.Models
         public int SenderId { get; set; }
 
         public Room Room { get; set; }
+        [Required]
         public string RoomId { get; set; }
 
     }

@@ -77,16 +77,6 @@ namespace Ringer.ViewModels
                     Title = terms.Title,
                     DetailUrl = $"{Constants.TermsUrl}/{terms.Id}"
                 });
-
-            //TermsList = new ObservableCollection<TermsModel>
-            //{
-            //    new TermsModel{Title="서비스 동의", Required= true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/84"},
-            //    new TermsModel{Title="위치 정보 동의", Required = true, DetailUrl="https://agiwana.azurewebsites.net/Article/Details/85"},
-            //    new TermsModel{Title="맞춤형 서비스 안내 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/86"},
-            //    new TermsModel{Title="마케팅 정보 수신 동의(선택)", DetailUrl="https://agiwana.azurewebsites.net/Article/Details/87"}
-            //};
-
-            //await Task.Delay(0);
         }
 
         public ICommand ValidateCommand { get; private set; }

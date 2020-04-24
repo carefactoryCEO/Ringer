@@ -12,6 +12,7 @@ using Plugin.LocalNotification;
 using Microsoft.AppCenter.Distribute;
 using Ringer.Views.Permission;
 using Ringer.Views.Intro;
+using Ringer.Views;
 
 namespace Ringer
 {
@@ -102,7 +103,8 @@ namespace Ringer
             _messaging.Closed += (s, e) => Utility.Trace(e.Message, true);
 
 
-            MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
+            MainPage = new LoginPage();
+            //MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
             //MainPage = new NavigationPage(new IntroPage());
         }
         #endregion

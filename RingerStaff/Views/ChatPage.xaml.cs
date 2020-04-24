@@ -32,7 +32,7 @@ namespace RingerStaff.Views
             });
         }
 
-        protected override void OnSizeAllocated(double width, double height)
+        protected override void OnSizeAllocatedAsync(double width, double height)
         {
             if (Device.RuntimePlatform == Device.iOS)
                 _insets = On<iOS>().SafeAreaInsets();

@@ -103,6 +103,16 @@ namespace Ringer.HubServer
                 options.RootPath = "wwwroot";
             });
 
+            MailConfigSection mailConfigSection = Configuration.GetSection("mailConfigSection").Get<MailConfigSection>();
+            services.AddSingleton(mailConfigSection);
+            //services.AddScoped<IEmailSender, MailgunEmailSender>();
+            services.AddHttpClient<IEmailSender, MailgunEmailSender>(cfg =>
+            {
+                cfg.BaseAddress = new Uri("https://api.mailgun.net");
+                cfg.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
+                    Convert.ToBase64String(Encoding.UTF8.GetBytes($"api:{mailConfigSection.MailgunKey}")));
+            });
+
             services.AddControllers();
 
             services.AddSignalR();
@@ -143,6 +153,8 @@ namespace Ringer.HubServer
                     }
                 });
             });
+
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
