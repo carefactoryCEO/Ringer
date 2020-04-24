@@ -189,6 +189,12 @@ namespace Ringer.Services
             }
         }
 
+        public async Task<AuthResult> LoginConsumerAsync(User user)
+        {
+            await Task.Delay(1);
+            return AuthResult.LoginFailed;
+        }
+
         public async Task RecordFootPrintAsync(FootPrint footPrint)
         {
             var footPrintReq = JsonSerializer.Serialize(footPrint, serilizeOptions);

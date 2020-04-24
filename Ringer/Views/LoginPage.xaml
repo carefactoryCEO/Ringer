@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:Ringer.ViewModels"
+             xmlns:controls="clr-namespace:Ringer.Views.Controls"
+             x:Class="Ringer.Views.LoginPage">
+    <ContentPage.BindingContext>
+        <vm:LoginPageViewModel/>
+    </ContentPage.BindingContext>
+    <ContentPage.Resources>
+        <Style TargetType="Entry">
+            <Setter Property="PlaceholderColor" Value="#9298A1"/>
+            <Setter Property="ClearButtonVisibility" Value="WhileEditing"/>
+            <Setter Property="IsTextPredictionEnabled" Value="False"/>
+            <Setter Property="BackgroundColor" Value="#FFFFFF"/>
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="FontSize" Value="{OnPlatform iOS=22, Android=20}"/>
+        </Style>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <controls:KeyboardGrid x:Name="MainContainer"
+                               BackgroundColor="#FFF"
+                               Padding="20,0"
+                               Visual="Material">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!--Title-->
+            <Label Text="링거 로그인"
+                   FontSize="25"
+                   FontAttributes="Bold"
+                   TextColor="Black"
+                   x:Name="TitleLabel"
+                   Margin="15,50,0,10"
+                   Grid.Row="0"/>
+
+            <ScrollView Grid.Row="1"
+                        VerticalScrollBarVisibility="Never">
+
+                <StackLayout x:Name="ContainerStackLayout"
+                             VerticalOptions="FillAndExpand">
+
+                    <Entry Placeholder="이메일"
+                           x:Name="EmailEntry"
+                           ClassId="EmailEntry"
+                           Keyboard="Email"
+                           Completed="Entry_Completed"
+                           TextChanged="Entry_TextChanged"
+                           Focused="Entry_Focused"
+                           Unfocused="Entry_Unfocused"
+                           IsEnabled="{Binding IsEmailEntryEnabled}"
+                           Text="{Binding Email}"
+                           Margin="0,10,0,0"/>
+
+                    <Entry Placeholder="비밀번호"
+                           x:Name="PasswordEntry"
+                           ClassId="PasswordEntry"
+                           IsPassword="True"
+                           Keyboard="Plain"
+                           Completed="Entry_Completed"
+                           TextChanged="Entry_TextChanged"
+                           Focused="Entry_Focused"
+                           Unfocused="Entry_Unfocused"
+                           Text="{Binding Password}"
+                           Margin="0,10,0,0"/>
+
+                    <Button Text="로그인"
+                            x:Name="LoginButton"
+                            ClassId="LoginButton"
+                            IsEnabled="{Binding IsLoginButtonEnabled}"
+                            Command="{Binding LoginCommand}"
+                            Style="{StaticResource LargeButtonStyle}"
+                            Margin="0,30,0,0"/>
+
+                    <StackLayout Orientation="Horizontal"
+                                 HorizontalOptions="Center"
+                                 Spacing="0"
+                                 Margin="0,-6,0,0">
+
+                        <Label Text="비밀번호가 기억나지 않나요?"
+                               VerticalOptions="Center"
+                               FontSize="12"
+                               Margin="0,0,6,0"/>
+
+                        <Button Text="이메일로 임시 비밀번호 받기"
+                            x:Name="ResetPasswordButton"
+                            ClassId="ResetPasswordButton"
+                            BackgroundColor="Transparent"
+                                Padding="0"
+                            FontSize="12"
+                            TextColor="{StaticResource LargeButtonBackgroundColor}"
+                            Command="{Binding ResetPasswordCommand}"
+                            Visual="Default"/>
+                    </StackLayout>
+
+
+                </StackLayout>
+            </ScrollView>
+
+            <!--확인버튼-->
+            <Button Text="확인"
+                    Grid.Row="2"
+                    x:Name="ConfirmButton"
+                    ClassId="ConfirmButton"
+                    Padding="8"
+                    CornerRadius="0"
+                    FontSize="18"
+                    Margin="-20,0,-20,0"
+                    FontAttributes="Bold"
+                    VerticalOptions="EndAndExpand"
+                    Clicked="ConfirmButton_Clicked"
+                    IsVisible="False"
+                    BackgroundColor="{StaticResource LargeButtonBackgroundColor}"/>
+
+        </controls:KeyboardGrid>
+
+    </ContentPage.Content>
+</ContentPage>

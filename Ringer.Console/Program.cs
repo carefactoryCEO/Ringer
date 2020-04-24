@@ -26,9 +26,6 @@ namespace Ringer.ConsoleApp
         static readonly string name = "Admin";
         static readonly DateTime birthDate = DateTime.Parse("76-07-21");
         static readonly GenderType gender = GenderType.Male;
-
-        // 신모범 : d947c08f-ca2a-44be-b76c-219151c9fb73
-        // 김순용 : 7e81ec2e-9fd4-4971-a103-6b10a7d0cbf7
         static string currentRoomId;
 
         static Dictionary<string, string> roomList = new Dictionary<string, string>();

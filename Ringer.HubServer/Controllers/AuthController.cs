@@ -23,30 +23,25 @@ namespace Ringer.HubServer.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender emailSender;
 
-        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService, IConfiguration configuration)
+        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService, IConfiguration configuration, IEmailSender emailSender)
         {
             _dbContext = dbContext;
             _logger = logger;
             _userService = userService;
             _configuration = configuration;
+            this.emailSender = emailSender;
         }
 
-        [HttpGet("password")]
-        public async Task<ActionResult> InitializePassword()
+        [HttpGet("send")]
+        public async Task<ActionResult> SendTestMail()
         {
-            var users = _userService.GetAll().ToList();
-
-            foreach (var user in users.Where(u => u.Password != null))
-            {
-                user.Password = null;
-                await _userService.UpdateAsync(user, null);
-            }
+            await emailSender.SendMail("jhylmb@gmail.com", "안녕하세요", "<h1>링거입니다.</h1>");
 
             return Ok();
         }
 
-        // delete
         [HttpGet("user/{id}")]
         public async Task<ActionResult<User>> GetUserByIdAsync(int id)
         {
@@ -58,32 +53,33 @@ namespace Ringer.HubServer.Controllers
             return user;
         }
 
-        [HttpGet("messagelist")]
-        public IEnumerable<Message> MessageList()
-        {
-            return _dbContext.Messages.ToList();
-        }
-
-        [HttpGet("messages")]
-        public async Task<IActionResult> Messages()
-        {
-            var messages = await _dbContext.Messages.ToListAsync();
-            return Ok(messages);
-        }
-
+        #region staff
         [HttpPost("register")]
         public async Task<ActionResult> RegisterAsync([FromBody]RegisterInfo registerInfo)
         {
+
             // TODO: implement AutoMapper registerInfo -> User
             var user = new User
             {
+                Name = registerInfo.Name,
                 Email = registerInfo.Email,
                 UserType = UserType.Staff,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.Now,
             };
 
             try
             {
+                var bio = registerInfo.BirthDateGenderString;
+
+                if (int.TryParse(bio.Substring(6, 1), out int sex) &&
+                    int.TryParse(bio.Substring(0, 2), out int year) &&
+                    int.TryParse(bio.Substring(2, 2), out int month) &&
+                    int.TryParse(bio.Substring(4, 2), out int day))
+                {
+                    year += sex > 2 ? 2000 : 1900;
+                    user.BirthDate = new DateTime(year, month, day);
+                    user.Gender = sex % 2 == 0 ? GenderType.Female : GenderType.Male;
+                }
                 await _userService.CreateAsync(user, registerInfo.Password);
                 return Ok();
             }
@@ -137,7 +133,9 @@ namespace Ringer.HubServer.Controllers
 
             return Ok(response);
         }
+        #endregion
 
+        #region Terms
         [HttpGet("terms/{id}")]
         public async Task<Terms> GetTermsById(int id)
         {
@@ -156,7 +154,9 @@ namespace Ringer.HubServer.Controllers
         {
             return await _dbContext.Terms.Where(t => t.IsCurrent).ToListAsync();
         }
+        #endregion
 
+        #region consumer
         [HttpPost("register-consumer")]
         public async Task<ActionResult> RegisterConsumerAsync([FromBody]RegisterConsumerRequest req)
         {
@@ -260,6 +260,15 @@ namespace Ringer.HubServer.Controllers
             }
         }
 
+        [HttpPost("login-consumer")]
+        public async Task<ActionResult> LoginConsumerAsync()
+        {
+            await Task.Delay(0);
+            return Ok();
+        }
+        #endregion
+
+        #region console
         [HttpPost("login")]
         public async Task<ActionResult<string>> UserLoginAsync([FromBody]LoginInfo loginInfo)
         {
@@ -334,6 +343,6 @@ namespace Ringer.HubServer.Controllers
 
             return Ok(response);
         }
-
+        #endregion
     }
 }
