@@ -19,31 +19,17 @@ namespace Ringer.HubServer
 {
     public class Startup
     {
-        private readonly IWebHostEnvironment _env;
-
-        public Startup(IConfiguration configuration, IWebHostEnvironment env)
+        public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            _env = env;
         }
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // services.AddCors(options =>
-            // {
-            //     options.AddPolicy("allow",
-            //     builder =>
-            //     {
-            //         builder.WithOrigins("https://localhost:5003", "http://localhost:5002").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-            //     });
-            // });
-
             services.AddDbContext<RingerDbContext>(options =>
                     options.UseSqlServer(Configuration.GetConnectionString("RingerDbContext")));
-
 
             // security key
             string securityKey = Configuration["SecurityKey"];
@@ -67,7 +53,6 @@ namespace Ringer.HubServer
                     ValidateLifetime = false, // validate expire time
                     ValidateIssuerSigningKey = true,
 
-
                     // setup validate data
                     ValidIssuer = "Ringer",
                     ValidAudience = "ringer.co.kr",
@@ -76,8 +61,7 @@ namespace Ringer.HubServer
 
                 // TODO: Configute the authority to the expected value for your authentication provider
                 // This ensures the token is appropriately validated
-                //options.Authority = "http://localhost:5000/auth/token";
-
+                // options.Authority = "http://localhost:5000/auth/token";
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
@@ -94,8 +78,6 @@ namespace Ringer.HubServer
                         return Task.CompletedTask;
                     }
                 };
-
-
             });
 
             services.AddSpaStaticFiles(options =>
@@ -153,17 +135,10 @@ namespace Ringer.HubServer
                     }
                 });
             });
-
-
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // migrate any database changes on startup (includes initial db creation)
-            // using (var scope = app.ApplicationServices.CreateScope())
-            //     scope.ServiceProvider.GetService<RingerDbContext>().Database.Migrate();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

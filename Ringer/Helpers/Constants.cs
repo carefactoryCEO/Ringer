@@ -14,6 +14,8 @@ namespace Ringer.Helpers
         public static readonly string HubUrl = BaseUrl + "/hubs/chat";
         public static readonly string LoginUrl = BaseUrl + "/auth/login";
         public static readonly string RegisterConsumerUrl = BaseUrl + "/auth/register-consumer";
+        public static readonly string LoginConsumerUrl = BaseUrl + "/auth/login-consumer";
+        public static readonly string DeviceCheckUrl = BaseUrl + "/auth/check-device-activity";
 
         public static readonly string InformationUrl = BaseUrl + "/information";
         public static readonly string ConsulateUrl = InformationUrl + "/consulates";

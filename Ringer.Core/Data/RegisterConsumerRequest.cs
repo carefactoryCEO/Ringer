@@ -2,19 +2,20 @@
 
 namespace Ringer.Core.Data
 {
-    public class RegisterConsumerRequest
+    public class ConsumerAuthRequest
     {
         public User User { get; set; }
         public Device Device { get; set; }
     }
 
-    public class RegisterConsumerResponse
+    public class ConsumerAuthResponse
     {
         public string Token { get; set; }
         public string RoomId { get; set; }
         public int UserId { get; set; }
+        public string UserName { get; set; }
         public bool Success { get; set; }
         public bool RequireLogin { get; set; }
-        public string UserName { get; set; }
+        public string ErrorMessage { get; set; }
     }
 }

@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:Ringer.ViewModels"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
+             Shell.PresentationMode="ModalAnimated"
              x:Class="Ringer.Views.LoginPage">
     <ContentPage.BindingContext>
         <vm:LoginPageViewModel/>

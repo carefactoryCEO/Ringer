@@ -49,7 +49,7 @@ namespace Ringer.ViewModels
             messaging = DependencyService.Get<IMessaging>();
             messaging.FetchingStateChanged += Messaging_FetchingStateChanged;
 
-            GoToChatPageCommand = new Command(() => GoToChatPage());
+            GoToChatPageCommand = new Command(async () => await GoToChatPage());
             SendEmailCommand = new Command<ConsulateModel>(async consulate => await SendEmail(consulate));
             OpenSiteCommand = new Command<ConsulateModel>(async consulate => await OpenSite(consulate));
             PhoneCallCommand = new Command<string>(number => PhoneCall(number));
@@ -152,12 +152,19 @@ namespace Ringer.ViewModels
                 Utility.Trace($"{ex}\nOther error has occurred");
             }
         }
-        private void GoToChatPage()
+        private async Task GoToChatPage()
         {
             if (App.IsLoggedIn)
-                Shell.Current.GoToAsync($"{nameof(ChatPage)}?room=fromMap");
+            {
+                var api = DependencyService.Get<IRESTService>();
+
+                if (await api.CheckDeviceActivity())
+                    await Shell.Current.GoToAsync($"{nameof(ChatPage)}");
+                else
+                    await Shell.Current.GoToAsync($"{nameof(LoginPage)}");
+            }
             else
-                Shell.Current.GoToAsync(nameof(RegisterPage));
+                await Shell.Current.GoToAsync(nameof(RegisterPage));
         }
         private async Task OpenMap(Consulate consulate)
         {

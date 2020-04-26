@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Text.Json;
 using System.Collections.Generic;
 using Ringer.HubServer.Services;
 using Microsoft.Extensions.Configuration;
+using System.Runtime.CompilerServices;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -34,10 +34,10 @@ namespace Ringer.HubServer.Controllers
             this.emailSender = emailSender;
         }
 
-        [HttpGet("send")]
-        public async Task<ActionResult> SendTestMail()
+        [HttpGet("send/{email}")]
+        public async Task<ActionResult> SendTestMail(string email)
         {
-            await emailSender.SendMail("jhylmb@gmail.com", "안녕하세요", "<h1>링거입니다.</h1>");
+            await emailSender.SendMail(email, "안녕하세요", "<h1>링거입니다.</h1>");
 
             return Ok();
         }
@@ -157,8 +157,122 @@ namespace Ringer.HubServer.Controllers
         #endregion
 
         #region consumer
+        [HttpPost("check-device-activity")]
+        public async Task<ActionResult> CheckDeviceActiveAsync([FromBody]ConsumerAuthRequest req)
+        {
+            try
+            {
+                var device = await _dbContext.Devices.Where(d => d.Id == req.Device.Id).FirstOrDefaultAsync();
+
+
+                if (device != null)
+                {
+                    if (device.IsActive)
+                        return Ok();
+                    else
+                        return BadRequest();
+                }
+                else
+                {
+                    return BadRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, "Device Checking Throws", req);
+                return BadRequest();
+            }
+        }
+
+        [HttpPost("login-consumer")]
+        public async Task<ActionResult> LoginConsumerAsync([FromBody]ConsumerAuthRequest req)
+        {
+            try
+            {
+                var secretKey = _configuration["SecurityKey"];
+                var device = req.Device;
+                device.IsActive = true;
+                string roomId = Guid.NewGuid().ToString();
+                var tokenInfo = new LoginInfo { DeviceId = device.Id, DeviceType = device.DeviceType };
+                var user = await _dbContext.Users
+                    .Where(u => u.Email == req.User.Email)
+                    .Include(u => u.Devices)
+                    .Include(u => u.Enrollments)
+                    .FirstOrDefaultAsync();
+
+                if (user != null)
+                {
+                    // 방금 입력한 비밀번호로 로그인 되면
+                    if (_userService.VerifyPasswordHash(req.User.Password, user.PasswordHash, user.PasswordSalt))
+                    {
+                        // 이전 기기들 비활성화
+                        foreach (var d in user.Devices.Where(d => d.Id != device.Id))
+                            d.IsActive = false;
+
+                        if (!user.Devices.Any(d => d.Id == device.Id))
+                            user.Devices.Add(device);
+                        else
+                        {
+                            var userDevice = user.Devices.FirstOrDefault(d => d.Id == device.Id);
+                            userDevice.IsActive = true;
+                        }
+
+                        if (user.Enrollments.Any())
+                        {
+                            roomId = user.Enrollments.First().RoomId;
+                        }
+                        else
+                        {
+                            var room = new Room { Name = user.Name, Id = roomId };
+                            user.Enrollments.Add(new Enrollment { Room = room });
+                        }
+
+                        await _dbContext.SaveChangesAsync();
+
+                        return Ok(new ConsumerAuthResponse
+                        {
+                            RoomId = roomId,
+                            UserId = user.Id,
+                            UserName = user.Name,
+                            Token = user.JwtToken(tokenInfo, secretKey),
+                            Success = true,
+                        });
+
+                        // TODO: App.Startup()에서 Device의 활성 상태 검증
+                        // 비활성 기기면 재로그인
+                    }
+                    else // Name, BirthDate, Sex, Email은 일치하지만 비번이 틀림
+                    {
+                        return Unauthorized(new ConsumerAuthResponse
+                        {
+                            Success = false,
+                            RequireLogin = true,
+                            ErrorMessage = "비밀번호가 틀렸습니다."
+                        });
+                    }
+                }
+                else
+                {
+                    return BadRequest(new ConsumerAuthResponse
+                    {
+                        Success = false,
+                        ErrorMessage = $"입력한 이메일({req.User.Email})이 등록되어있지 않습니다."
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message, "Consumer Login Throws", req);
+                return StatusCode(500, new ConsumerAuthResponse
+                {
+                    Success = false,
+                    ErrorMessage = $"서버에서 에러가 일어났습니다."
+                });
+            }
+        }
+
         [HttpPost("register-consumer")]
-        public async Task<ActionResult> RegisterConsumerAsync([FromBody]RegisterConsumerRequest req)
+        public async Task<ActionResult> RegisterConsumerAsync([FromBody]ConsumerAuthRequest req)
         {
             try
             {
@@ -185,8 +299,8 @@ namespace Ringer.HubServer.Controllers
                         foreach (var d in user.Devices)
                             d.IsActive = false;
 
-                        // 로그인한 기기 활성화
-                        user.Devices.Add(device);
+                        if (!user.Devices.Contains(device))
+                            user.Devices.Add(device);
 
                         if (user.Enrollments.Any())
                         {
@@ -200,7 +314,7 @@ namespace Ringer.HubServer.Controllers
 
                         await _dbContext.SaveChangesAsync();
 
-                        return Ok(new RegisterConsumerResponse
+                        return Ok(new ConsumerAuthResponse
                         {
                             RoomId = roomId,
                             UserId = user.Id,
@@ -218,7 +332,7 @@ namespace Ringer.HubServer.Controllers
                         // 신모법님은 링거에 가입되어 있지만 비밀번호가 틀렸습니다. 정확한 비밀번호를 입력하세요.
                         // 여기를 누르면 계정이메일(jhylmb@gmail.com)으로 비밀번호 재설정 링크를 발송합니다.
                         // jhylmb@gmail.com으로 비밀번호 재설정 링크를 발송했습니다.
-                        return Unauthorized(new RegisterConsumerResponse
+                        return Unauthorized(new ConsumerAuthResponse
                         {
                             Success = false,
                             RequireLogin = true
@@ -243,7 +357,7 @@ namespace Ringer.HubServer.Controllers
 
                     await _dbContext.SaveChangesAsync();
 
-                    return Ok(new RegisterConsumerResponse
+                    return Ok(new ConsumerAuthResponse
                     {
                         RoomId = room.Id,
                         UserId = user.Id,
@@ -260,12 +374,6 @@ namespace Ringer.HubServer.Controllers
             }
         }
 
-        [HttpPost("login-consumer")]
-        public async Task<ActionResult> LoginConsumerAsync()
-        {
-            await Task.Delay(0);
-            return Ok();
-        }
         #endregion
 
         #region console

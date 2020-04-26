@@ -22,8 +22,10 @@ namespace Ringer.Services
         Task<List<ConsulateModel>> GetConsulatesByCoordinateAsync(double lat = double.NegativeInfinity, double lon = double.NegativeInfinity);
         Task RecordFootPrintAsync(FootPrint footPrint);
         Task<AuthResult> RegisterConsumerAsync(User user, Device device);
+        Task<AuthResult> LoginConsumerAsync(User user, Device device);
         Task<List<Terms>> GetTermsListAsync();
         Task PostAgreements(List<Agreement> agreementList);
+        Task<bool> CheckDeviceActivity();
     }
 
     public class RESTService : IRESTService
@@ -131,7 +133,7 @@ namespace Ringer.Services
 
         public async Task<AuthResult> RegisterConsumerAsync(User user, Device device)
         {
-            var registerConsumerRequest = new RegisterConsumerRequest { User = user, Device = device };
+            var registerConsumerRequest = new ConsumerAuthRequest { User = user, Device = device };
             var reqJson = JsonSerializer.Serialize(registerConsumerRequest, serilizeOptions);
 
             try
@@ -142,7 +144,7 @@ namespace Ringer.Services
                 {
                     case HttpStatusCode.OK:
                         var resJson = await response.Content.ReadAsStringAsync();
-                        if (JsonSerializer.Deserialize<RegisterConsumerResponse>(resJson, serilizeOptions) is RegisterConsumerResponse registerResponse)
+                        if (JsonSerializer.Deserialize<ConsumerAuthResponse>(resJson, serilizeOptions) is ConsumerAuthResponse registerResponse)
                         {
                             if (registerResponse.Success)
                             {
@@ -189,10 +191,91 @@ namespace Ringer.Services
             }
         }
 
-        public async Task<AuthResult> LoginConsumerAsync(User user)
+        public async Task<bool> CheckDeviceActivity()
         {
-            await Task.Delay(1);
-            return AuthResult.LoginFailed;
+            var registerConsumerRequest = new ConsumerAuthRequest
+            {
+                User = null,
+                Device = new Device
+                {
+                    Id = App.DeviceId
+                }
+            };
+            var reqJson = JsonSerializer.Serialize(registerConsumerRequest, serilizeOptions);
+
+            try
+            {
+                HttpResponseMessage response = await _client.PostAsync(Constants.DeviceCheckUrl, new StringContent(reqJson, Encoding.UTF8, "application/json"));
+
+                return response.StatusCode == HttpStatusCode.OK;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<AuthResult> LoginConsumerAsync(User user, Device device)
+        {
+            var registerConsumerRequest = new ConsumerAuthRequest { User = user, Device = device };
+            var reqJson = JsonSerializer.Serialize(registerConsumerRequest, serilizeOptions);
+
+            try
+            {
+                HttpResponseMessage response = await _client.PostAsync(Constants.LoginConsumerUrl, new StringContent(reqJson, Encoding.UTF8, "application/json"));
+
+                switch (response.StatusCode)
+                {
+                    case HttpStatusCode.OK:
+                        var resJson = await response.Content.ReadAsStringAsync();
+                        if (JsonSerializer.Deserialize<ConsumerAuthResponse>(resJson, serilizeOptions) is ConsumerAuthResponse loginResponse)
+                        {
+                            if (loginResponse.Success)
+                            {
+                                Analytics.TrackEvent("Registration Succeeded", new Dictionary<string, string>
+                            {
+                                {"roomId", loginResponse.RoomId},
+                                {"userId", loginResponse.UserId.ToString()},
+                                {"userName", loginResponse.UserName}
+                            });
+
+                                App.Token = loginResponse.Token;
+                                App.RoomId = loginResponse.RoomId;
+                                App.UserId = loginResponse.UserId;
+                                App.UserName = loginResponse.UserName;
+
+                                return AuthResult.Succeed;
+                            }
+                            else
+                                return AuthResult.Unknown;
+                        }
+                        return AuthResult.Unknown;
+
+                    case HttpStatusCode.Unauthorized:
+                        return AuthResult.LoginFailed;
+
+                    case HttpStatusCode.BadRequest:
+                        return AuthResult.LoginFailed;
+
+                    case HttpStatusCode.InternalServerError:
+                        return AuthResult.ServerError;
+
+                    default:
+                        Debug.WriteLine(await response.Content.ReadAsStringAsync());
+                        return AuthResult.Unknown;
+                }
+            }
+            catch (Exception ex)
+            {
+                Analytics.TrackEvent("Login Process Failed", new Dictionary<string, string>
+                {
+                    ["message"] = ex.Message,
+                    ["userName"] = user.Name,
+                    ["deviceId"] = device.Id
+                });
+
+                return AuthResult.ServerError;
+            }
         }
 
         public async Task RecordFootPrintAsync(FootPrint footPrint)

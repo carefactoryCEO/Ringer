@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Plugin.Permissions;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.Extensions;
@@ -25,20 +22,18 @@ namespace Ringer.ViewModels
         private DateTime _birthDate;
         private GenderType _sex;
 
+        public event PropertyChangedEventHandler PropertyChanged;
         public string Name { get; set; }
         public string BirthDate { get; set; }
         public string Sex { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
-
         public bool IsContinueButtonEnabled =>
             !string.IsNullOrWhiteSpace(Name) &&
             !string.IsNullOrWhiteSpace(BirthDate) &&
             !string.IsNullOrWhiteSpace(Sex) &&
             !string.IsNullOrWhiteSpace(Email) &&
             !string.IsNullOrWhiteSpace(Password);
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
@@ -194,7 +189,8 @@ namespace Ringer.ViewModels
                 }
                 else if (result == AuthResult.LoginFailed)
                 {
-                    await Shell.Current.DisplayAlert("앗!", $"가입했는데 비번이 틀림", "확인");
+                    await Shell.Current.DisplayAlert(null, $"{Name}님은 링거에 가입하셨지만 비밀번호가 틀렸습니다.\n정확한 비밀번호로 로그인해주세요.", "확인");
+                    await Shell.Current.GoToAsync($"{nameof(LoginPage)}?RegisteredEmail={Email}");
                 }
             }
         }
