@@ -11,5 +11,10 @@ namespace Ringer.Views.Permission
             InitializeComponent();
             On<iOS>().SetUseSafeArea(true);
         }
+
+        protected override bool OnBackButtonPressed()
+        {
+            return true;
+        }
     }
 }

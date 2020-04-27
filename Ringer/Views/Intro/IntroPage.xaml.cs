@@ -18,5 +18,10 @@ namespace Ringer.Views.Intro
         {
             await Navigation.PushModalAsync(new PermissionPage());
         }
+
+        protected override bool OnBackButtonPressed()
+        {
+            return true;
+        }
     }
 }
