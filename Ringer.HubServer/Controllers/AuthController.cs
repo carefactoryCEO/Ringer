@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using Ringer.HubServer.Services;
 using Microsoft.Extensions.Configuration;
 using System.Runtime.CompilerServices;
+using Ringer.HubServer.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -23,21 +25,23 @@ namespace Ringer.HubServer.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly IUserService _userService;
         private readonly IConfiguration _configuration;
-        private readonly IEmailSender emailSender;
+        private readonly IEmailSender _emailSender;
+        private readonly IHubContext<ChatHub> _hubContext;
 
-        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService, IConfiguration configuration, IEmailSender emailSender)
+        public AuthController(RingerDbContext dbContext, ILogger<AuthController> logger, IUserService userService, IConfiguration configuration, IEmailSender emailSender, IHubContext<ChatHub> hubContext)
         {
             _dbContext = dbContext;
             _logger = logger;
             _userService = userService;
             _configuration = configuration;
-            this.emailSender = emailSender;
+            _emailSender = emailSender;
+            _hubContext = hubContext;
         }
 
         [HttpGet("send/{email}")]
         public async Task<ActionResult> SendTestMail(string email)
         {
-            await emailSender.SendMail(email, "안녕하세요", "<h1>링거입니다.</h1>");
+            await _emailSender.SendMail(email, "안녕하세요", "<h1>링거입니다.</h1><p>임시 비밀번호는 aldskfja입니다.</p>");
 
             return Ok();
         }
@@ -207,7 +211,9 @@ namespace Ringer.HubServer.Controllers
                     {
                         // 이전 기기들 비활성화
                         foreach (var d in user.Devices.Where(d => d.Id != device.Id))
+                        {
                             d.IsActive = false;
+                        }
 
                         if (!user.Devices.Any(d => d.Id == device.Id))
                             user.Devices.Add(device);
@@ -228,6 +234,10 @@ namespace Ringer.HubServer.Controllers
                         }
 
                         await _dbContext.SaveChangesAsync();
+
+                        // 이미 허브에 접속해있는 기기에 퇴출 신호
+                        var userProxy = _hubContext.Clients.User(user.Id.ToString());
+                        await userProxy.SendAsync("NewLogin", device.Id);
 
                         return Ok(new ConsumerAuthResponse
                         {
@@ -313,6 +323,10 @@ namespace Ringer.HubServer.Controllers
                         }
 
                         await _dbContext.SaveChangesAsync();
+
+                        // 이미 허브에 접속해있는 기기에 퇴출 신호
+                        var userProxy = _hubContext.Clients.User(user.Id.ToString());
+                        await userProxy.SendAsync("NewLogin", device.Id);
 
                         return Ok(new ConsumerAuthResponse
                         {

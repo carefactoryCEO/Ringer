@@ -11,6 +11,7 @@ using Ringer.Core.EventArgs;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Types;
+using Ringer.Views;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
@@ -30,6 +31,7 @@ namespace Ringer.Services
         event EventHandler<MessageModel> MessageUpdated;
         event EventHandler<FetchingState> FetchingStateChanged;
         event EventHandler<MessageModel[]> MessagesFetched;
+        event EventHandler NewLoginOccured;
 
         Task FetchRemoteMessagesAsync();
         Task EnsureConnected();
@@ -66,6 +68,8 @@ namespace Ringer.Services
         public event EventHandler<MessageModel> MessageUpdated;
         public event EventHandler<FetchingState> FetchingStateChanged;
         public event EventHandler<MessageModel[]> MessagesFetched;
+
+        public event EventHandler NewLoginOccured;
         #endregion
 
         #region public properties
@@ -143,7 +147,19 @@ namespace Ringer.Services
             _hubConnection.On<string, string, int, int, DateTime, string>("ReceiveMessage", (senderName, body, messageId, senderId, createdAt, roomId) => MessageReceived?.Invoke(this, new MessageReceivedEventArgs(body, senderName, messageId, senderId, createdAt, roomId)));
             _hubConnection.On<string>("Entered", user => SomeoneEntered?.Invoke(this, new SignalREventArgs($"{user} entered.", user)));
             _hubConnection.On<string>("Left", user => SomeoneLeft?.Invoke(this, new SignalREventArgs($"{user} left.", user)));
+            _hubConnection.On<string>("NewLogin", deviceId => HandleNewLoginAsync(deviceId));
         }
+
+        private async void HandleNewLoginAsync(string deviceId)
+        {
+            if (App.DeviceId != deviceId)
+            {
+                NewLoginOccured?.Invoke(this, new EventArgs());
+                await Shell.Current.DisplayAlert("새 기기 로그인", "다른 기기에서 로그인됐습니다.", "확인");
+                await Shell.Current.Navigation.PopToRootAsync();
+            }
+        }
+
         public async Task<string> InitAsync(string url, string token)
         {
             if (_hubConnection != null)
