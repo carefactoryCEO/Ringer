@@ -75,6 +75,7 @@
                                 BackgroundColor="#2E78EF"
                                 FontSize="18"
                                 TextColor="White"
+                                Margin="0,0,0,20"
                                 Clicked="PermissionButton_Clicked"/>
                     </StackLayout>
                 </Frame>
