@@ -45,8 +45,8 @@ namespace Ringer.Helpers
         public static readonly string ChatPageUriFromLocalNotification = $"//MapPage/ChatPage?from={LocalNotificationString}";
         public static readonly string ChatPageUriFromPushNotification = $"//MapPage/ChatPage?from={PushNotificationString}";
 
-        public static readonly string RingerPhoneNumber = "+82-10-2922-7428";
-        public static readonly string RingerEmergencyPhoneNumber = "+82-10-2922-7428";
+        public static readonly string RingerPhoneNumber = "+82-02-2039-9771";
+        public static readonly string RingerEmergencyPhoneNumber = "+82-02-2039-9771";
 
         public static readonly string FootPrintUrl = InformationUrl + "/foot-print";
         public static readonly string TermsUrl = BaseUrl + "/auth/terms";

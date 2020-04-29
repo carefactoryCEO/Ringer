@@ -3,29 +3,50 @@
              BackgroundColor="White"
              NavigationPage.HasNavigationBar="False"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="Ringer.Views.Intro.IntroPage">
+    <ContentPage.Resources>
+        <Style TargetType="Label" x:Key="TitleLabel">
+            <Setter Property="FontAttributes" Value="Bold"/>
+            <Setter Property="TextColor" Value="Black"/>
+            <Setter Property="FontSize" Value="25"/>
+        </Style>
+
+        <Style TargetType="Label" x:Key="DescriptionLabel">
+            <Setter Property="TextColor" Value="#3A495A"/>
+            <Setter Property="FontSize" Value="18.5"/>
+            <Setter Property="LineHeight" Value="{OnPlatform iOS=1.2, Android=1.1}"/>
+            <Setter Property="LineBreakMode" Value="WordWrap"/>
+        </Style>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <Grid>
-            <Image Source="https://meet-thelocals.com/wp-content/uploads/2019/10/Eiffel-Tower-view-Paris.jpg"
-                   Aspect="AspectFill"/>
             <Grid Padding="30,0"
               Visual="Material">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
 
-                <StackLayout VerticalOptions="Center"
-                             HorizontalOptions="Center"
-                             Spacing="10"
-                             Padding="10"
-                             BackgroundColor="#77222222">
+                <StackLayout VerticalOptions="CenterAndExpand"
+                             HorizontalOptions="StartAndExpand"
+                             Spacing="0"
+                             Padding="10">
 
-                    <Label Text="건강한 여행, 링거" FontAttributes="Bold" FontSize="25" TextColor="White"/>
-                    <Label Text="링거는 어쩌고 저쩌고 블라블라합니다. 링거는 어쩌고 저쩌고라구요." TextColor="White"/>
+                    <Label Text="아플 때 걱정될 때" Style="{StaticResource TitleLabel}" Margin="0,30,0,0"/>
+                    <Label Text="지금 바로, 링거" Style="{StaticResource TitleLabel}"/>
+
+                    <Label Text="해외에서 아플때 1분 안에 연결하세요. 예약도 대기도 없습니다."
+                            Style="{StaticResource DescriptionLabel}"
+                           Margin="0,30,0,0"/>
+
+                    <Label Text="내과? 외과? 그냥 상담 버튼만 누르세요. 친구와 대화하듯 간단히 전문의와 연결됩니다."
+                           Style="{StaticResource DescriptionLabel}"
+                           Margin="{OnPlatform iOS='0,8,0,0', Android='0,12,0,0'}"/>
+
+
                 </StackLayout>
                 <Button Text="시작하기"
                         Style="{StaticResource LargeButtonStyle}"
-                        Margin="0,0,0,80"
+                        Margin="0,0,0,50"
                         VerticalOptions="EndAndExpand"
                         Clicked="Button_Clicked"
                         Grid.Row="1"/>
