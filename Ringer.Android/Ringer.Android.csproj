@@ -87,16 +87,16 @@
       <Version>4.5.0.657</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Analytics">
-      <Version>3.1.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter">
-      <Version>3.1.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Crashes">
-      <Version>3.1.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Push">
-      <Version>3.1.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.MediaRouter">
       <Version>1.1.0</Version>
@@ -117,9 +117,9 @@
       <Version>2.2.5</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.AppCenter.Distribute">
-      <Version>3.1.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
-  <PackageReference Include="Xamarin.AndroidX.Migration" Version="1.0.4" />  <PackageReference Include="Xamarin.Forms.Visual.Material">
+  <PackageReference Include="Xamarin.AndroidX.Migration" Version="1.0.5" />  <PackageReference Include="Xamarin.Forms.Visual.Material">
     <Version>4.5.0.657</Version>
   </PackageReference>
 </ItemGroup>
