@@ -104,7 +104,7 @@ namespace Ringer
 
 
             //MainPage = new NavigationPage(new IntroPage());
-            //MainPage = new LoginPage();
+            //MainPage = new IntroPage();
             MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
         }
         #endregion

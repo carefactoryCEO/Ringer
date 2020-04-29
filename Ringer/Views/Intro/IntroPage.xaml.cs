@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Ringer.Views.Permission;
+﻿using Ringer.Views.Permission;
 using Xamarin.Forms;
-using Xamarin.Forms.PlatformConfiguration;
-using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
 
 namespace Ringer.Views.Intro
 {
