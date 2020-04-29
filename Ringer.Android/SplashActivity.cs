@@ -4,7 +4,7 @@ using Android.OS;
 
 namespace Ringer.Droid
 {
-    [Activity(Label = "Ringer",
+    [Activity(Label = "링거",
         Icon = "@drawable/icon",
         Theme = "@style/RingerTheme.Splash",
         MainLauncher = false
