@@ -44,10 +44,13 @@
         <DataTemplate x:Key="PermissionEmptyViewTemplate">
             <ContentView BackgroundColor="#DCDEDC" Padding="15,0">
                 <Frame HasShadow="False"
-                               CornerRadius="15">
+                       BackgroundColor="#FFFFFF"
+                       Padding="0,10"
+                       CornerRadius="15">
                     <StackLayout HorizontalOptions="Center"
-                                         VerticalOptions="CenterAndExpand"
-                                         WidthRequest="280">
+                                 VerticalOptions="CenterAndExpand"
+                                 WidthRequest="280"
+                                 BackgroundColor="#FFFFFF">
 
                         <Label Text="⚙️" FontSize="{OnPlatform iOS=80, Android=60}"
                                    TextColor="Black"
@@ -75,10 +78,12 @@
                                 BackgroundColor="#2E78EF"
                                 FontSize="18"
                                 TextColor="White"
-                                Margin="0,0,0,20"
                                 Clicked="PermissionButton_Clicked"/>
+
+                        <BoxView HeightRequest="10" BackgroundColor="Transparent"/>
                     </StackLayout>
                 </Frame>
+
             </ContentView>
         </DataTemplate>
 
