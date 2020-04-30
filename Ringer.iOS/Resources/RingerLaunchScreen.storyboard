@@ -14,33 +14,45 @@
                         <viewControllerLayoutGuide type="bottom" id="xb3-aO-Qok"/>
                     </layoutGuides>
                     <view key="view" contentMode="scaleToFill" id="Ze5-6b-2t3">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="812"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" colorSpace="custom" customColorSpace="sRGB" red="0.461734592914581" green="0.84952586889267" blue="1" alpha="1"/>
                         <subviews>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" id="197" image="Splash-Screen" translatesAutoresizingMaskIntoConstraints="NO">
-                                <rect key="frame" x="110.5" y="332" width="154" height="148"/>
+                                <rect key="frame" x="130" y="329" width="154" height="148"/>
                                 <constraints>
-                                    <constraint id="904" firstAttribute="height" constant="148"/>
-                                    <constraint id="905" firstAttribute="width" constant="154"/>
+                                    <constraint id="1948" firstAttribute="height" constant="148"/>
+                                    <constraint id="1949" firstAttribute="width" constant="154"/>
                                 </constraints>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="건강한 여행, 링거" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="231" translatesAutoresizingMaskIntoConstraints="NO">
-                                <rect key="frame" x="123.5" y="472" width="128" height="21"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="지금 바로, 링거" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="231" translatesAutoresizingMaskIntoConstraints="NO">
+                                <rect key="frame" x="143" y="484" width="128" height="21"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <color key="textColor" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" white="1" alpha="1"/>
                                 <nil key="highlightedColor"/>
                                 <constraints>
-                                    <constraint id="906" firstAttribute="height" constant="21"/>
-                                    <constraint id="907" firstAttribute="width" constant="128"/>
+                                    <constraint id="1720" firstAttribute="height" constant="21"/>
+                                    <constraint id="1721" firstAttribute="width" constant="128"/>
+                                </constraints>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="아플 때 걱정될 때" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="1127" translatesAutoresizingMaskIntoConstraints="NO">
+                                <rect key="frame" x="147" y="464" width="120" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="highlightedColor"/>
+                                <color key="textColor" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace" white="1" alpha="1"/>
+                                <constraints>
+                                    <constraint id="1717" firstAttribute="height" constant="21"/>
+                                    <constraint id="1718" firstAttribute="width" constant="120"/>
                                 </constraints>
                             </label>
                         </subviews>
                         <constraints>
-                            <constraint id="902" firstItem="197" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX"/>
-                            <constraint id="903" firstItem="197" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY"/>
-                            <constraint id="910" firstItem="231" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX"/>
-                            <constraint id="912" firstItem="231" firstAttribute="top" secondItem="197" secondAttribute="centerY" constant="66"/>
+                            <constraint id="1706" firstItem="197" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX"/>
+                            <constraint id="2386" firstItem="1127" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX"/>
+                            <constraint id="2387" firstAttribute="centerY" secondItem="197" secondAttribute="centerY" constant="45"/>
+                            <constraint id="2388" firstItem="1127" firstAttribute="top" secondItem="197" secondAttribute="centerY" constant="61"/>
+                            <constraint id="2389" firstItem="231" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX"/>
+                            <constraint id="2390" firstItem="231" firstAttribute="top" secondItem="197" secondAttribute="centerY" constant="81"/>
                         </constraints>
                     </view>
                 </viewController>
