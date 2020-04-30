@@ -334,8 +334,9 @@ namespace Ringer.HubServer.Controllers
                             UserId = user.Id,
                             UserName = user.Name,
                             Success = true,
+                            IsAlreadyRegistered = true,
                             Token = user.JwtToken(tokenInfo, secretKey)
-                        });
+                        }); ;
 
                         // TODO: App.Startup()에서 Device의 활성 상태 검증
                         // 비활성 기기면 재로그인

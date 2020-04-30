@@ -16,6 +16,7 @@ namespace Ringer.Core.Data
         public string UserName { get; set; }
         public bool Success { get; set; }
         public bool RequireLogin { get; set; }
+        public bool IsAlreadyRegistered { get; set; }
         public string ErrorMessage { get; set; }
     }
 }

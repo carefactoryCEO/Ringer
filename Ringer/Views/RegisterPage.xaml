@@ -277,6 +277,15 @@
                 </Grid>
             </ContentView>
 
+            <ContentView AbsoluteLayout.LayoutBounds="0,0,1,1"
+                         AbsoluteLayout.LayoutFlags="All"
+                         BackgroundColor="#88888888"
+                         IsVisible="{Binding IsBusy}">
+                <ActivityIndicator IsRunning="True"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center"/>
+            </ContentView>
+
         </AbsoluteLayout>
     </ContentPage.Content>
 </ContentPage>

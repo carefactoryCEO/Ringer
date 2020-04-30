@@ -28,6 +28,7 @@ namespace Ringer.ViewModels
         public string Sex { get; set; }
         public string Email { get; set; }
         public string Password { get; set; }
+        public bool IsBusy { get; set; }
         public bool IsContinueButtonEnabled =>
             !string.IsNullOrWhiteSpace(Name) &&
             !string.IsNullOrWhiteSpace(BirthDate) &&
@@ -106,7 +107,10 @@ namespace Ringer.ViewModels
                 if (agreementList.Any())
                 {
                     var api = DependencyService.Get<IRESTService>();
+
+                    IsBusy = true;
                     await api.PostAgreements(agreementList);
+                    IsBusy = false;
                 }
                 // send agreement list to server
 
@@ -169,9 +173,11 @@ namespace Ringer.ViewModels
                     IsOn = true
                 };
 
+                IsBusy = true;
                 var result = await rest.RegisterConsumerAsync(user, device);
+                IsBusy = false;
 
-                if (result == AuthResult.Succeed)
+                if (result == AuthResult.Succeed || result == AuthResult.IsAlreadyRegistered)
                 {
                     // init messaging
                     var messaging = DependencyService.Get<IMessaging>();
@@ -181,11 +187,15 @@ namespace Ringer.ViewModels
                     var location = DependencyService.Get<ILocationService>();
                     await location.RecordFootPrintAsync();
 
-                    MessagingCenter.Send(this, "ShowTermsView");
+                    if (result == AuthResult.IsAlreadyRegistered)
+                        await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}");
+
+                    if (result == AuthResult.Succeed)
+                        MessagingCenter.Send(this, "ShowTermsView");
                 }
                 else if (result == AuthResult.ServerError || result == AuthResult.Unknown)
                 {
-                    await Shell.Current.DisplayAlert("앗!", $"회원등록에 실패했습니다.\n접속 환경이 이유일 수 있습니다.\n다시 시도해보세요.", "확인");
+                    await Shell.Current.DisplayAlert(null, $"회원등록에 실패했습니다.\n접속 환경이 이유일 수 있습니다.\n다시 시도해보세요.", "확인");
                 }
                 else if (result == AuthResult.LoginFailed)
                 {

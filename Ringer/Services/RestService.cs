@@ -160,7 +160,7 @@ namespace Ringer.Services
                                 App.UserId = registerResponse.UserId;
                                 App.UserName = registerResponse.UserName;
 
-                                return AuthResult.Succeed;
+                                return (registerResponse.IsAlreadyRegistered) ? AuthResult.IsAlreadyRegistered : AuthResult.Succeed;
                             }
                             else
                                 return AuthResult.Unknown;
@@ -233,11 +233,11 @@ namespace Ringer.Services
                             if (loginResponse.Success)
                             {
                                 Analytics.TrackEvent("Registration Succeeded", new Dictionary<string, string>
-                            {
-                                {"roomId", loginResponse.RoomId},
-                                {"userId", loginResponse.UserId.ToString()},
-                                {"userName", loginResponse.UserName}
-                            });
+                                {
+                                    {"roomId", loginResponse.RoomId},
+                                    {"userId", loginResponse.UserId.ToString()},
+                                    {"userName", loginResponse.UserName}
+                                });
 
                                 App.Token = loginResponse.Token;
                                 App.RoomId = loginResponse.RoomId;
@@ -305,6 +305,7 @@ namespace Ringer.Services
     {
         Succeed,
         LoginFailed,
+        IsAlreadyRegistered,
         ServerError,
         Unknown
     }
