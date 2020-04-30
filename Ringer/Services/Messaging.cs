@@ -31,7 +31,6 @@ namespace Ringer.Services
         event EventHandler<MessageModel> MessageUpdated;
         event EventHandler<FetchingState> FetchingStateChanged;
         event EventHandler<MessageModel[]> MessagesFetched;
-        event EventHandler NewLoginOccured;
 
         Task FetchRemoteMessagesAsync();
         Task EnsureConnected();
@@ -68,8 +67,6 @@ namespace Ringer.Services
         public event EventHandler<MessageModel> MessageUpdated;
         public event EventHandler<FetchingState> FetchingStateChanged;
         public event EventHandler<MessageModel[]> MessagesFetched;
-
-        public event EventHandler NewLoginOccured;
         #endregion
 
         #region public properties
@@ -154,7 +151,7 @@ namespace Ringer.Services
         {
             if (App.DeviceId != deviceId)
             {
-                NewLoginOccured?.Invoke(this, new EventArgs());
+                await DisconnectAsync();
                 await Shell.Current.DisplayAlert("새 기기 로그인", "다른 기기에서 로그인됐습니다.", "확인");
                 await Shell.Current.Navigation.PopToRootAsync();
             }
@@ -162,6 +159,9 @@ namespace Ringer.Services
 
         public async Task<string> InitAsync(string url, string token)
         {
+            if (!await _restService.CheckDeviceActivity())
+                return null;
+
             if (_hubConnection != null)
             {
                 await _hubConnection.DisposeAsync();
@@ -456,6 +456,9 @@ namespace Ringer.Services
         public async Task EnsureConnected()
         {
             if (IsConnected)
+                return;
+
+            if (!await _restService.CheckDeviceActivity())
                 return;
 
             await ConnectAsync().ConfigureAwait(false);

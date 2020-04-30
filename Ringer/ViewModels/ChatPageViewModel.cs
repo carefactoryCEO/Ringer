@@ -76,7 +76,6 @@ namespace Ringer.ViewModels
             _messaging.MessageUpdated += OnMessageUpdated;
             _messaging.FetchingStateChanged += OnFetchingStateChanged;
             _messaging.MessagesFetched += OnMessagesFetched;
-            _messaging.NewLoginOccured += _messaging_NewLoginOccured;
 
             RefreshCommand = new Command(async () => await RefreshMessageAsync());
             GalleryVideoCommand = new Command(async () => await GalleryVideoAsync());
@@ -89,12 +88,6 @@ namespace Ringer.ViewModels
 
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
             _messaging.BufferMessages();
-        }
-
-        private async void _messaging_NewLoginOccured(object sender, EventArgs e)
-        {
-            //await Shell.Current.DisplayAlert("새 기기 로그인", "다른 기기에서 로그인됐습니다.", "확인");
-            //await Shell.Current.Navigation.PopToRootAsync();
         }
         #endregion
 

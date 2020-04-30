@@ -199,7 +199,7 @@ namespace Ringer.ViewModels
         {
             if (!Regex.IsMatch(Password, @"^[~`!@#$%\^&*()-+=a-zA-Z0-9]{6,20}$"))
             {
-                await Shell.Current.DisplayAlert(null, "비밀번호는 영문 대소문자, 숫자, 특수문자를 조합해 6자이상 20자 이하 길이여야 합니다.", "확인");
+                await Shell.Current.DisplayAlert(null, "비밀번호는 6자이상 20자 이하 길이여야 합니다.", "확인");
                 return false;
             }
 

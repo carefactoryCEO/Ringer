@@ -50,10 +50,10 @@ namespace Ringer.HubServer.Hubs
             var en = room.Enrollments.FirstOrDefault(e => e.UserId == UserId);
             if (en is null)
             {
-                room.Enrollments.Add(new Enrollment{ UserId = UserId, RoomId = roomId });
-                
+                room.Enrollments.Add(new Enrollment { UserId = UserId, RoomId = roomId });
+
                 _logger.LogWarning($"User({userName}) entered to room({roomId}) with device({DeviceId}({DeviceType}))");
-                
+
                 await _dbContext.SaveChangesAsync();
                 // notify entering
                 await Clients.Group(roomId).SendAsync("Entered", userName);
@@ -140,7 +140,7 @@ namespace Ringer.HubServer.Hubs
                 if (enroll.UserId != UserId)
                     foreach (Device device in enroll.User.Devices)
                     {
-                        if (!device.IsOn &&
+                        if (!device.IsOn && device.IsActive &&
                             (device.DeviceType == Core.Data.DeviceType.iOS || device.DeviceType == Core.Data.DeviceType.Android))
                             pushDic.Add(device.Id, device.DeviceType == Core.Data.DeviceType.iOS ? "iOS" : "Android");
                     }
