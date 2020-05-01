@@ -213,10 +213,22 @@ namespace Ringer.HubServer.Controllers
                         foreach (var d in user.Devices.Where(d => d.Id != device.Id))
                         {
                             d.IsActive = false;
+                            d.IsOn = false;
                         }
 
                         if (!user.Devices.Any(d => d.Id == device.Id))
-                            user.Devices.Add(device);
+                        {
+                            if (await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == device.Id) is Device deviceBelogsOther)
+                            {
+                                deviceBelogsOther.Owner = user;
+                                deviceBelogsOther.IsActive = true;
+                                deviceBelogsOther.IsOn = true;
+                            }
+                            else
+                            {
+                                user.Devices.Add(device);
+                            }
+                        }
                         else
                         {
                             var userDevice = user.Devices.FirstOrDefault(d => d.Id == device.Id);

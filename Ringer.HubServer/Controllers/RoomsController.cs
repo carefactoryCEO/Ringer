@@ -21,14 +21,10 @@ namespace Ringer.HubServer.Controllers
     public class RoomsController : ControllerBase
     {
         private readonly RingerDbContext dbContext;
-        private readonly ILogger<RoomsController> logger;
-        private readonly IHubContext<ChatHub> hubContext;
 
-        public RoomsController(RingerDbContext dbContext, ILogger<RoomsController> logger, IHubContext<ChatHub> hubContext)
+        public RoomsController(RingerDbContext dbContext)
         {
             this.dbContext = dbContext;
-            this.logger = logger;
-            this.hubContext = hubContext;
         }
 
         [Authorize]
@@ -58,7 +54,9 @@ namespace Ringer.HubServer.Controllers
                 roomInfos.Add(new RoomInformation { Room = room, LastMessage = lastMessage });
             }
 
-            return Ok(roomInfos);
+            var response = JsonSerializer.Serialize(roomInfos);
+
+            return Ok(response);
         }
 
         [Authorize]

@@ -8,7 +8,8 @@ namespace Ringer.Core.Models
         SeviceGeneral,
         Location,
         Marketing,
-        CustomizedInformation
+        CustomizedInformation,
+        PersonalInformation
     }
 
     public class Terms
@@ -21,6 +22,7 @@ namespace Ringer.Core.Models
         public string Version { get; set; }
         public TermsType Type { get; set; }
         public DateTime CreaetedAt { get; set; }
+        public string Url { get; set; }
 
         public ICollection<Agreement> Agreements { get; set; }
     }

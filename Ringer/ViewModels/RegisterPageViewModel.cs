@@ -71,7 +71,7 @@ namespace Ringer.ViewModels
                     Id = terms.Id,
                     Required = terms.Required,
                     Title = terms.Title,
-                    DetailUrl = $"{Constants.TermsUrl}/{terms.Id}"
+                    DetailUrl = $"{Constants.BaseUrl}/{terms.Url}"
                 });
         }
 
@@ -179,6 +179,7 @@ namespace Ringer.ViewModels
 
                 if (result == AuthResult.Succeed || result == AuthResult.IsAlreadyRegistered)
                 {
+                    IsBusy = true;
                     // init messaging
                     var messaging = DependencyService.Get<IMessaging>();
                     await messaging.InitAsync(Constants.HubUrl, App.Token);
@@ -192,6 +193,8 @@ namespace Ringer.ViewModels
 
                     if (result == AuthResult.Succeed)
                         MessagingCenter.Send(this, "ShowTermsView");
+
+                    IsBusy = false;
                 }
                 else if (result == AuthResult.ServerError || result == AuthResult.Unknown)
                 {

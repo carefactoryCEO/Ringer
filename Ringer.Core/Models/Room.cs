@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace Ringer.Core.Models
 {
@@ -14,6 +15,7 @@ namespace Ringer.Core.Models
         public bool IsClosed { get; set; }
 
         public ICollection<Enrollment> Enrollments { get; set; }
+        [JsonIgnore]
         public ICollection<Message> Messages { get; set; }
     }
 }

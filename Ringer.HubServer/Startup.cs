@@ -97,6 +97,8 @@ namespace Ringer.HubServer
 
             services.AddControllers();
 
+            services.AddRazorPages();
+
             services.AddSignalR();
 
             // configure DI for application services
@@ -164,6 +166,7 @@ namespace Ringer.HubServer
             {
                 endpoints.MapHub<ChatHub>("/Hubs/Chat");
                 endpoints.MapControllers();
+                endpoints.MapRazorPages();
             });
 
             app.UseSpaStaticFiles();

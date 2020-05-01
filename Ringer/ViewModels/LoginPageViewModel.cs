@@ -34,6 +34,7 @@ namespace Ringer.ViewModels
 
         public ICommand LoginCommand { get; set; }
         public ICommand ResetPasswordCommand { get; set; }
+        public bool IsBusy { get; set; }
 
         public LoginPageViewModel()
         {
@@ -58,10 +59,13 @@ namespace Ringer.ViewModels
                 IsOn = true
             };
 
+            IsBusy = true;
             var result = await rest.LoginConsumerAsync(user, device);
+            IsBusy = false;
 
             if (result == AuthResult.Succeed)
             {
+                IsBusy = true;
                 // init messaging
                 var messaging = DependencyService.Get<IMessaging>();
                 await messaging.InitAsync(Constants.HubUrl, App.Token);
@@ -70,11 +74,13 @@ namespace Ringer.ViewModels
                 var location = DependencyService.Get<ILocationService>();
                 await location.RecordFootPrintAsync();
 
+                IsBusy = false;
+
                 await Shell.Current.GoToAsync($"//{nameof(MapPage)}/{nameof(ChatPage)}?from=LoginPage");
             }
             else if (result == AuthResult.ServerError || result == AuthResult.Unknown)
             {
-                await Shell.Current.DisplayAlert("앗!", $"로그인에 실패했습니다.\n네트워크 환경이 이유일 수 있습니다.\n네트워크를 확인하고 다시 시도해보세요.", "확인");
+                await Shell.Current.DisplayAlert(null, $"로그인에 실패했습니다.\n네트워크 환경이 이유일 수 있습니다.\n네트워크를 확인하고 다시 시도해보세요.", "확인");
 
             }
             else if (result == AuthResult.LoginFailed)
