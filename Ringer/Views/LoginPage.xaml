@@ -117,12 +117,14 @@
                     IsVisible="False"
                     BackgroundColor="{StaticResource LargeButtonBackgroundColor}"/>
 
-            <ContentView BackgroundColor="#888888"
+            <ContentView BackgroundColor="#88888888"
                          Grid.RowSpan="3"
+                         Margin="-20,0,-20,0"
                          IsVisible="{Binding IsBusy}">
                 <ActivityIndicator IsRunning="True"
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center"/>
+                                   Visual="Default"
+                                   HorizontalOptions="CenterAndExpand"
+                                   VerticalOptions="CenterAndExpand"/>
             </ContentView>
 
         </controls:KeyboardGrid>
