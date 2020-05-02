@@ -597,17 +597,18 @@ namespace Ringer.ViewModels
             IsBusy = true;
             await _messaging.InitMessagesAsync();
             Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
+            MessagingCenter.Send(this, "MessageAdded", (object)Messages?.Last());
             IsBusy = false;
         }
         public async Task RefreshMessageAsync()
         {
-            IsBusy = true;
-            await _messaging.InitMessagesAsync();
-            Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
-            _messaging.BufferMessages();
-            MessagingCenter.Send(this, "MessageAdded", (object)Messages.Last());
-            IsBusy = false;
+            //IsBusy = true;
+            //await _messaging.InitMessagesAsync();
+            //Messages = new ObservableCollection<MessageModel>(_messaging.Messages);
+            //_messaging.BufferMessages();
+            //MessagingCenter.Send(this, "MessageAdded", (object)Messages?.Last());
+            //IsBusy = false;
+            await Shell.Current.GoToAsync(nameof(SettingsPage));
         }
         #endregion
 

@@ -41,7 +41,8 @@ namespace Ringer.HubServer.Controllers
         [HttpGet("send/{email}")]
         public async Task<ActionResult> SendTestMail(string email)
         {
-            await _emailSender.SendMail(email, "안녕하세요", "<h1>링거입니다.</h1><p>임시 비밀번호는 aldskfja입니다.</p>");
+            var password = _emailSender.GetRandomString();
+            await _emailSender.SendMail(email, "[링거]임시비밀번호입니다.", $"<h3>링거 임시비밀번호 발급 안내</h3><p>아래 임시비밀번호로 로그인하세요. 로그인 후 안전한 새 비밀번호를 등록하세요.</p><p><strong>임시비밀번호 : {password}</strong></p><p></p><p>이 메일은 발신전용 계정으로 발송되었기 때문에 답장하실 수 없습니다. 문의사항은 hello@carefactory.co.kr 으로 연락주시기 바랍니다.</p>");
 
             return Ok();
         }
@@ -233,6 +234,7 @@ namespace Ringer.HubServer.Controllers
                         {
                             var userDevice = user.Devices.FirstOrDefault(d => d.Id == device.Id);
                             userDevice.IsActive = true;
+                            userDevice.IsOn = true;
                         }
 
                         if (user.Enrollments.Any())
@@ -242,7 +244,7 @@ namespace Ringer.HubServer.Controllers
                         else
                         {
                             var room = new Room { Name = user.Name, Id = roomId };
-                            user.Enrollments.Add(new Enrollment { Room = room });
+                            user.Enrollments.Add(new Enrollment { Room = room, EnrolledAt = DateTime.UtcNow });
                         }
 
                         await _dbContext.SaveChangesAsync();
@@ -321,8 +323,25 @@ namespace Ringer.HubServer.Controllers
                         foreach (var d in user.Devices)
                             d.IsActive = false;
 
-                        if (!user.Devices.Contains(device))
-                            user.Devices.Add(device);
+                        if (!user.Devices.Any(d => d.Id == device.Id))
+                        {
+                            if (await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == device.Id) is Device deviceBelogsOther)
+                            {
+                                deviceBelogsOther.Owner = user;
+                                deviceBelogsOther.IsActive = true;
+                                deviceBelogsOther.IsOn = true;
+                            }
+                            else
+                            {
+                                user.Devices.Add(device);
+                            }
+                        }
+                        else
+                        {
+                            var userDevice = user.Devices.FirstOrDefault(d => d.Id == device.Id);
+                            userDevice.IsActive = true;
+                            userDevice.IsOn = true;
+                        }
 
                         if (user.Enrollments.Any())
                         {
@@ -331,7 +350,7 @@ namespace Ringer.HubServer.Controllers
                         else
                         {
                             var room = new Room { Name = user.Name, Id = roomId };
-                            user.Enrollments.Add(new Enrollment { Room = room });
+                            user.Enrollments.Add(new Enrollment { Room = room, EnrolledAt = DateTime.UtcNow });
                         }
 
                         await _dbContext.SaveChangesAsync();
@@ -380,7 +399,7 @@ namespace Ringer.HubServer.Controllers
 
                     // add enrollment / room
                     var room = new Room { Id = roomId, Name = user.Name };
-                    user.Enrollments.Add(new Enrollment { Room = room });
+                    user.Enrollments.Add(new Enrollment { Room = room, EnrolledAt = DateTime.UtcNow });
 
                     await _dbContext.SaveChangesAsync();
 
@@ -433,7 +452,7 @@ namespace Ringer.HubServer.Controllers
                 if (!user.Enrollments.Any())
                 {
                     // 만들어 주고 입장시킨다.
-                    user.Enrollments.Add(new Enrollment { Room = new Room { Id = roomId, Name = user.Name } });
+                    user.Enrollments.Add(new Enrollment { Room = new Room { Id = roomId, Name = user.Name }, EnrolledAt = DateTime.UtcNow });
                 }
                 else
                 {

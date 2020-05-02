@@ -202,7 +202,7 @@
                                 <StackLayout Orientation="Horizontal">
                                     <Image>
                                         <Image.Source>
-                                            <FontImageSource Glyph="{StaticResource CheckCircle}"
+                                            <FontImageSource Glyph="{StaticResource IconSetting}"
                                                              FontFamily="{StaticResource MaterialFontFamily}"
                                                              Size="50"
                                                              Color="{Binding AllAgreed, Converter={StaticResource BooleanToAgreeColorConverter}}"/>

@@ -22,19 +22,19 @@
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>링거는 사용자의 위치를 기반으로 합니다. 위치 정보가 없으면 서비스의 대부분이 작동하지 않습니다.</string>
+	<string>링거가 위치를 파악하여 현지 공관과 의료기관 정보를 제공합니다. 각국의 의료법 준수를 위해 접속 위치를 확인합니다.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>링거는 사용자의 위치를 기반으로 합니다. 위치 정보가 없으면 서비스의 대부분이 작동하지 않습니다.</string>
+	<string>링거가 위치를 파악하여 현지 공관과 의료기관 정보를 제공합니다. 각국의 의료법 준수를 위해 접속 위치를 확인합니다.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>링거는 사용자의 위치를 기반으로 합니다. 위치 정보가 없으면 서비스의 대부분이 작동하지 않습니다.</string>
+	<string>링거가 위치를 파악하여 현지 공관과 의료기관 정보를 제공합니다. 각국의 의료법 준수를 위해 접속 위치를 확인합니다.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>카메라 접근을 허용해야 링거와 사진, 동영상을 주고 받을 수 있습니다.</string>
+	<string>링거 상담팀에 사진, 동영상을 촬영하고 전송합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>포토 라이브러리 접근을 허용해야 사진을 저장하고 찍어둔 사진을 전송할 수 있습니다.</string>
+	<string>사진첩의 사진과 동영상을 링거 상담팀에 전송합니다.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>마이크 접근을 허용해야 동영상을 촬영하고 링거와 통화할 수 있습니다.</string>
+	<string>동영상 촬영에 음성 및 오디오를 함께 넣습니다.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>링거에 전송하는 사진 및 비디오를 포토 라이브러리에도 함께 저장합니다.</string>
+	<string>링거에 전송하는 사진 및 동영상을 사진첩에도 함께 저장합니다.</string>
 	<key>CFBundleLocalizations</key>
 	<array>
 		<string>ko</string>

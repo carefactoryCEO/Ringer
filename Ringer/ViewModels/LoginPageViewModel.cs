@@ -85,7 +85,7 @@ namespace Ringer.ViewModels
             }
             else if (result == AuthResult.LoginFailed)
             {
-                var errorMessage = _loginFailingCount > 2 ? "\n비밀번호가 생각나지 않으면 이메일로 새 비밀번호를 받으세요." : "\n정확한 비밀번호로 로그인해주세요.";
+                var errorMessage = _loginFailingCount > 2 ? "\n비밀번호가 생각나지 않으면 이메일로 임시 비밀번호를 받으세요." : "\n정확한 비밀번호로 로그인해주세요.";
                 _loginFailingCount++;
 
                 await Shell.Current.DisplayAlert(null, $"비밀번호가 틀렸습니다.{errorMessage}", "확인");

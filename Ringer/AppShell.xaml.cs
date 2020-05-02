@@ -23,6 +23,7 @@ namespace Ringer
             Routing.RegisterRoute("permissionspage", typeof(PermissionsPage));
             Routing.RegisterRoute(nameof(RegisterPage), typeof(RegisterPage));
             Routing.RegisterRoute(nameof(LoginPage), typeof(LoginPage));
+            Routing.RegisterRoute(nameof(SettingsPage), typeof(SettingsPage));
         }
 
         public static string RoomId { get; private set; }
