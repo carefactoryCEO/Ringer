@@ -104,7 +104,7 @@ namespace Ringer
 
 
             //MainPage = new NavigationPage(new IntroPage());
-            //MainPage = new RegisterPage();
+            //MainPage = new NavigationPage(new SettingsPage());
             MainPage = VersionTracking.IsFirstLaunchEver ? (Page)new NavigationPage(new IntroPage()) : new AppShell();
         }
         #endregion
@@ -213,6 +213,15 @@ namespace Ringer
             base.OnResume();
 
             IsOn = true;
+
+            var api = DependencyService.Get<IRESTService>();
+
+            if (!await api.CheckDeviceActivity())
+            {
+                Token = null;
+                await _messaging.DisconnectAsync();
+                await Shell.Current.Navigation.PopToRootAsync();
+            }
 
             if (IsLoggedIn)
             {

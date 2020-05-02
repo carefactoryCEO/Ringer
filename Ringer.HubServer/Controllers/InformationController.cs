@@ -14,6 +14,7 @@ using Geolocation;
 using System;
 using Microsoft.Extensions.Logging;
 using Ringer.Core.Data;
+using CsvHelper.Configuration;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -52,7 +53,8 @@ namespace Ringer.HubServer.Controllers
                 con.Distance = GeoCalculator.GetDistance(origin, new Coordinate(con.Latitude, con.Longitude), 1, DistanceUnit.Kilometers);
             }
 
-            return Ok(consulates.OrderBy(c => c.Distance).Take(5));
+            //return Ok(consulates.OrderBy(c => c.Distance).Take(5));
+            return Ok(consulates.Where(c => c.Distance < 1500).OrderBy(c => c.Distance));
         }
 
         [HttpGet("consulates")]
@@ -69,20 +71,6 @@ namespace Ringer.HubServer.Controllers
             List<Consulate> consulates = await _dbContext.Consulates.Where(c => c.CountryCode == countryCode).ToListAsync();
 
             return Ok(consulates);
-        }
-
-        [HttpPost("upload")]
-        public async Task<IActionResult> Upload(IFormFile file)
-        {
-
-            var consulates = await JsonSerializer.DeserializeAsync<List<Consulate>>(file.OpenReadStream());
-
-            await _dbContext.Consulates.AddRangeAsync(consulates);
-            await _dbContext.SaveChangesAsync();
-
-            var savedConsulates = await _dbContext.Consulates.ToListAsync();
-
-            return Ok(savedConsulates);
         }
 
         [HttpGet("set-countrycode/{id}/{countryCode}")]
@@ -104,7 +92,10 @@ namespace Ringer.HubServer.Controllers
 
             using (var stream = csv.OpenReadStream())
             using (var reader = new StreamReader(stream))
-            using (var csvReader = new CsvReader(reader, CultureInfo.InvariantCulture))
+            using (var csvReader = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture)
+            {
+                MissingFieldFound = null
+            }))
             {
                 csvReader.Read();
                 csvReader.ReadHeader();
@@ -127,7 +118,9 @@ namespace Ringer.HubServer.Controllers
                         CountryCode = csvReader.GetField("CountryCode"),
                         CountryCodeAndroid = csvReader.GetField("CountryCodeAndroid"),
                         CountryCodeiOS = csvReader.GetField("CountryCodeiOS"),
-
+                        City = csvReader.GetField("City"),
+                        WorkingTime = csvReader.GetField("WorkingTime"),
+                        Description = csvReader.GetField("Description"),
                     };
 
                     consulates.Add(consulate);

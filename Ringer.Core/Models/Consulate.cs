@@ -20,5 +20,8 @@ namespace Ringer.Core.Models
         public double Longitude { get; set; }
         public string GoogleMap { get; set; }
         public double Distance { get; set; }
+        public string City { get; set; }
+        public string WorkingTime { get; set; }
+        public string Description { get; set; }
     }
 }

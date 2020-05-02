@@ -61,7 +61,7 @@
                                LineBreakMode="CharacterWrap"
                                Grid.Row="1"
                                Grid.Column="1"/>
-                        <CheckBox Grid.Column="2" Grid.RowSpan="2" IsChecked="{Binding IsGranted}"
+                        <CheckBox Grid.Column="2" Grid.RowSpan="2" IsChecked="{Binding IsGranted}" IsVisible="{Binding IsGranted}"
                                   InputTransparent="True" />
                     </Grid>
                 </DataTemplate>

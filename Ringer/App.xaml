@@ -137,6 +137,7 @@
             <converters:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
             <converters:BooleanToOpacityConverter x:Key="BooleanToOpacityConverter"/>
             <converters:BooleanToAgreeColorConverter x:Key="BooleanToAgreeColorConverter"/>
+            <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

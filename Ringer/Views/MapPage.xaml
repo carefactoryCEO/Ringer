@@ -178,24 +178,45 @@
                         <StackLayout Spacing="3">
                             <Label Text="{Binding KoreanName}" FontSize="20" TextColor="#1680CE"/>
                             <Label Text="{Binding LocalName}" FontSize="13" TextColor="#424242"/>
+
+                            <Label Text="{Binding City}"
+                                   IsVisible="{Binding City, Converter={StaticResource StringToVisibilityConverter}}"
+                                   FontAttributes="Bold"
+                                   FontSize="14"
+                                   TextColor="#424242"
+                                   HorizontalOptions="End"/>
+
+                            <Label Text="{Binding WorkingTime}"
+                                   IsVisible="{Binding WorkingTime, Converter={StaticResource StringToVisibilityConverter}}"
+                                   FontAttributes="Bold"
+                                   FontSize="14"
+                                   TextColor="#424242"
+                                   HorizontalOptions="End"/>
+
+                            <Label HorizontalTextAlignment="End"
+                                   FontSize="14"
+                                   TextColor="#424242">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding Distance, StringFormat='직선거리 {0:N1}Km'}"/>
+                                        <Span Text=", "/>
+                                        <Span Text="{Binding ConsulateType}"/>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
                         </StackLayout>
 
                         <BoxView BackgroundColor="Gray" HeightRequest="1.4"/>
 
-                        <Label Text="{Binding Address}" TextColor="#424242" />
-
-                        <Label TextColor="#424242"
-                               HorizontalOptions="EndAndExpand"
-                               FontSize="14" 
-                               Margin="0,2,0,0"
-                               Text="{Binding Distance, StringFormat='직선거리 {0:N1}Km'}">
-                        </Label>
+                        <Label Text="{Binding Address}" TextColor="#424242"
+                               HorizontalTextAlignment="End"/>
 
                         <StackLayout Orientation="Horizontal"
                                      HorizontalOptions="EndAndExpand"
                                      Spacing="8">
 
                             <Button Text="이메일"
+                                    IsVisible="{Binding Email, Converter={StaticResource StringToVisibilityConverter}}"
                                     Command="{Binding BindingContext.SendEmailCommand, Source={x:Reference mapPage}}"
                                     CommandParameter="{Binding .}"
                                     BackgroundColor="#1680CE"
@@ -205,6 +226,7 @@
                                     TextColor="White"/>
 
                             <Button Text="홈페이지"
+                                    IsVisible="{Binding Homepage, Converter={StaticResource StringToVisibilityConverter}}"
                                     Command="{Binding BindingContext.OpenSiteCommand, Source={x:Reference mapPage}}"
                                     CommandParameter="{Binding .}"
                                     BackgroundColor="#1680CE"
@@ -227,14 +249,16 @@
                         <StackLayout Spacing="5" HorizontalOptions="EndAndExpand" Margin="0,5,0,0">
 
                             <Label FontSize="15" TextColor="#1680CE"
-                                   Text="{Binding PhoneNumber, StringFormat='대표번호 {0}'}">
+                                   Text="{Binding PhoneNumber, StringFormat='대표번호 {0}'}"
+                                   IsVisible="{Binding PhoneNumber, Converter={StaticResource StringToVisibilityConverter}}">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding PhoneNumber}"/>
                                 </Label.GestureRecognizers>
                             </Label>
 
                             <Label FontSize="15" TextColor="#DF708A"
-                                   Text="{Binding EmergencyPhoneNumber, StringFormat='대표번호 {0}'}">
+                                   Text="{Binding EmergencyPhoneNumber, StringFormat='긴급번호 {0}'}"
+                                   IsVisible="{Binding EmergencyPhoneNumber, Converter={StaticResource StringToVisibilityConverter}}">
                                 <Label.GestureRecognizers>
                                     <TapGestureRecognizer Command="{Binding BindingContext.PhoneCallCommand, Source={x:Reference mapPage}}" CommandParameter="{Binding EmergencyPhoneNumber}"/>
                                 </Label.GestureRecognizers>

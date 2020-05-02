@@ -22,6 +22,11 @@ namespace Ringer.Views
             _vm = BindingContext as LoginPageViewModel;
         }
 
+        protected override bool OnBackButtonPressed()
+        {
+            return true;
+        }
+
         protected override async void OnAppearing()
         {
             base.OnAppearing();

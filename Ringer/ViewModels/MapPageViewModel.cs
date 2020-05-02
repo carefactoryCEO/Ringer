@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using Ringer.Helpers;
 using Ringer.Views;
 using System.Globalization;
+using Microsoft.AppCenter.Analytics;
 
 namespace Ringer.ViewModels
 {
@@ -175,11 +176,28 @@ namespace Ringer.ViewModels
         }
         private async Task OpenSite(Consulate consulate)
         {
-            await Browser.OpenAsync(consulate.Homepage, new BrowserLaunchOptions
+            if (string.IsNullOrWhiteSpace(consulate.Homepage))
+                return;
+
+            if (!consulate.Homepage.StartsWith("http"))
+                consulate.Homepage = $"https://{consulate.Homepage}";
+
+            try
             {
-                LaunchMode = BrowserLaunchMode.SystemPreferred,
-                TitleMode = BrowserTitleMode.Show
-            });
+                await Browser.OpenAsync(consulate.Homepage, new BrowserLaunchOptions
+                {
+                    LaunchMode = BrowserLaunchMode.SystemPreferred,
+                    TitleMode = BrowserTitleMode.Show
+                });
+            }
+            catch
+            {
+                Analytics.TrackEvent("Wrong-Homepage-URL-Format", new Dictionary<string, string>
+                {
+                    ["ConsulateId"] = consulate.Id.ToString(),
+                    ["URL"] = consulate.Homepage
+                });
+            }
         }
         private async Task SendEmail(Consulate consulate)
         {

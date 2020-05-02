@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
+             ios:Page.UseSafeArea="True"
+             x:Class="Ringer.Views.SettingsPage"
+             Shell.BackgroundColor="LightGray"
+             Title="설정">
+    <ContentPage.Content>
+        <TableView Intent="Settings" HasUnevenRows="True"
+                   BackgroundColor="White">
+            <TableRoot>
+
+                <TableSection Title="계정">
+                    <EntryCell Label="로그인정보" Text="jhylmb@gmail.com"/>
+                    <EntryCell Label="사용자정보" Text="신모범"/>
+                </TableSection>
+
+                <TableSection Title="결제">
+                    <EntryCell Label="신용카드" Text="Master 1023"/>
+                    <EntryCell Label="과금정보" Text="10,000원"/>
+
+                </TableSection>
+
+                <TableSection Title="설정">
+                    <SwitchCell Text="이메일 수신" />
+                    <SwitchCell Text="푸시 알림" On="true" />
+                </TableSection>
+
+                <TableSection Title="약관">
+                    <TextCell Text="서비스이용약관" Detail="탭하여 보기"/>
+                    <TextCell Text="위치정보수집" Detail="탭하여 보기"/>
+                    <TextCell Text="개인정보처리지침" Detail="탭하여 보기"/>
+                </TableSection>
+
+                <TableSection Title="정보">
+                    <EntryCell Label="버전" Text="v1.0.1" IsEnabled="False"/>
+                    <TextCell Text="문의" Detail="탭하여 문의하기"/>
+                </TableSection>
+            </TableRoot>
+        </TableView>
+    </ContentPage.Content>
+</ContentPage>
