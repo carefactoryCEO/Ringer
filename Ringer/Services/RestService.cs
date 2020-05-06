@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mail;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -26,6 +27,7 @@ namespace Ringer.Services
         Task<List<Terms>> GetTermsListAsync();
         Task PostAgreements(List<Agreement> agreementList);
         Task<bool> CheckDeviceActivity();
+        Task SendEamilForResettingPasswordAsync(string email);
     }
 
     public class RESTService : IRESTService
@@ -159,6 +161,7 @@ namespace Ringer.Services
                                 App.RoomId = registerResponse.RoomId;
                                 App.UserId = registerResponse.UserId;
                                 App.UserName = registerResponse.UserName;
+                                App.Email = user.Email;
 
                                 return (registerResponse.IsAlreadyRegistered) ? AuthResult.IsAlreadyRegistered : AuthResult.Succeed;
                             }
@@ -243,6 +246,7 @@ namespace Ringer.Services
                                 App.RoomId = loginResponse.RoomId;
                                 App.UserId = loginResponse.UserId;
                                 App.UserName = loginResponse.UserName;
+                                App.Email = user.Email;
 
                                 return AuthResult.Succeed;
                             }
@@ -298,6 +302,11 @@ namespace Ringer.Services
             var payload = JsonSerializer.Serialize(agreementList, serilizeOptions);
 
             await _client.PostAsync(Constants.TermsUrl, new StringContent(payload, Encoding.UTF8, "application/json"));
+        }
+
+        public async Task SendEamilForResettingPasswordAsync(string email)
+        {
+            await _client.GetAsync($"{Constants.SendEmailForResettingPasswordUrl}/{email}");
         }
     }
 

@@ -67,6 +67,11 @@ namespace Ringer
             get => Preferences.Get(nameof(RoomId), null);
             set => Preferences.Set(nameof(RoomId), value);
         }
+        public static string Email
+        {
+            get => Preferences.Get(nameof(Email), null);
+            set => Preferences.Set(nameof(Email), value);
+        }
         public static int LastServerMessageId
         {
             get => Preferences.Get(nameof(LastServerMessageId), 0);

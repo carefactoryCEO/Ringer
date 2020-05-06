@@ -4,38 +4,103 @@
              xmlns:ios="clr-namespace:Xamarin.Forms.PlatformConfiguration.iOSSpecific;assembly=Xamarin.Forms.Core"
              ios:Page.UseSafeArea="True"
              x:Class="Ringer.Views.SettingsPage"
-             Shell.BackgroundColor="LightGray"
-             Title="설정">
+             Shell.BackgroundColor="#6D6768"
+             Shell.TitleColor="#FFFFFF"
+             Title="정보">
+    <ContentPage.Resources>
+        <Style TargetType="Label">
+            <Setter Property="TextColor" Value="#000000"/>
+            <Setter Property="VerticalTextAlignment" Value="Center"/>
+        </Style>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <TableView Intent="Settings" HasUnevenRows="True"
                    BackgroundColor="White">
             <TableRoot>
 
                 <TableSection Title="계정">
-                    <EntryCell Label="로그인정보" Text="jhylmb@gmail.com"/>
-                    <EntryCell Label="사용자정보" Text="신모범"/>
-                </TableSection>
-
-                <TableSection Title="결제">
-                    <EntryCell Label="신용카드" Text="Master 1023"/>
-                    <EntryCell Label="과금정보" Text="10,000원"/>
-
-                </TableSection>
-
-                <TableSection Title="설정">
-                    <SwitchCell Text="이메일 수신" />
-                    <SwitchCell Text="푸시 알림" On="true" />
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="이름"
+                                   HorizontalOptions="StartAndExpand"/>
+                            <Label Text="신모범"
+                                   x:Name="NameLabel"
+                                   Margin="0,0,10,0"/>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="이메일" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="jhylmb@gmail.com"
+                                   x:Name="EmailLabel"
+                                   Margin="0,0,10,0"/>
+                        </StackLayout>
+                    </ViewCell>
                 </TableSection>
 
                 <TableSection Title="약관">
-                    <TextCell Text="서비스이용약관" Detail="탭하여 보기"/>
-                    <TextCell Text="위치정보수집" Detail="탭하여 보기"/>
-                    <TextCell Text="개인정보처리지침" Detail="탭하여 보기"/>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="서비스이용약관" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="{StaticResource RightChevron}"
+                                   FontFamily="{StaticResource MaterialFontFamily}"
+                                   FontSize="25"/>
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="ShowTermsGeneral"/>
+                            </StackLayout.GestureRecognizers>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="위치기반서비스이용약관" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="{StaticResource RightChevron}"
+                                   FontFamily="{StaticResource MaterialFontFamily}"
+                                   FontSize="25"/>
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="ShowTermsLocation"/>
+                            </StackLayout.GestureRecognizers>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="개인정보처리방침" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="{StaticResource RightChevron}"
+                                   FontFamily="{StaticResource MaterialFontFamily}"
+                                   FontSize="25"/>
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="ShowTermsPrivate"/>
+                            </StackLayout.GestureRecognizers>
+                        </StackLayout>
+                    </ViewCell>
                 </TableSection>
 
-                <TableSection Title="정보">
-                    <EntryCell Label="버전" Text="v1.0.1" IsEnabled="False"/>
-                    <TextCell Text="문의" Detail="탭하여 문의하기"/>
+                <TableSection Title="앱 정보">
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="버전" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="v1.0.1"
+                                   x:Name="VersionLabel"
+                                   Margin="0,0,10,0"/>
+                        </StackLayout>
+                    </ViewCell>
+                    <ViewCell>
+                        <StackLayout Orientation="Horizontal"
+                                     Padding="{OnPlatform iOS='20,10', Android='15,10'}">
+                            <Label Text="문의" HorizontalOptions="StartAndExpand"/>
+                            <Label Text="{StaticResource RightChevron}"
+                                   FontFamily="{StaticResource MaterialFontFamily}"
+                                   FontSize="25"/>
+                            <StackLayout.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="Help"/>
+                            </StackLayout.GestureRecognizers>
+                        </StackLayout>
+                    </ViewCell>
                 </TableSection>
             </TableRoot>
         </TableView>

@@ -41,10 +41,22 @@ namespace Ringer.HubServer.Controllers
         [HttpGet("send/{email}")]
         public async Task<ActionResult> SendTestMail(string email)
         {
-            var password = _emailSender.GetRandomString();
-            await _emailSender.SendMail(email, "[링거]임시비밀번호입니다.", $"<h3>링거 임시비밀번호 발급 안내</h3><p>아래 임시비밀번호로 로그인하세요. 로그인 후 안전한 새 비밀번호를 등록하세요.</p><p><strong>임시비밀번호 : {password}</strong></p><p></p><p>이 메일은 발신전용 계정으로 발송되었기 때문에 답장하실 수 없습니다. 문의사항은 hello@carefactory.co.kr 으로 연락주시기 바랍니다.</p>");
+            var user = await _dbContext.Users.Where(u => u.Email == email).FirstOrDefaultAsync();
 
-            return Ok();
+            if (user != null)
+            {
+                var password = _emailSender.GetRandomString();
+
+                await _userService.UpdateAsync(user, password: password);
+
+                await _emailSender.SendMail(email, "[링거]임시비밀번호입니다.", $"<h3>링거 임시비밀번호 발급 안내</h3><p>아래 임시비밀번호로 로그인하세요. 로그인 후 안전한 새 비밀번호를 등록하세요.</p><p><strong>임시비밀번호 : {password}</strong></p><p></p><p>이 메일은 발신전용 계정으로 발송되었기 때문에 답장하실 수 없습니다. 문의사항은 hello@carefactory.co.kr 으로 연락주시기 바랍니다.</p>");
+
+                return Ok();
+            }
+            else
+            {
+                return NotFound();
+            }
         }
 
         [HttpGet("user/{id}")]

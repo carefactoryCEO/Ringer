@@ -69,7 +69,7 @@
             <ff:CachedImage x:Name="cachedImage"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
-                            LoadingPlaceholder="https://ringerstoragekr.blob.core.windows.net/ringer/ringer-placeholder.jpg"
+                            LoadingPlaceholder="placeholder.jpg"
                             DownsampleToViewSize="True"
                             FadeAnimationDuration="100"
                             FadeAnimationEnabled="True"

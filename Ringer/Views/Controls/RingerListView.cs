@@ -36,7 +36,7 @@ namespace Ringer.Views.Controls
         }
         #endregion
 
-        public RingerListView() : this(ListViewCachingStrategy.RecycleElement)
+        public RingerListView() : this(ListViewCachingStrategy.RetainElement)
         {
             if (Device.RuntimePlatform == Device.Android)
             {

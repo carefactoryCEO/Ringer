@@ -74,7 +74,7 @@ namespace Ringer.Services
         public bool IsDisconnected => _hubConnection?.State == HubConnectionState.Disconnected;
         public bool IsConnecting => _hubConnection?.State == HubConnectionState.Connecting;
         public bool IsReconnecting => _hubConnection?.State == HubConnectionState.Reconnecting;
-        public string ConnectionId => _hubConnection?.ConnectionId ?? Constants.DisconnectedString;
+        public string ConnectionId => _hubConnection?.ConnectionId ?? "Disconnected";
         public HubConnection HubConnection => _hubConnection;
         public ObservableCollection<MessageModel> Messages { get; }
         #endregion
@@ -152,6 +152,8 @@ namespace Ringer.Services
             if (App.DeviceId != deviceId)
             {
                 await DisconnectAsync();
+                App.Token = App.RoomId = App.UserName = App.Email = null;
+
                 await Shell.Current.DisplayAlert("새 기기 로그인", "다른 기기에서 로그인됐습니다.", "확인");
                 await Shell.Current.Navigation.PopToRootAsync();
             }

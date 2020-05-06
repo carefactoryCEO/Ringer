@@ -16073,31 +16073,34 @@ namespace Ringer.Droid
 			public const int PictureIcon = 2131165554;
 			
 			// aapt resource value: 0x7F070173
-			public const int SendButton = 2131165555;
+			public const int placeholder = 2131165555;
 			
 			// aapt resource value: 0x7F070174
-			public const int SendIcon = 2131165556;
+			public const int SendButton = 2131165556;
 			
 			// aapt resource value: 0x7F070175
-			public const int splash_logo = 2131165557;
+			public const int SendIcon = 2131165557;
 			
 			// aapt resource value: 0x7F070176
-			public const int splash_screen = 2131165558;
+			public const int splash_logo = 2131165558;
 			
 			// aapt resource value: 0x7F070177
-			public const int StartChatButton = 2131165559;
+			public const int splash_screen = 2131165559;
 			
 			// aapt resource value: 0x7F070178
-			public const int tooltip_frame_dark = 2131165560;
+			public const int StartChatButton = 2131165560;
 			
 			// aapt resource value: 0x7F070179
-			public const int tooltip_frame_light = 2131165561;
+			public const int tooltip_frame_dark = 2131165561;
 			
 			// aapt resource value: 0x7F07017A
-			public const int VideoButton = 2131165562;
+			public const int tooltip_frame_light = 2131165562;
 			
 			// aapt resource value: 0x7F07017B
-			public const int VideoCallButton = 2131165563;
+			public const int VideoButton = 2131165563;
+			
+			// aapt resource value: 0x7F07017C
+			public const int VideoCallButton = 2131165564;
 			
 			static Drawable()
 			{

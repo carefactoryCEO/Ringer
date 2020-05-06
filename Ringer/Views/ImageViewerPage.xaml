@@ -19,7 +19,7 @@
             <ff:CachedImage x:Name="imageViewer"
                         HorizontalOptions="FillAndExpand"
                         VerticalOptions="FillAndExpand"
-                        LoadingPlaceholder="{StaticResource ImagePlaceholder}"
+                        LoadingPlaceholder="placeholder.jpg"
                         FadeAnimationDuration="100"
                         Aspect="AspectFit"
                         CacheDuration="50"

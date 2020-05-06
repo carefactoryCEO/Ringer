@@ -176,6 +176,7 @@ namespace Ringer.ViewModels
             App.Token = null;
             App.RoomId = null;
             App.UserName = null;
+            App.Email = null;
             App.LastServerMessageId = 0;
 
             await _messaging.Clear();

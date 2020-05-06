@@ -5,6 +5,7 @@
              xmlns:helpers="clr-namespace:Ringer.Helpers"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
+             xmlns:converters="clr-namespace:RingerStaff.Converters"
              x:Class="Ringer.Views.ChatPage"
              x:Name="ChatContentPage"
              Title="링거"
@@ -28,6 +29,8 @@
 
             <Color x:Key="NavBarButtonBackgroundColor">Transparent</Color>
             <Color x:Key="NavBarBackgroundColor">Pink</Color>
+
+
 
         </ResourceDictionary>
     </ContentPage.Resources>
@@ -91,7 +94,7 @@
                    HorizontalTextAlignment="End"
                    HorizontalOptions="EndAndExpand"
                    VerticalOptions="EndAndExpand"/>-->
-            <ImageButton Source="{FontImage Glyph={StaticResource IconSetting},
+            <ImageButton Source="{FontImage Glyph={StaticResource IconAccount},
                                             FontFamily={StaticResource MaterialFontFamily},
                                             Color={StaticResource White}}"
                          HorizontalOptions="EndAndExpand"

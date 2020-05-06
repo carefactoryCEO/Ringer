@@ -34,17 +34,22 @@ namespace Ringer.ViewModels
 
         public ICommand LoginCommand { get; set; }
         public ICommand ResetPasswordCommand { get; set; }
+
+        private IRESTService rest;
+
         public bool IsBusy { get; set; }
 
         public LoginPageViewModel()
         {
             LoginCommand = new Command(async () => await Login());
             ResetPasswordCommand = new Command(async () => await ResetPassword());
+
+            rest = DependencyService.Get<IRESTService>();
         }
 
         async Task Login()
         {
-            var rest = DependencyService.Get<IRESTService>();
+
 
             var user = new User
             {
@@ -94,9 +99,13 @@ namespace Ringer.ViewModels
 
         int _loginFailingCount = 0;
 
-        Task ResetPassword()
+        async Task ResetPassword()
         {
-            return Application.Current.MainPage.DisplayAlert(null, "reset", "확인");
+            if (!string.IsNullOrWhiteSpace(Email))
+            {
+                await rest.SendEamilForResettingPasswordAsync(Email);
+                await Application.Current.MainPage.DisplayAlert(null, "가입한 이메일로 임시 비밀번호를 발송했습니다.", "확인");
+            }
         }
     }
 }

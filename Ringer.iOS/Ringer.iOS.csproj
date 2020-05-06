@@ -178,6 +178,7 @@
     <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon-2.png" />
     <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon-3.png" />
     <ImageAsset Include="Assets.xcassets\Splash-Screen.imageset\Ringer.Icon%402x-2.png" />
+    <BundleResource Include="Resources\placeholder.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

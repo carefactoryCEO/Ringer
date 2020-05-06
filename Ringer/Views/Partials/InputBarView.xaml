@@ -116,7 +116,7 @@
                 <Label Text="동영상보내기" HorizontalOptions="Center"/>
             </StackLayout>
 
-            <StackLayout Grid.Row="1" Grid.Column="0">
+            <!--<StackLayout Grid.Row="1" Grid.Column="0">
                 <ImageButton Source="PhoneCallButton"
                              HorizontalOptions="Center"
                              VerticalOptions="Center"
@@ -149,7 +149,7 @@
                              VerticalOptions="Center"
                              Command="{Binding ResetCommand}"/>
                 <Label Text="리셋" HorizontalOptions="Center"/>
-            </StackLayout>
+            </StackLayout>-->
 
 
 

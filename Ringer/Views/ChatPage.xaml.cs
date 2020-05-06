@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.AppCenter.Analytics;
 using Ringer.Helpers;
 using Ringer.Models;
 using Ringer.Services;
@@ -86,12 +90,26 @@ namespace Ringer.Views
 
             MessagingCenter.Subscribe<ChatPageViewModel, object>(this, "MessageLoaded", (sender, message) =>
             {
-                Device.BeginInvokeOnMainThread(() =>
+                try
                 {
-                    MessageFeed.ScrollTo(message, position: ScrollToPosition.MakeVisible, animated: false);
+                    Device.BeginInvokeOnMainThread(() =>
+                    {
+                        MessageFeed.ScrollTo(message, position: ScrollToPosition.MakeVisible, animated: false);
 
-                    Utility.Trace(((MessageModel)message).Body);
-                });
+                        Utility.Trace(((MessageModel)message).Body);
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex);
+
+                    Analytics.TrackEvent("ScrollFailed", new Dictionary<string, string>
+                    {
+                        ["ErrorMessage"] = ex.Message,
+                        ["TargetMessage"] = ((MessageModel)message).Body
+                    });
+                }
+
             });
         }
         protected override void OnDisappearing()
