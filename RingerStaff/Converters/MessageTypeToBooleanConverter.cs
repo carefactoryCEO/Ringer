@@ -195,6 +195,25 @@ namespace RingerStaff.Converters
         }
     }
 
+    public class DateTimeToStringWithDateConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            var dateTime = ((DateTime)value).ToLocalTime();
+
+            if (dateTime.Date == DateTime.Now.Date)
+                return dateTime.ToString(@"tt h:mm");
+
+            var stringWithDate = dateTime.ToString(@"M\/d tt h:mm");
+            return stringWithDate;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class DateTimeToStringConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

@@ -55,7 +55,7 @@
                                        Style="{DynamicResource ListItemTextStyle}"
                                        FontSize="16"
                                        FontAttributes="Bold" />
-                            <Label Text="{Binding LastMessageArrivedAt, Converter={StaticResource DateTimeToStringConverter}}"
+                            <Label Text="{Binding LastMessageArrivedAt, Converter={StaticResource DateTimeToStringWithDateConverter}}"
                                        TextColor="Gray"
                                        FontSize="12"
                                        HorizontalOptions="EndAndExpand"/>

@@ -16,8 +16,6 @@ namespace RingerStaff.ViewModels
 {
     public class RoomsPageViewModel : BaseViewModel
     {
-        private static Dictionary<string, int> UnreadCounts = new Dictionary<string, int>();
-
         public RoomsPageViewModel()
         {
             Title = "채팅";
@@ -62,18 +60,30 @@ namespace RingerStaff.ViewModels
         private async Task GoChat(object room)
         {
             RoomModel model = (RoomModel)room;
-            UnreadCounts[model.Id] = 0;
-            App.RoomTitle = model.Title;
+            //App.UnreadCounts[model.Id] = 0;
             await Shell.Current.GoToAsync($"{nameof(ChatPage)}?RoomId={model.Id}");
         }
 
         private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)
         {
+            if (App.RoomId == e.RoomId)
+                return;
+
             var room = Rooms.FirstOrDefault(r => r.Id == e.RoomId);
 
             room.LastMessage = e.Body;
             room.LastMessageArrivedAt = e.CreatedAt;
             room.UnreadMessagesCount++;
+
+            App.UnreadCounts[e.RoomId] = room.UnreadMessagesCount;
+
+            // 도착 역순으로 재배치
+            var orderedRooms = Rooms.OrderByDescending(r => r.LastMessageArrivedAt).ToArray();
+            Rooms.Clear();
+            foreach (var roomModel in orderedRooms)
+            {
+                Rooms.Add(roomModel);
+            }
         }
 
         public async Task<bool> LoadRoomsAsync()
@@ -92,10 +102,10 @@ namespace RingerStaff.ViewModels
 
                 Rooms.Clear();
 
-                foreach (var roomInfo in roomInfors)
+                foreach (var roomInfo in roomInfors.OrderByDescending(r => r.LastMessage.CreatedAt))
                 {
-                    if (!UnreadCounts.ContainsKey(roomInfo.Room.Id))
-                        UnreadCounts[roomInfo.Room.Id] = 0;
+                    if (!App.UnreadCounts.ContainsKey(roomInfo.Room.Id))
+                        App.UnreadCounts[roomInfo.Room.Id] = 0;
 
                     var room = new RoomModel
                     {
@@ -103,7 +113,7 @@ namespace RingerStaff.ViewModels
                         Id = roomInfo.Room.Id,
                         LastMessage = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.Body,
                         LastMessageArrivedAt = (roomInfo.LastMessage is null) ? default : roomInfo.LastMessage.CreatedAt,
-                        UnreadMessagesCount = UnreadCounts[roomInfo.Room.Id]
+                        UnreadMessagesCount = App.UnreadCounts[roomInfo.Room.Id]
                     };
 
                     Rooms.Add(room);

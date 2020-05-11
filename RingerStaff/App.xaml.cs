@@ -12,6 +12,8 @@ using System.Collections.ObjectModel;
 using RingerStaff.Models;
 using Microsoft.AppCenter.Distribute;
 using Plugin.SimpleAudioPlayer;
+using RingerStaff.Views;
+using System.Collections.Generic;
 
 namespace RingerStaff
 {
@@ -46,10 +48,12 @@ namespace RingerStaff
             set => Preferences.Set(nameof(UserId), value);
         }
         public static string RoomId;
-        public static string RoomTitle;
         private static int id;
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
+        public static Dictionary<string, int> UnreadCounts = new Dictionary<string, int>();
+
+        public static bool IsForeground = false;
 
         public App()
         {
@@ -68,12 +72,19 @@ namespace RingerStaff
 
         private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)
         {
+            if (e.SenderId == App.UserId)
+                return;
+
             if (e.RoomId != RoomId)
             {
                 var currentState = Shell.Current.CurrentState;
-                var vibeOnly = currentState.Location.ToString().EndsWith(nameof(Views.RoomsPage));
+                var vibeOnly = currentState.Location.ToString().EndsWith(nameof(RoomsPage)) && App.IsForeground;
 
                 NotifyLocally(e.SenderName, e.Body, e.RoomId, vibeOnly);
+            }
+            else if (!App.IsForeground && Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android)
+            {
+                NotifyLocally(e.SenderName, e.Body, e.RoomId);
             }
         }
 
@@ -107,48 +118,29 @@ namespace RingerStaff
         private void OnLocalNotificationTapped(NotificationTappedEventArgs e)
         {
             Debug.WriteLine($"noti data: {e.Data}");
+            var uri = $"//{nameof(RoomsPage)}/{nameof(ChatPage)}?RoomId={e.Data}";
+            Shell.Current.GoToAsync(uri);
         }
 
         protected override async void OnStart()
         {
+            App.IsForeground = true;
+
             #region AppCenter
             // Intercept Push Notification
             if (!AppCenter.Configured)
             {
-                Push.PushNotificationReceived += (sender, e) =>
+                Push.PushNotificationReceived += async (sender, e) =>
                 {
-                    //string body = null;
-                    //string pushSender = null;
-                    // If there is custom data associated with the notification,
-                    // print the entries
+                    string roomIdKey = "room";
+
                     if (e.CustomData != null)
                     {
-                        foreach (var key in e.CustomData.Keys)
+                        if (e.CustomData.ContainsKey(roomIdKey))
                         {
-                            Debug.WriteLine($"[{key}]{e.CustomData[key]}");
-
-                            //switch (key)
-                            //{
-                            //    case "room":
-                            //        RoomId = e.CustomData[key];
-                            //        break;
-
-                            //    case "body":
-                            //        body = e.CustomData[key];
-                            //        break;
-
-                            //    case "sender":
-                            //        pushSender = e.CustomData[key];
-                            //        break;
-                            //}
+                            await Shell.Current.GoToAsync($"//{nameof(RoomsPage)}/{nameof(ChatPage)}?RoomId={e.CustomData[roomIdKey]}");
                         }
                     }
-
-                    //if (CurrentRoomId != null)
-                    //{
-                    //    await Shell.Current.Navigation.PopToRootAsync(false);
-                    //    await Shell.Current.GoToAsync($"//mappage/chatpage?room={CurrentRoomId}", false);
-                    //}
                 };
             }
 
@@ -177,14 +169,20 @@ namespace RingerStaff
                 await RealTimeService.ConnectAsync(Huburl, Token).ConfigureAwait(false);
         }
 
-        protected override void OnSleep()
+        protected override async void OnSleep()
         {
-            // Handle when your app sleeps
+            App.IsForeground = false;
+
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+                await RealTimeService.DisconnectAsync();
         }
 
-        protected override void OnResume()
+        protected override async void OnResume()
         {
-            // Handle when your app resumes
+            App.IsForeground = true;
+
+            if (IsLoggedIn)
+                await RealTimeService.ConnectAsync(Huburl, Token).ConfigureAwait(false);
         }
     }
 }

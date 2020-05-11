@@ -4,16 +4,13 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Azure.Storage.Blobs;
-using Plugin.LocalNotification;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
-using Plugin.SimpleAudioPlayer;
 using Ringer.Core;
 using Ringer.Core.Data;
 using Ringer.Core.EventArgs;
@@ -22,7 +19,6 @@ using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Types;
 using RingerStaff.Views;
-//using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace RingerStaff.ViewModels
@@ -37,6 +33,7 @@ namespace RingerStaff.ViewModels
             {
                 App.RoomId = value;
                 _roomId = value;
+                App.UnreadCounts[_roomId] = 0;
 
                 Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(async () => await OnAppearingAsync());
             }
@@ -57,7 +54,6 @@ namespace RingerStaff.ViewModels
 
         public ChatPageViewModel()
         {
-            Title = App.RoomTitle;
             messages = new ObservableCollection<MessageModel>();
             blobContainer = new BlobContainerClient(Constant.BlobStorageConnectionString, Constant.BlobContainerName);
 
@@ -540,7 +536,7 @@ namespace RingerStaff.ViewModels
             var lastMessage = Messages.LastOrDefault();
 
             // 내가 방금 보낸 메시지면 바디가 같음.
-            if (lastMessage.Body == e.Body && lastMessage.CreatedAt.Second == e.CreatedAt.Second && lastMessage.SenderId == e.SenderId)
+            if (lastMessage.Body == e.Body && lastMessage.SenderId == e.SenderId)
                 return;
 
             MessageModel message = new MessageModel
@@ -604,13 +600,19 @@ namespace RingerStaff.ViewModels
 
         public async Task OnAppearingAsync()
         {
-            await RealTimeService.EnterRoomAsync(_roomId, "staff");
-            await LoadMessagesAsync();
+            IsBusy = true;
+            Title = await ApiService.GetRoomNameByIdAsync(_roomId);
+
+            await Task.WhenAll(new Task[]
+            {
+                RealTimeService.EnterRoomAsync(_roomId, App.UserName),
+                LoadMessagesAsync()
+            }).ConfigureAwait(false);
+
+            IsBusy = false;
         }
         public async Task LoadMessagesAsync()
         {
-            IsBusy = true;
-
             Messages.Clear();
 
             List<PendingMessage> pendingMessages = await ApiService.PullPendingMessagesAsync(_roomId, 0, App.Token);
@@ -620,7 +622,7 @@ namespace RingerStaff.ViewModels
 
             MessageModel[] messages = pendingMessages
                 .OrderBy(p => p.CreatedAt)
-                //.TakeLast(50)
+                .TakeLast(50)
                 .Select(pm => new MessageModel
                 {
                     ServerId = pm.Id,
@@ -641,8 +643,6 @@ namespace RingerStaff.ViewModels
 
             if (Messages.Any())
                 MessagingCenter.Send(this, "MessageAdded", Messages.Last());
-
-            IsBusy = false;
         }
 
         public ICommand LoadMessagesCommand { get; set; }

@@ -77,6 +77,9 @@ namespace RingerStaff.Services
             Url = url;
             Token = token;
 
+            if (_hubConnection != null)
+                await _hubConnection.DisposeAsync();
+
             Init(url, token);
             await ConnectAsync();
         }
