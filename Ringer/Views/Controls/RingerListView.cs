@@ -84,7 +84,7 @@ namespace Ringer.Views.Controls
                         var msg = ItemsSource.Cast<object>().FirstOrDefault();
                         if (msg != null)
                         {
-                            ScrollTo(msg, ScrollToPosition.Start, false);
+                            ScrollTo(msg, ScrollToPosition.MakeVisible, false);
                         }
 
                     }
@@ -108,7 +108,7 @@ namespace Ringer.Views.Controls
                         var msg = ItemsSource.Cast<object>().LastOrDefault();
                         if (msg != null)
                         {
-                            ScrollTo(msg, ScrollToPosition.End, false);
+                            ScrollTo(msg, ScrollToPosition.MakeVisible, false);
                         }
 
                     }

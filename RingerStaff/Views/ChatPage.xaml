@@ -41,6 +41,8 @@
         <controls:RingerListView ItemsSource="{Binding Messages}" Grid.Row="0"
                                  ItemTemplate="{StaticResource MessageTemplateSelector}"
                                  BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                                 LoadCommand="{Binding LoadBufferCommand}"
+                                 IsLoading="{Binding IsBusy}"
                                  SeparatorVisibility="None"
                                  SelectionMode="None"
                                  HasUnevenRows="true"

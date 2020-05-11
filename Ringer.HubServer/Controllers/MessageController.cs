@@ -32,7 +32,29 @@ namespace Ringer.HubServer.Controllers
         }
 
         [Authorize]
-        // GET: api/values
+        [HttpGet("segmented-messages")]
+        public async Task<ActionResult> GetSegmentedMessages(string roomId, string skip, string take)
+        {
+            var messages = await _dbContext.Messages
+                .Where(m => m.RoomId == roomId)
+                .Include(m => m.Sender)
+                .OrderByDescending(m => m.Id)
+                .Skip(int.Parse(skip))
+                .Take(int.Parse(take))
+                .Select(m => new PendingMessage
+                {
+                    Id = m.Id,
+                    Body = m.Body,
+                    CreatedAt = m.CreatedAt,
+                    SenderId = m.SenderId,
+                    SenderName = m.Sender.Name
+                })
+                .ToListAsync();
+
+            return Ok(JsonSerializer.Serialize(messages));
+        }
+
+        [Authorize]
         [HttpGet("pending")]
         public async Task<ActionResult<string>> GetPendings(string roomId, int lastId = 0)
         {

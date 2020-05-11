@@ -23,6 +23,13 @@ namespace RingerStaff.Views
                 MessageFeed.ScrollTo(message, ScrollToPosition.MakeVisible, true);
             });
 
+            MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageLoaded", (sender, message) =>
+            {
+                vm.IsBusy = true;
+                MessageFeed.ScrollTo(message, ScrollToPosition.Start, true);
+                vm.IsBusy = false;
+            });
+
             MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
             {
                 //Device.BeginInvokeOnMainThread(async () =>

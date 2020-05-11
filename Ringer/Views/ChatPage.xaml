@@ -82,17 +82,6 @@
                    BackgroundColor="Transparent"
                    Text="링거"/>
 
-            <!--<Label Text="{StaticResource IconSetting}"
-                   FontFamily="{StaticResource MaterialFontFamily}"
-                   FontSize="24"
-                   TextColor="White"
-                   Padding="0,13"
-                   Margin="0,0,15,0"
-                   WidthRequest="70"
-                   BackgroundColor="AliceBlue"
-                   HorizontalTextAlignment="End"
-                   HorizontalOptions="EndAndExpand"
-                   VerticalOptions="EndAndExpand"/>-->
             <ImageButton Source="{FontImage Glyph={StaticResource IconAccount},
                                             FontFamily={StaticResource MaterialFontFamily},
                                             Color={StaticResource White}}"

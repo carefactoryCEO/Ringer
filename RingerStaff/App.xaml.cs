@@ -26,6 +26,7 @@ namespace RingerStaff
         public static readonly string Huburl = BaseUrl + "/hubs/chat";
         public static readonly string PendingUrl = BaseUrl + "/message/pending";
         public static readonly string LoginUrl = BaseUrl + "/auth/staff-login";
+        public static readonly string AdditionalMessagesUrl = BaseUrl + "/message/segmented-messages";
 
         public static string Token
         {

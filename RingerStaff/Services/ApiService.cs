@@ -134,5 +134,33 @@ namespace RingerStaff.Services
                 return null;
             }
         }
+
+        public static async Task<List<PendingMessage>> GetSegmentedMessages(string roomId, int skip, int take)
+        {
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", App.Token);
+
+            try
+            {
+                string requestUri = $"{App.AdditionalMessagesUrl}?roomId={roomId}&skip={skip}&take={take}";
+                var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
+
+                if (!response.IsSuccessStatusCode)
+                    throw new HttpRequestException("request failed");
+
+                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    throw new HttpRequestException("unauthorized");
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                var pendingMessages = JsonSerializer.Deserialize<List<PendingMessage>>(responseString);
+
+                return pendingMessages;
+
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                return null;
+            }
+        }
     }
 }

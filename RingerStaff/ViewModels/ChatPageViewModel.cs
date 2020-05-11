@@ -40,12 +40,26 @@ namespace RingerStaff.ViewModels
             }
         }
 
+        #region Public Commands
+        public ICommand SendCommand { get; set; }
+        public ICommand StopCommand { get; set; }
+        public ICommand GoBackCommand { get; set; }
+        public ICommand OpenSessionsPageCommand { get; set; }
+        public ICommand OpenProfilePageCommand { get; set; }
+        public ICommand TakePhotoCommand { get; set; }
+        public ICommand PickPhotoCommand { get; set; }
+        public ICommand TakeVideoCommand { get; set; }
+        public ICommand PickVideoCommand { get; set; }
+        public ICommand InviteCommand { get; set; }
+
+        public ICommand LoadBufferCommand { get; set; }
+        #endregion
+
         private ObservableCollection<MessageModel> messages;
         private readonly BlobContainerClient _blobContainer;
         private string textToSend;
         private double navBarHeight;
         private Thickness bottomPadding;
-        private int id = 0;
         private string _roomId;
 
         public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
@@ -58,9 +72,6 @@ namespace RingerStaff.ViewModels
             messages = new ObservableCollection<MessageModel>();
             _blobContainer = new BlobContainerClient(Constant.BlobStorageConnectionString, Constant.BlobContainerName);
 
-
-            MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
-            LoadMessagesCommand = new Command(async () => await LoadMessagesAsync());
             SendCommand = new Command(async () => await SendMessageAsync());
             GoBackCommand = new Command(async () => await ExcuteGoBackCommand());
             OpenSessionsPageCommand = new Command(async () => await ExcuteOpenSessionsPageCommand());
@@ -71,6 +82,7 @@ namespace RingerStaff.ViewModels
             TakeVideoCommand = new Command(async () => await TakeVideoAsync());
             PickVideoCommand = new Command(async () => await PickVideoAsync());
             InviteCommand = new Command(async () => await InviteAsync());
+            LoadBufferCommand = new Command(async () => await LoadBufferAsync());
 
             RealTimeService.MessageReceived += RealTimeService_MessageReceived;
             RealTimeService.Reconnecting += RealTimeService_Reconnecting;
@@ -79,6 +91,58 @@ namespace RingerStaff.ViewModels
             RealTimeService.SomeoneLeft += RealTimeService_SomeoneLeft;
 
             messages.CollectionChanged += Messages_CollectionChanged;
+        }
+
+        private async Task LoadBufferAsync()
+        {
+            IsBusy = true;
+
+            int skip = Messages.Count;
+            int take = 50;
+
+            List<PendingMessage> pendingMessages = await ApiService.GetSegmentedMessages(_roomId, skip, take);
+
+            if (!pendingMessages.Any())
+            {
+                IsBusy = false;
+                return;
+            }
+
+            var newMessages = new ObservableCollection<MessageModel>();
+
+            MessageModel[] messages = pendingMessages
+                .OrderBy(pm => pm.CreatedAt)
+                .Select(pm => new MessageModel
+                {
+                    ServerId = pm.Id,
+                    Body = pm.Body,
+                    Sender = pm.SenderName,
+                    SenderId = pm.SenderId,
+                    CreatedAt = pm.CreatedAt,
+                    UnreadCount = 0
+                })
+                .ToArray();
+
+            var scrollTarget = Messages.First();
+
+            for (int i = 0; i < messages.Length; i++)
+            {
+                MessageModel lastMessage = i > 0 ? messages[i - 1] : null;
+                Utility.SetMessageTypes(ref messages[i], ref lastMessage, App.UserId);
+                Messages.Insert(i, messages[i]);
+            }
+
+            MessagingCenter.Send(this, "MessageLoaded", scrollTarget);
+            //var mergedMessages = newMessages.Concat(Messages);
+
+            //Debug.WriteLine(mergedMessages.Count());
+
+            //Messages = mergedMessages as ObservableCollection<MessageModel>;
+
+            // skip : 현재 메시지 개수
+            // take : 50
+
+            IsBusy = false;
         }
 
         #region camera actions
@@ -629,14 +693,13 @@ namespace RingerStaff.ViewModels
         {
             Messages.Clear();
 
-            List<PendingMessage> pendingMessages = await ApiService.PullPendingMessagesAsync(_roomId, 0, App.Token);
+            List<PendingMessage> pendingMessages = await ApiService.GetSegmentedMessages(_roomId, 0, 50);
 
-            if (!pendingMessages.Any())
+            if (pendingMessages == null || !pendingMessages.Any())
                 return;
 
             MessageModel[] messages = pendingMessages
                 .OrderBy(p => p.CreatedAt)
-                .TakeLast(50)
                 .Select(pm => new MessageModel
                 {
                     ServerId = pm.Id,
@@ -659,18 +722,6 @@ namespace RingerStaff.ViewModels
                 MessagingCenter.Send(this, "MessageAdded", Messages.Last());
         }
 
-        public ICommand LoadMessagesCommand { get; set; }
-        public ICommand SendCommand { get; set; }
-        public ICommand StopCommand { get; set; }
-        public ICommand MessageTappedCommand { get; set; }
-        public ICommand GoBackCommand { get; set; }
-        public ICommand OpenSessionsPageCommand { get; set; }
-        public ICommand OpenProfilePageCommand { get; set; }
-        public ICommand TakePhotoCommand { get; set; }
-        public ICommand PickPhotoCommand { get; set; }
-        public ICommand TakeVideoCommand { get; set; }
-        public ICommand PickVideoCommand { get; set; }
-        public ICommand InviteCommand { get; set; }
 
     }
 }
