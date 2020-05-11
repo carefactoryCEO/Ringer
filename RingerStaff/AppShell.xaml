@@ -28,7 +28,9 @@
         </ResourceDictionary>
     </Shell.Resources>
 
-    <TabBar>
+    <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" Route="RoomsPage"/>
+
+    <!--<TabBar>
         <Tab Title="링거" Route="RoomsPage">
             <Tab.Icon>
                 <FontImageSource
@@ -36,7 +38,7 @@
                     Glyph="{StaticResource IconChat}"
                     Size="20"/>
             </Tab.Icon>
-            <!--<ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />-->
+            <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />
             <ShellContent>
                 <local:RoomsPage/>
             </ShellContent>
@@ -48,7 +50,7 @@
                     Glyph="{StaticResource IconStaff}"
                     Size="23"/>
             </Tab.Icon>
-            <!--<ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />-->
+            <ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />
             <ShellContent>
                 <local:StaffsPage/>
             </ShellContent>
@@ -60,7 +62,7 @@
                     Glyph="{StaticResource IconSchedule}"
                     Size="20"/>
             </Tab.Icon>
-            <!--<ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />-->
+            <ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />
             <ShellContent>
                 <local:SchedulePage/>
             </ShellContent>
@@ -73,11 +75,11 @@
                     Glyph="{StaticResource IconSetting}"
                     Size="22"/>
             </Tab.Icon>
-            <!--<ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />-->
+            <ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />
             <ShellContent>
                 <local:ItemsPage/>
             </ShellContent>
         </Tab>
-    </TabBar>
+    </TabBar>-->
 
 </Shell>

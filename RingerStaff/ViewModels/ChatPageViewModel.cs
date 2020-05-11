@@ -664,12 +664,14 @@ namespace RingerStaff.ViewModels
 
         private Task ExcuteOpenProfilePageCommand()
         {
+            return Task.CompletedTask;
             //return Shell.Current.GoToAsync("profilepage");
-            return Shell.Current.Navigation.PushModalAsync(new ProfilePage());
+            //return Shell.Current.Navigation.PushModalAsync(new ProfilePage());
         }
         private Task ExcuteOpenSessionsPageCommand()
         {
-            return Shell.Current.Navigation.PushModalAsync(new SessionsPage());
+            return Task.CompletedTask;
+            //return Shell.Current.Navigation.PushModalAsync(new SessionsPage());
         }
         private Task ExcuteGoBackCommand()
         {
