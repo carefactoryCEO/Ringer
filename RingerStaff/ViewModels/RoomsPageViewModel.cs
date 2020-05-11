@@ -63,9 +63,8 @@ namespace RingerStaff.ViewModels
         {
             RoomModel model = (RoomModel)room;
             UnreadCounts[model.Id] = 0;
-            App.RoomId = model.Id;
             App.RoomTitle = model.Title;
-            await Shell.Current.GoToAsync(nameof(ChatPage));
+            await Shell.Current.GoToAsync($"{nameof(ChatPage)}?RoomId={model.Id}");
         }
 
         private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)
@@ -75,12 +74,6 @@ namespace RingerStaff.ViewModels
             room.LastMessage = e.Body;
             room.LastMessageArrivedAt = e.CreatedAt;
             room.UnreadMessagesCount++;
-        }
-
-        internal void SetRoomId(RoomModel roomModel)
-        {
-            App.RoomId = roomModel.Id;
-            App.RoomTitle = roomModel.Title;
         }
 
         public async Task<bool> LoadRoomsAsync()

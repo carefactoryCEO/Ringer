@@ -114,7 +114,12 @@ namespace Ringer.HubServer.Controllers
             if (user == null)
                 return BadRequest();
 
-            if (!user.Devices.Any(d => d.Id == loginInfo.DeviceId))
+            if (user.Devices.FirstOrDefault(d => d.Id == loginInfo.DeviceId) is Device userDevice)
+            {
+                userDevice.IsOn = true;
+                userDevice.IsActive = true;
+            }
+            else
             {
                 // 디바이스가 디비에 존재하면 다른 유저가 이 디바이스를 사용했었던 것임.
                 var device = await _dbContext.Devices.FirstOrDefaultAsync(d => d.Id == loginInfo.DeviceId);
@@ -123,6 +128,8 @@ namespace Ringer.HubServer.Controllers
                 {
                     // 디바이스의 오너를 현재 유저로 변경한다.
                     device.Owner = user;
+                    device.IsOn = true;
+                    device.IsActive = true;
                 }
                 else
                 {
@@ -130,11 +137,13 @@ namespace Ringer.HubServer.Controllers
                     {
                         Id = loginInfo.DeviceId,
                         DeviceType = loginInfo.DeviceType,
+                        IsOn = true,
+                        IsActive = true
                     });
                 }
-
-                await _dbContext.SaveChangesAsync();
             }
+
+            await _dbContext.SaveChangesAsync();
 
             var secretKey = _configuration["SecurityKey"];
 

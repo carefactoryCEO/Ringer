@@ -11,6 +11,7 @@ using Xamarin.Essentials;
 using System.Collections.ObjectModel;
 using RingerStaff.Models;
 using Microsoft.AppCenter.Distribute;
+using Plugin.SimpleAudioPlayer;
 
 namespace RingerStaff
 {
@@ -46,6 +47,7 @@ namespace RingerStaff
         }
         public static string RoomId;
         public static string RoomTitle;
+        private static int id;
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
 
@@ -58,6 +60,48 @@ namespace RingerStaff
             DependencyService.Register<MockDataStore>();
 
             MainPage = new AppShell();
+
+            id = 0;
+
+            RealTimeService.MessageReceived += RealTimeService_MessageReceived;
+        }
+
+        private void RealTimeService_MessageReceived(object sender, Ringer.Core.EventArgs.MessageReceivedEventArgs e)
+        {
+            if (e.RoomId != RoomId)
+            {
+                var currentState = Shell.Current.CurrentState;
+                var vibeOnly = currentState.Location.ToString().EndsWith(nameof(Views.RoomsPage));
+
+                NotifyLocally(e.SenderName, e.Body, e.RoomId, vibeOnly);
+            }
+        }
+
+        private static void NotifyLocally(string sender, string body, string roomId, bool vibeOnly = false)
+        {
+            if (!vibeOnly)
+            {
+                var notification = new NotificationRequest
+                {
+                    NotificationId = id++,
+                    Title = sender,
+                    Description = body,
+                    ReturningData = roomId,
+                    Sound = Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.Android ? "good_things_happen" : "good_things_happen.mp3",
+                };
+
+                NotificationCenter.Current.Show(notification);
+            }
+
+            // TODO: iOS이고 CurrentRoom이 아니면 알람 사운드
+            if (Xamarin.Forms.Device.RuntimePlatform == Xamarin.Forms.Device.iOS)
+            {
+                var player = CrossSimpleAudioPlayer.Current;
+                player.Load("good_things_happen.mp3");
+                player.Play();
+            }
+
+            Vibration.Vibrate();
         }
 
         private void OnLocalNotificationTapped(NotificationTappedEventArgs e)
@@ -73,8 +117,8 @@ namespace RingerStaff
             {
                 Push.PushNotificationReceived += (sender, e) =>
                 {
-                    string body = null;
-                    string pushSender = null;
+                    //string body = null;
+                    //string pushSender = null;
                     // If there is custom data associated with the notification,
                     // print the entries
                     if (e.CustomData != null)
@@ -83,20 +127,20 @@ namespace RingerStaff
                         {
                             Debug.WriteLine($"[{key}]{e.CustomData[key]}");
 
-                            switch (key)
-                            {
-                                case "room":
-                                    RoomId = e.CustomData[key];
-                                    break;
+                            //switch (key)
+                            //{
+                            //    case "room":
+                            //        RoomId = e.CustomData[key];
+                            //        break;
 
-                                case "body":
-                                    body = e.CustomData[key];
-                                    break;
+                            //    case "body":
+                            //        body = e.CustomData[key];
+                            //        break;
 
-                                case "sender":
-                                    pushSender = e.CustomData[key];
-                                    break;
-                            }
+                            //    case "sender":
+                            //        pushSender = e.CustomData[key];
+                            //        break;
+                            //}
                         }
                     }
 

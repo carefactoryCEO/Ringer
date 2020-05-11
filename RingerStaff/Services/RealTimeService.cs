@@ -5,8 +5,11 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AppCenter.Crashes;
 using Microsoft.AspNetCore.SignalR.Client;
+using Plugin.LocalNotification;
+using Plugin.SimpleAudioPlayer;
 using Ringer.Core.EventArgs;
 using RingerStaff.Models;
+using Xamarin.Forms;
 
 namespace RingerStaff.Services
 {
@@ -50,6 +53,7 @@ namespace RingerStaff.Services
 
         public static string Url;
         public static string Token;
+        private static int id = 0;
 
         public static async Task SendMessageAsync(MessageModel message, string roomId)
         {

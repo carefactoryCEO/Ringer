@@ -121,6 +121,7 @@ namespace Ringer.HubServer.Hubs
 
             sw.Restart();
 
+            #region push
             // 룸에 속한 유저의 디바이스들 중 !IsOn인 디바이스는 푸시
             var room = await _dbContext.Rooms
                 .Include(room => room.Enrollments)
@@ -138,12 +139,26 @@ namespace Ringer.HubServer.Hubs
             foreach (Enrollment enroll in room.Enrollments)
             {
                 if (enroll.UserId != UserId)
+                {
                     foreach (Device device in enroll.User.Devices)
                     {
-                        if (!device.IsOn && device.IsActive &&
-                            (device.DeviceType == Core.Data.DeviceType.iOS || device.DeviceType == Core.Data.DeviceType.Android))
-                            pushDic.Add(device.Id, device.DeviceType == Core.Data.DeviceType.iOS ? "iOS" : "Android");
+                        if (enroll.User.UserType == UserType.Consumer)
+                        {
+                            if (!device.IsOn && device.IsActive && (device.DeviceType == Core.Data.DeviceType.iOS || device.DeviceType == Core.Data.DeviceType.Android))
+                            {
+                                pushDic.Add(device.Id, device.DeviceType == Core.Data.DeviceType.iOS ? "iOS" : "Android");
+                            }
+                        }
+                        else // UserType.Staff, UserType.Admin, UserType.Super
+                        {
+                            if (!device.IsOn && device.IsActive && (device.DeviceType == Core.Data.DeviceType.iOS || device.DeviceType == Core.Data.DeviceType.Android))
+                            {
+                                pushDic.Add(device.Id, device.DeviceType == Core.Data.DeviceType.iOS ? "staff-iOS" : "staff-Android");
+                            }
+                        }
+
                     }
+                }
             }
 
             //if (pushDic.Count > 0 && false)
@@ -157,14 +172,18 @@ namespace Ringer.HubServer.Hubs
 
                 var pushService = new PushService(pushDic);
 
-                pushService.Push(user.Name, body, customDataDic);
-
                 foreach (var push in pushDic)
                     _logger.LogWarning($"Push message to [{push.Key}]({push.Value}) from {user.Name}");
+
+                var result = await pushService.Push(user.Name, body, customDataDic);
+                _logger.LogWarning($"push result: {result}");
+
             }
 
             sw.Stop();
             _logger.LogWarning($"Push to unconnected Devices: {sw.ElapsedMilliseconds}");
+
+            #endregion
         }
         #endregion
 

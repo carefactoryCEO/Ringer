@@ -7,18 +7,20 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 namespace Ringer.HubServer.Services
 {
     public interface IPushService
     {
-        void Push(string title, string message, Dictionary<string, string> customData);
+        Task<string> Push(string title, string message, Dictionary<string, string> customData);
     }
 
     public class PushService : IPushService
     {
         Receiver receiver = new Receiver();
+        private readonly ILogger logger;
 
         public PushService(Dictionary<string, string> dicInstallIdPlatform)
         {
@@ -29,12 +31,18 @@ namespace Ringer.HubServer.Services
                 {
                     case "Android":
                         receiver.AndroidDevices.Add(key);
-
                         break;
 
                     case "iOS":
                         receiver.IOSDevices.Add(key);
+                        break;
 
+                    case "staff-iOS":
+                        receiver.IOSStaffDevices.Add(key);
+                        break;
+
+                    case "staff-Android":
+                        receiver.AndroidStaffDevices.Add(key);
                         break;
                 }
             }
@@ -51,6 +59,8 @@ namespace Ringer.HubServer.Services
 
             public const string AppNameAndroid = "ringer.android";
             public const string AppNameiOS = "ringer.ios";
+            public const string AppNameStaffAndroid = "push-me-android";
+            public const string AppNameStaffiOS = "push-me-ios";
 
             public const string Organization = "mbshin-carefactory.co.kr";
         }
@@ -102,13 +112,17 @@ namespace Ringer.HubServer.Services
             {
                 IOSDevices = new List<string>();
                 AndroidDevices = new List<string>();
+                AndroidStaffDevices = new List<string>();
+                IOSStaffDevices = new List<string>();
             }
 
             public List<string> IOSDevices { get; set; }
             public List<string> AndroidDevices { get; set; }
+            public List<string> AndroidStaffDevices { get; set; }
+            public List<string> IOSStaffDevices { get; set; }
         }
 
-        public async void Push(string title, string message, Dictionary<string, string> customData = default)
+        public async Task<string> Push(string title, string message, Dictionary<string, string> customData = default)
         {
             try
             {
@@ -118,8 +132,8 @@ namespace Ringer.HubServer.Services
                 if (message.Length > 100)
                     message = message.Substring(0, 95) + "...";
 
-                if (!receiver.IOSDevices.Any() && !receiver.AndroidDevices.Any())
-                    return; //No devices to send
+                if (!receiver.IOSDevices.Any() && !receiver.AndroidDevices.Any() && !receiver.AndroidStaffDevices.Any() && !receiver.IOSStaffDevices.Any())
+                    return null; //No devices to send
 
                 //To make sure in Android, title and message is retain when click from notification. Else it's lost when app is in background
                 if (customData == null)
@@ -150,7 +164,7 @@ namespace Ringer.HubServer.Services
                     },
                     Target = new Target
                     {
-                        Type = Constants.DeviceTarget
+                        Type = Constants.DeviceTarget // "devices_target"
                     }
                 };
 
@@ -162,6 +176,8 @@ namespace Ringer.HubServer.Services
 
                 //Needed to solve SSL/TLS issue when 
                 ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+
+                var resultString = string.Empty;
 
                 if (receiver.IOSDevices.Any())
                 {
@@ -176,6 +192,8 @@ namespace Ringer.HubServer.Services
                     string URL = $"{Constants.Url}/{Constants.Organization}/{Constants.AppNameiOS}/{Constants.Apis.Notification}";
 
                     var result = await httpClient.PostAsync(URL, httpContent);
+
+                    resultString += await result.Content.ReadAsStringAsync();
                 }
 
                 if (receiver.AndroidDevices.Any())
@@ -191,12 +209,38 @@ namespace Ringer.HubServer.Services
                     string URL = $"{Constants.Url}/{Constants.Organization}/{Constants.AppNameAndroid}/{Constants.Apis.Notification}";
 
                     var result = await httpClient.PostAsync(URL, httpContent);
+
+                    resultString += await result.Content.ReadAsStringAsync();
                 }
+
+                if (receiver.AndroidStaffDevices.Any())
+                {
+                    push.Target.Devices = receiver.AndroidStaffDevices;
+                    string content = JsonConvert.SerializeObject(push);
+                    HttpContent httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+                    string URL = $"{Constants.Url}/{Constants.Organization}/{Constants.AppNameStaffAndroid}/{Constants.Apis.Notification}";
+                    var result = await httpClient.PostAsync(URL, httpContent);
+
+                    resultString += await result.Content.ReadAsStringAsync();
+                }
+
+                if (receiver.IOSStaffDevices.Any())
+                {
+                    push.Target.Devices = receiver.IOSStaffDevices;
+                    string content = JsonConvert.SerializeObject(push);
+                    HttpContent httpContent = new StringContent(content, Encoding.UTF8, "application/json");
+                    string URL = $"{Constants.Url}/{Constants.Organization}/{Constants.AppNameStaffiOS}/{Constants.Apis.Notification}";
+                    var result = await httpClient.PostAsync(URL, httpContent);
+
+                    resultString += await result.Content.ReadAsStringAsync();
+                }
+
+                return resultString;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-
+                return ex.Message;
             }
         }
     }

@@ -112,7 +112,7 @@
                 <Label Text="동영상보내기" HorizontalOptions="Center"/>
             </StackLayout>
 
-            <StackLayout Grid.Row="1" Grid.Column="0">
+            <!--<StackLayout Grid.Row="1" Grid.Column="0">
                 <ImageButton Source="PhoneCallButton"
                              IsEnabled="False"
                              HorizontalOptions="Center"
@@ -126,9 +126,9 @@
                              HorizontalOptions="Center"
                              VerticalOptions="Center"/>
                 <Label Text="영상통화" HorizontalOptions="Center"/>
-            </StackLayout>
+            </StackLayout>-->
 
-            <StackLayout Grid.Row="1" Grid.Column="2">
+            <StackLayout Grid.Row="1" Grid.Column="0">
                 <ImageButton Source="InviteButton"
                              HorizontalOptions="Center"
                              VerticalOptions="Center"

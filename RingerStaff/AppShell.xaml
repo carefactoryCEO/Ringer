@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Shell xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:d="http://xamarin.com/schemas/2014/forms/design" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" xmlns:local="clr-namespace:RingerStaff.Views" Title="RingerStaff" x:Class="RingerStaff.AppShell">
+<Shell xmlns="http://xamarin.com/schemas/2014/forms"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+       mc:Ignorable="d"
+       xmlns:local="clr-namespace:RingerStaff.Views"
+       Title="RingerStaff"
+       x:Class="RingerStaff.AppShell">
     <!-- 
         Styles and Resources 
     -->
@@ -22,41 +29,54 @@
     </Shell.Resources>
 
     <TabBar>
-        <Tab Title="링거">
+        <Tab Title="링거" Route="RoomsPage">
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
                     Glyph="{StaticResource IconChat}"
                     Size="20"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />
+            <!--<ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />-->
+            <ShellContent>
+                <local:RoomsPage/>
+            </ShellContent>
         </Tab>
-        <Tab Title="스태프">
+        <Tab Title="스태프" Route="StaffsPage">
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
                     Glyph="{StaticResource IconStaff}"
                     Size="23"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />
+            <!--<ShellContent ContentTemplate="{DataTemplate local:StaffsPage}" />-->
+            <ShellContent>
+                <local:StaffsPage/>
+            </ShellContent>
         </Tab>
-        <Tab Title="스케쥴">
+        <Tab Title="스케쥴" Route="SchedulePage">
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
                     Glyph="{StaticResource IconSchedule}"
                     Size="20"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />
+            <!--<ShellContent ContentTemplate="{DataTemplate local:SchedulePage}" />-->
+            <ShellContent>
+                <local:SchedulePage/>
+            </ShellContent>
+
         </Tab>
-        <Tab Title="설정">
+        <Tab Title="설정" Route="ItemsPage">
             <Tab.Icon>
                 <FontImageSource
                     FontFamily="{DynamicResource MaterialFontFamily}"
                     Glyph="{StaticResource IconSetting}"
                     Size="22"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />
+            <!--<ShellContent ContentTemplate="{DataTemplate local:ItemsPage}" />-->
+            <ShellContent>
+                <local:ItemsPage/>
+            </ShellContent>
         </Tab>
     </TabBar>
 

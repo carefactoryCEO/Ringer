@@ -4,13 +4,16 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Azure.Storage.Blobs;
+using Plugin.LocalNotification;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
 using Plugin.Permissions.Abstractions;
+using Plugin.SimpleAudioPlayer;
 using Ringer.Core;
 using Ringer.Core.Data;
 using Ringer.Core.EventArgs;
@@ -19,17 +22,33 @@ using RingerStaff.Models;
 using RingerStaff.Services;
 using RingerStaff.Types;
 using RingerStaff.Views;
+//using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace RingerStaff.ViewModels
 {
+    [QueryProperty("RoomId", "RoomId")]
     public class ChatPageViewModel : BaseViewModel
     {
+        public string RoomId
+        {
+            get => _roomId;
+            set
+            {
+                App.RoomId = value;
+                _roomId = value;
+
+                Xamarin.Essentials.MainThread.BeginInvokeOnMainThread(async () => await OnAppearingAsync());
+            }
+        }
+
         private ObservableCollection<MessageModel> messages;
         private readonly BlobContainerClient blobContainer;
         private string textToSend;
         private double navBarHeight;
         private Thickness bottomPadding;
+        private int id = 0;
+        private string _roomId;
 
         public string TextToSend { get => textToSend; set => SetProperty(ref textToSend, value); }
         public ObservableCollection<MessageModel> Messages { get => messages; set => SetProperty(ref messages, value); }
@@ -510,15 +529,20 @@ namespace RingerStaff.ViewModels
         {
             Debug.WriteLine(e.Message);
         }
+
         private void RealTimeService_MessageReceived(object sender, MessageReceivedEventArgs e)
         {
-            if (e.RoomId != App.RoomId)
+            if (e.RoomId != _roomId)
+            {
                 return;
-
-            if (e.SenderId == App.UserId)
-                return;
+            }
 
             var lastMessage = Messages.LastOrDefault();
+
+            // 내가 방금 보낸 메시지면 바디가 같음.
+            if (lastMessage.Body == e.Body && lastMessage.CreatedAt.Second == e.CreatedAt.Second && lastMessage.SenderId == e.SenderId)
+                return;
+
             MessageModel message = new MessageModel
             {
                 Body = e.Body,
@@ -553,7 +577,7 @@ namespace RingerStaff.ViewModels
 
             Messages.Add(message);
 
-            await RealTimeService.SendMessageAsync(message, App.RoomId);
+            await RealTimeService.SendMessageAsync(message, _roomId);
         }
 
         private void Messages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -580,12 +604,8 @@ namespace RingerStaff.ViewModels
 
         public async Task OnAppearingAsync()
         {
-            await RealTimeService.EnterRoomAsync(App.RoomId, "staff");
+            await RealTimeService.EnterRoomAsync(_roomId, "staff");
             await LoadMessagesAsync();
-        }
-        public async Task OnDisappearingAsync()
-        {
-            await Task.Delay(0);
         }
         public async Task LoadMessagesAsync()
         {
@@ -593,14 +613,14 @@ namespace RingerStaff.ViewModels
 
             Messages.Clear();
 
-            List<PendingMessage> pendingMessages = await ApiService.PullPendingMessagesAsync(App.RoomId, 0, App.Token);
+            List<PendingMessage> pendingMessages = await ApiService.PullPendingMessagesAsync(_roomId, 0, App.Token);
 
             if (!pendingMessages.Any())
                 return;
 
             MessageModel[] messages = pendingMessages
                 .OrderBy(p => p.CreatedAt)
-                .TakeLast(50)
+                //.TakeLast(50)
                 .Select(pm => new MessageModel
                 {
                     ServerId = pm.Id,

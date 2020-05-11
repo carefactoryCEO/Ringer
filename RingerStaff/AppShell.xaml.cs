@@ -9,9 +9,7 @@ namespace RingerStaff
         {
             InitializeComponent();
 
-            Routing.RegisterRoute("loginpage", typeof(LoginPage));
             Routing.RegisterRoute(nameof(ChatPage), typeof(ChatPage));
-            Routing.RegisterRoute("profilepage", typeof(ProfilePage));
         }
     }
 }

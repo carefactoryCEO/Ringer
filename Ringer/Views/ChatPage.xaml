@@ -5,7 +5,6 @@
              xmlns:helpers="clr-namespace:Ringer.Helpers"
              xmlns:controls="clr-namespace:Ringer.Views.Controls"
              xmlns:partials="clr-namespace:Ringer.Views.Partials"
-             xmlns:converters="clr-namespace:RingerStaff.Converters"
              x:Class="Ringer.Views.ChatPage"
              x:Name="ChatContentPage"
              Title="링거"

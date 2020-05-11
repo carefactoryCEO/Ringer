@@ -49,18 +49,11 @@ namespace RingerStaff.Views
                 MessageFeed.ScrollToLast();
         }
 
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-
-            await vm.OnAppearingAsync().ConfigureAwait(false);
-        }
-
-        protected override async void OnDisappearing()
+        protected override void OnDisappearing()
         {
             base.OnDisappearing();
 
-            await vm.OnDisappearingAsync().ConfigureAwait(false);
+            App.RoomId = null;
         }
     }
 }

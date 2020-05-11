@@ -36,7 +36,8 @@ namespace Ringer.HubServer.Services
 
             var user = await _context.Users
                 .Include(u => u.Devices)
-                .SingleOrDefaultAsync(u => u.Email == email).ConfigureAwait(false);
+                .SingleOrDefaultAsync(u => u.Email == email)
+                .ConfigureAwait(false);
 
             // check if username exists
             if (user == null)
