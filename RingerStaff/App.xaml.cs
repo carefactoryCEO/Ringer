@@ -47,10 +47,13 @@ namespace RingerStaff
             get => Preferences.Get(nameof(UserId), -1);
             set => Preferences.Set(nameof(UserId), value);
         }
-        public static string RoomId;
+        public static string RoomId { get; set; }
         private static int id;
 
         public static bool IsLoggedIn => !string.IsNullOrEmpty(Token);
+
+        public static bool IsCameraActivated { get; internal set; }
+
         public static Dictionary<string, int> UnreadCounts = new Dictionary<string, int>();
 
         public static bool IsForeground = false;
@@ -75,7 +78,7 @@ namespace RingerStaff
             if (e.SenderId == App.UserId)
                 return;
 
-            if (e.RoomId != RoomId)
+            if (e.RoomId != App.RoomId)
             {
                 var currentState = Shell.Current.CurrentState;
                 var vibeOnly = currentState.Location.ToString().EndsWith(nameof(RoomsPage)) && App.IsForeground;

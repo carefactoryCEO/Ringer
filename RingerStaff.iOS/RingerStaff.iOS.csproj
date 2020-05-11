@@ -178,6 +178,7 @@
     <ImageAsset Include="Assets.xcassets\splash.imageset\ringerstaffsplash-2.png" />
     <ImageAsset Include="Assets.xcassets\splash.imageset\ringerstaffsplash%402x-2.png" />
     <InterfaceDefinition Include="Resources\RingerStaffStoryBoard.storyboard" />
+    <BundleResource Include="Resources\placeholder.jpg" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

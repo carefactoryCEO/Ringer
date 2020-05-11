@@ -20,7 +20,7 @@ namespace RingerStaff.Views
 
             MessagingCenter.Subscribe<ChatPageViewModel, MessageModel>(this, "MessageAdded", (sender, message) =>
             {
-                MessageFeed.ScrollTo(message, ScrollToPosition.End, true);
+                MessageFeed.ScrollTo(message, ScrollToPosition.MakeVisible, true);
             });
 
             MessagingCenter.Subscribe<ChatPageViewModel, string>(this, "ConnectionEvent", (sender, message) =>
@@ -53,7 +53,8 @@ namespace RingerStaff.Views
         {
             base.OnDisappearing();
 
-            App.RoomId = null;
+            if (!App.IsCameraActivated)
+                App.RoomId = null;
         }
     }
 }

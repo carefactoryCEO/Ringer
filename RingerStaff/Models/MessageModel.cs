@@ -8,10 +8,12 @@ namespace RingerStaff.Models
     {
         public int Id { get; set; }
         public int ServerId { get; set; }
+        public string RoomId { get; set; }
         public string Body { get; set; }
         public string Sender { get; set; }
         public int SenderId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public DateTime ReceivedAt { get; set; }
 
         private MessageTypes messageTypes;
         public MessageTypes MessageTypes

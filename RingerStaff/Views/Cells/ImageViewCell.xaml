@@ -4,6 +4,7 @@
           xmlns:d="http://xamarin.com/schemas/2014/forms/design"
           xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
           xmlns:ff="clr-namespace:FFImageLoading.Forms;assembly=FFImageLoading.Forms"
+          xmlns:fftransformations="clr-namespace:FFImageLoading.Transformations;assembly=FFImageLoading.Transformations"
           mc:Ignorable="d"
           x:Class="RingerStaff.Views.Cells.ImageViewCell">
 
@@ -71,24 +72,32 @@
                                         ConverterParameter='Sender'}"/>
 
             <!-- Body(Image) -->
-            <Frame BackgroundColor="White"
-                    Padding="0"
-                    CornerRadius="11"
-                    HasShadow="False"
-                    IsClippedToBounds="True">
-                <Frame.GestureRecognizers>
+            <ff:CachedImage x:Name="cachedImage"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            LoadingPlaceholder="placeholder.jpg"
+                            DownsampleToViewSize="True"
+                            FadeAnimationDuration="100"
+                            FadeAnimationEnabled="True"
+                            FadeAnimationForCachedImages="True"
+                            WidthRequest="240"
+                            HeightRequest="240"
+                            Aspect="AspectFill"
+                            CacheDuration="50"
+                            RetryCount="10"
+                            RetryDelay="250">
+                <ff:CachedImage.Transformations>
+                    <fftransformations:CornersTransformation
+                            CornersTransformType="TopLeftRounded,TopRightRounded,BottomLeftRounded,BottomRightRounded"
+                            TopLeftCornerSize="5"
+                            BottomLeftCornerSize="5"
+                            BottomRightCornerSize="5"
+                            TopRightCornerSize="5"/>
+                </ff:CachedImage.Transformations>
+                <ff:CachedImage.GestureRecognizers>
                     <TapGestureRecognizer Tapped="Image_Tapped"/>
-                </Frame.GestureRecognizers>
-
-                <ff:CachedImage Source="{Binding Body}"
-                                HorizontalOptions="Center"
-                                VerticalOptions="Center"
-                                FadeAnimationEnabled="True"
-                                DownsampleWidth="300"
-                                CacheDuration="50"
-                                RetryCount="3"
-                                RetryDelay="250"/>
-            </Frame>
+                </ff:CachedImage.GestureRecognizers>
+            </ff:CachedImage>
 
         </StackLayout>
 
@@ -118,7 +127,8 @@
             <!-- timestamp -->
             <Label TextColor="{StaticResource MessageMetadataColor}"
                    FontSize="10"
-                   Text="오후 9:21🇻🇳"
+                   Text="{Binding CreatedAt,
+                                  Converter={StaticResource DateTimeToStringConverter}}"
                    d:HorizontalOptions="End"
                    HorizontalOptions="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToLayoutOptionConverter},

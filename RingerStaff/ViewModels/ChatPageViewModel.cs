@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using Plugin.Permissions;
@@ -40,7 +41,7 @@ namespace RingerStaff.ViewModels
         }
 
         private ObservableCollection<MessageModel> messages;
-        private readonly BlobContainerClient blobContainer;
+        private readonly BlobContainerClient _blobContainer;
         private string textToSend;
         private double navBarHeight;
         private Thickness bottomPadding;
@@ -55,7 +56,7 @@ namespace RingerStaff.ViewModels
         public ChatPageViewModel()
         {
             messages = new ObservableCollection<MessageModel>();
-            blobContainer = new BlobContainerClient(Constant.BlobStorageConnectionString, Constant.BlobContainerName);
+            _blobContainer = new BlobContainerClient(Constant.BlobStorageConnectionString, Constant.BlobContainerName);
 
 
             MessageTappedCommand = new Command<MessageModel>(messageModel => Debug.WriteLine($"{messageModel.Body} tapped"));
@@ -93,6 +94,8 @@ namespace RingerStaff.ViewModels
 
                 try
                 {
+                    App.IsCameraActivated = true;
+
                     // Taking picture
                     using MediaFile mediaFile = await CrossMedia.Current.TakePhotoAsync(new StoreCameraMediaOptions
                     {
@@ -108,37 +111,40 @@ namespace RingerStaff.ViewModels
                         AllowCropping = false
                     });
 
-                    //if (mediaFile == null)
-                    //    return;
+                    if (mediaFile == null)
+                        return;
 
-                    //IsBusy = true;
+                    IsBusy = true;
 
-                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
-                    //BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+                    var fileName = $"image-{App.UserId}-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jpg";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
 
-                    //var message = new MessageModel
-                    //{
-                    //    RoomId = App.RoomId,
-                    //    ServerId = -1,
-                    //    Body = blobClient.Uri.ToString(),
-                    //    Sender = App.UserName,
-                    //    SenderId = App.UserId,
-                    //    CreatedAt = DateTime.UtcNow,
-                    //    ReceivedAt = DateTime.UtcNow,
-                    //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
-                    //};
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = -1,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                    };
 
-                    //MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                    //await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
-                    //await _messaging.AddMessageAsync(message);
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
+
+                    var lastMessage = messages.LastOrDefault();
+                    Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
+
+                    Messages.Add(message);
 
                     mediaFile.Dispose();
 
                     IsBusy = false;
 
                     //// Send image message to server
-                    //await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await RealTimeService.SendMessageAsync(message, message.RoomId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -147,7 +153,7 @@ namespace RingerStaff.ViewModels
                 finally
                 {
 
-                    //App.IsCameraActivated = false;
+                    App.IsCameraActivated = false;
                 }
             }
         }
@@ -155,7 +161,7 @@ namespace RingerStaff.ViewModels
         {
             try
             {
-                //App.IsCameraActivated = true;
+                App.IsCameraActivated = true;
 
                 if (!CrossMedia.Current.IsPickPhotoSupported)
                 {
@@ -177,31 +183,33 @@ namespace RingerStaff.ViewModels
 
                 IsBusy = true;
 
-                var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
-                //BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+                var fileName = $"image-{App.UserId}-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jpg";
+                BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
 
-                //var message = new MessageModel
-                //{
-                //    RoomId = App.RoomId,
-                //    ServerId = -1,
-                //    Body = blobClient.Uri.ToString(),
-                //    Sender = App.UserName,
-                //    SenderId = App.UserId,
-                //    CreatedAt = DateTime.UtcNow,
-                //    ReceivedAt = DateTime.UtcNow,
-                //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Image | MessageTypes.Leading | MessageTypes.Trailing,
-                //};
+                var message = new MessageModel
+                {
+                    RoomId = App.RoomId,
+                    ServerId = -1,
+                    Body = blobClient.Uri.ToString(),
+                    Sender = App.UserName,
+                    SenderId = App.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow,
+                };
 
-                //MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                //await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
-                //await _messaging.AddMessageAsync(message);
+                await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = "image/jpeg" });
+
+                var lastMessage = messages.LastOrDefault();
+                Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
+                Messages.Add(message);
 
                 mediaFile.Dispose();
 
                 IsBusy = false;
 
-                //await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                await RealTimeService.SendMessageAsync(message, message.RoomId).ConfigureAwait(false);
 
             }
             catch (Exception ex)
@@ -210,7 +218,7 @@ namespace RingerStaff.ViewModels
             }
             finally
             {
-                //App.IsCameraActivated = false;
+                App.IsCameraActivated = false;
             }
         }
         private async Task TakeVideoAsync()
@@ -225,7 +233,7 @@ namespace RingerStaff.ViewModels
 
                 try
                 {
-                    //App.IsCameraActivated = true;
+                    App.IsCameraActivated = true;
                     // Taking Video
                     MediaFile mediaFile = await CrossMedia.Current.TakeVideoAsync(new StoreVideoOptions
                     {
@@ -235,37 +243,39 @@ namespace RingerStaff.ViewModels
                         Directory = "RingerVideo",
                         SaveToAlbum = true,
                         Quality = VideoQuality.Medium
-                    }); ;
+                    });
 
                     if (mediaFile == null)
                         return;
 
                     IsBusy = true;
 
-                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
-                    //BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-                    //var message = new MessageModel
-                    //{
-                    //    RoomId = App.RoomId,
-                    //    ServerId = -1,
-                    //    Body = blobClient.Uri.ToString(),
-                    //    Sender = App.UserName,
-                    //    SenderId = App.UserId,
-                    //    CreatedAt = DateTime.UtcNow,
-                    //    ReceivedAt = DateTime.UtcNow,
-                    //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
-                    //};
+                    var fileName = $"video-{App.UserId}-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.mp4";
+                    BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+                    var message = new MessageModel
+                    {
+                        RoomId = App.RoomId,
+                        ServerId = -1,
+                        Body = blobClient.Uri.ToString(),
+                        Sender = App.UserName,
+                        SenderId = App.UserId,
+                        CreatedAt = DateTime.UtcNow,
+                        ReceivedAt = DateTime.UtcNow,
+                    };
 
-                    //MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                    MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                    //await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
-                    //await _messaging.AddMessageAsync(message);
+                    await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
+
+                    var lastMessage = messages.LastOrDefault();
+                    Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
+                    Messages.Add(message);
 
                     mediaFile.Dispose();
 
                     IsBusy = false;
 
-                    //await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                    await RealTimeService.SendMessageAsync(message, message.RoomId).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -273,7 +283,7 @@ namespace RingerStaff.ViewModels
                 }
                 finally
                 {
-                    //App.IsCameraActivated = false;
+                    App.IsCameraActivated = false;
                 }
             }
         }
@@ -288,7 +298,7 @@ namespace RingerStaff.ViewModels
 
             try
             {
-                //App.IsCameraActivated = true;
+                App.IsCameraActivated = true;
 
                 var mediaFile = await CrossMedia.Current.PickVideoAsync();
 
@@ -296,30 +306,33 @@ namespace RingerStaff.ViewModels
                     return;
 
                 IsBusy = true;
-                var fileName = $"video-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.mp4";
-                //BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
-                //var message = new MessageModel
-                //{
-                //    RoomId = App.RoomId,
-                //    ServerId = -1,
-                //    Body = blobClient.Uri.ToString(),
-                //    Sender = App.UserName,
-                //    SenderId = App.UserId,
-                //    CreatedAt = DateTime.UtcNow,
-                //    ReceivedAt = DateTime.UtcNow,
-                //    MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
-                //};
+                var fileName = $"video-{App.UserId}-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.mp4";
+                BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
+                var message = new MessageModel
+                {
+                    RoomId = App.RoomId,
+                    ServerId = -1,
+                    Body = blobClient.Uri.ToString(),
+                    Sender = App.UserName,
+                    SenderId = App.UserId,
+                    CreatedAt = DateTime.UtcNow,
+                    ReceivedAt = DateTime.UtcNow,
+                    MessageTypes = MessageTypes.Outgoing | MessageTypes.Video | MessageTypes.Leading | MessageTypes.Trailing,
+                };
 
-                //MessagingCenter.Send(this, "CameraActionCompleted", "completed");
+                MessagingCenter.Send(this, "CameraActionCompleted", "completed");
 
-                //await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
-                //await _messaging.AddMessageAsync(message);
+                await blobClient.UploadAsync(mediaFile.GetStream(), httpHeaders: new BlobHttpHeaders { ContentType = $"video/mp4" });
+
+                var lastMessage = messages.LastOrDefault();
+                Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);
+                Messages.Add(message);
 
                 mediaFile.Dispose();
 
                 IsBusy = false;
 
-                //await _messaging.SendMessageToRoomAsync(message.RoomId, message.Sender, message.Body).ConfigureAwait(false);
+                await RealTimeService.SendMessageAsync(message, message.RoomId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -327,7 +340,7 @@ namespace RingerStaff.ViewModels
             }
             finally
             {
-                //App.IsCameraActivated = false;
+                App.IsCameraActivated = false;
             }
         }
         private async Task<bool> CheckPhotosPermissionsAsync()
@@ -543,7 +556,8 @@ namespace RingerStaff.ViewModels
             {
                 Body = e.Body,
                 Sender = e.SenderName,
-                CreatedAt = e.CreatedAt
+                CreatedAt = e.CreatedAt,
+                SenderId = e.SenderId
             };
 
             Utility.SetMessageTypes(ref message, ref lastMessage, App.UserId);

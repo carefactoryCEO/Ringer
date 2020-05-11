@@ -31,13 +31,6 @@ namespace Ringer.Views.Cells
         {
             var url = (BindingContext as MessageModel).Body;
 
-            //await Browser.OpenAsync(url, new BrowserLaunchOptions
-            //{
-            //    LaunchMode = BrowserLaunchMode.SystemPreferred,
-            //    TitleMode = BrowserTitleMode.Hide
-
-            //});
-
             await Shell.Current.Navigation.PushAsync(new ImageViewerPage(url));
         }
     }

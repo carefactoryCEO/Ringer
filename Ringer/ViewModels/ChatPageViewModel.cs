@@ -281,7 +281,7 @@ namespace Ringer.ViewModels
 
                 IsBusy = true;
 
-                var fileName = $"image-{App.UserId}-{DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")}.jpg";
+                var fileName = $"image-{App.UserId}-{DateTime.UtcNow:yyyyMMdd-HHmmss-fff}.jpg";
                 BlobClient blobClient = _blobContainer.GetBlobClient(fileName);
 
                 var message = new MessageModel
@@ -339,7 +339,7 @@ namespace Ringer.ViewModels
                         Directory = "RingerVideo",
                         SaveToAlbum = true,
                         Quality = VideoQuality.Medium
-                    }); ;
+                    });
 
                     if (mediaFile == null)
                         return;

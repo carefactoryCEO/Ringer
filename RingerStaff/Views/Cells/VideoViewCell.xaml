@@ -115,7 +115,8 @@
             <!-- timestamp -->
             <Label TextColor="{StaticResource MessageMetadataColor}"
                    FontSize="10"
-                   Text="오후 9:21 🇻🇳"
+                   Text="{Binding CreatedAt,
+                                  Converter={StaticResource DateTimeToStringConverter}}"
                    d:HorizontalOptions="End"
                    HorizontalOptions="{Binding MessageTypes,
                                         Converter={StaticResource MessageTypesToLayoutOptionConverter},
