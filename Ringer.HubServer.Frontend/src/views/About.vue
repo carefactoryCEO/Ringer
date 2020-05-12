@@ -43,7 +43,7 @@ export default {
       isEntered: false,
       rooms: [],
       items: [],
-      messageToSend: ""
+      messageToSend: "",
     };
   },
   created() {
@@ -55,9 +55,16 @@ export default {
           body,
           messageId,
           userId,
-          createdAt
+          createdAt,
         };
-        this.addItem(`${message.senderName}: ${message.body}`);
+
+        const me = userId == Vue.prototype.$userId;
+
+        const displayMessage = me
+          ? message.body
+          : `${message.senderName}: ${message.body}`;
+
+        this.addItem(displayMessage, me);
       }
     );
   },
@@ -65,30 +72,35 @@ export default {
     // get room list
     this.getRoomList();
 
-    this.$connection.onreconnecting(e => console.log(e));
     /* eslint-disable */
-    this.$connection.onreconnected(e => {
+    this.$connection.onreconnecting((e) => console.log(e));
+    /* eslint-disable */
+    this.$connection.onreconnected((e) => {
       let test = "";
       console.log(e);
       this.enterRoom(this.$currentRoomId);
     });
     /** eslint-enable */
-    this.$connection.onclose(e => {
+    this.$connection.onclose((e) => {
       console.log(e);
     });
 
     // enter to send
-    document.querySelector("#message-input").addEventListener("keypress", e => {
-      if (e.keyCode == 13) this.sendMeessage();
-    });
+    document
+      .querySelector("#message-input")
+      .addEventListener("keypress", (e) => {
+        if (e.keyCode == 13) this.sendMeessage();
+      });
 
-    document.querySelector("#message-input").addEventListener("focus", e => {
+    document.querySelector("#message-input").addEventListener("focus", (e) => {
       e.target.placeholder = "";
     });
 
-    document.querySelector("#message-input").addEventListener("focusout", e => {
-      e.target.placeholder = "메시지";
-    });
+    document
+      .querySelector("#message-input")
+      .addEventListener("focusout", (e) => {
+        e.target.placeholder = "메시지";
+      });
   },
   methods: {
     enterRoom(roomId) {
@@ -99,9 +111,11 @@ export default {
     },
     async getRoomList() {
       await axios
-        .get("/auth/list")
-        .then(r => (this.rooms = r.data))
-        .catch(err => console.log(err));
+        .get("/rooms/list", {
+          headers: { Authorization: "Bearer " + Vue.prototype.$token },
+        })
+        .then((r) => (this.rooms = r.data))
+        .catch((err) => console.log(err));
 
       console.log(this.rooms);
     },
@@ -112,7 +126,7 @@ export default {
         this.$currentRoomId
       );
 
-      this.addItem(this.messageToSend, true);
+      //this.addItem(this.messageToSend, true);
 
       this.messageToSend = "";
 
@@ -129,8 +143,8 @@ export default {
         const element = document.getElementById("chat-feed");
         element.scrollTop = element.scrollHeight - element.clientHeight;
       }, 1);
-    }
-  }
+    },
+  },
 };
 </script>
 

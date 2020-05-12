@@ -2,6 +2,7 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="RingerStaff.Views.RoomsPage"
+             Shell.TabBarIsVisible="False"
              Shell.FlyoutBehavior="Disabled"
              Title="링거">
     <ContentPage.ToolbarItems>
@@ -13,9 +14,9 @@
                                  Glyph="{StaticResource IconSearch}"
                                  Size="18"/>
             </ToolbarItem.IconImageSource>
-        </ToolbarItem>-->
+        </ToolbarItem>
 
-        <!--<ToolbarItem Command="{Binding RefreshCommand}"
+        <ToolbarItem Command="{Binding RefreshCommand}"
                      Order="Primary" >
             <ToolbarItem.IconImageSource>
                 <FontImageSource FontFamily="{DynamicResource MaterialFontFamily}"

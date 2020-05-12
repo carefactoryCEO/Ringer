@@ -5,6 +5,7 @@
        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
        mc:Ignorable="d"
        xmlns:local="clr-namespace:RingerStaff.Views"
+       FlyoutBehavior="Disabled"
        Title="RingerStaff"
        x:Class="RingerStaff.AppShell">
     <!-- 
@@ -29,7 +30,6 @@
     </Shell.Resources>
 
     <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" Route="RoomsPage"/>
-
     <!--<TabBar>
         <Tab Title="링거" Route="RoomsPage">
             <Tab.Icon>
@@ -38,7 +38,6 @@
                     Glyph="{StaticResource IconChat}"
                     Size="20"/>
             </Tab.Icon>
-            <ShellContent ContentTemplate="{DataTemplate local:RoomsPage}" />
             <ShellContent>
                 <local:RoomsPage/>
             </ShellContent>

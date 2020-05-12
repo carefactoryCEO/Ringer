@@ -77,14 +77,16 @@
             <Color x:Key="ActionIconBackground">#B95C5C</Color>
 
             <!-- Chat Cell -->
-            <Color x:Key="MessageMetadataColor">LightGray</Color>
+            <!--<Color x:Key="MessageMetadataColor">LightGray</Color>-->
+            <Color x:Key="MessageMetadataColor">Gray</Color>
             <Color x:Key="MessageOutgoingBackgroundColor">#FFEB03</Color>
             <Color x:Key="MessageIncommingBackgroundClor">#FFFFFF</Color>
             <Color x:Key="MessageTextColor">#111111</Color>
             <Color x:Key="MessageUnreadCountTextColoir">#FFEB03</Color>
 
             <!-- Messages Feed -->
-            <Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>
+            <!--<Color x:Key="MessagesFeedBackgroundColor">#6C6768</Color>-->
+            <Color x:Key="MessagesFeedBackgroundColor">#FFFFFF</Color>
 
             <!-- ChatInputBarView -->
 

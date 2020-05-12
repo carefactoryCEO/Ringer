@@ -1,19 +1,22 @@
 import {
   HubConnectionBuilder,
   LogLevel,
-  HubConnectionState
+  HubConnectionState,
 } from "@microsoft/signalr";
 import axios from "axios";
+import { v4 as uuid } from "uuid";
 
 export default {
   token: "",
+  userId: -1,
 
   async getToken() {
     await axios
       .post("/auth/staff-login", {
         email: "test@test.com",
         password: "string",
-        devicetype: 2 // DeviceType.Web
+        devicetype: 2, // DeviceType.Web
+        deviceId: uuid(),
         /**
          * iOS      = 0,
          * Android  = 1,
@@ -22,17 +25,24 @@ export default {
          * Console  = 4
          */
       })
-      .then(response => {
+      .then((response) => {
         this.token = response.data.token;
+        this.userId = response.data.userId;
       });
 
     return this.token;
   },
 
-  install(Vue) {
+  async install(Vue) {
+    await this.getToken();
+    Vue.prototype.$token = this.token;
+    Vue.prototype.$userId = this.userId;
+
+    console.log(`token: ${this.token}`);
+
     const connection = new HubConnectionBuilder()
       .withUrl("/hubs/chat", {
-        accessTokenFactory: () => this.getToken()
+        accessTokenFactory: () => this.getToken(),
       })
       .withAutomaticReconnect([0, 0, 1000, 1000, 1000, 2000, 2000])
       .configureLogging(LogLevel.Information)
@@ -40,8 +50,8 @@ export default {
 
     Vue.prototype.$connection = connection;
 
-    connection.on("Entered", name => console.log(`${name} entered to room`));
-    connection.on("Left", name => console.log(`${name} left to room`));
+    connection.on("Entered", (name) => console.log(`${name} entered to room`));
+    connection.on("Left", (name) => console.log(`${name} left to room`));
 
     connection.on(
       "ReceiveMessage",
@@ -51,7 +61,7 @@ export default {
           body,
           messageId,
           userId,
-          createdAt
+          createdAt,
         };
         console.log(receivedMessage);
       }
@@ -66,5 +76,5 @@ export default {
         Vue.prototype.$connectionId = connection.connectionId;
       }
     });
-  }
+  },
 };

@@ -25,7 +25,7 @@
                 <Setter Property="VerticalOptions" Value="EndAndExpand"/>
                 <Setter Property="Margin" Value="0,0,0,0"/>
                 <Setter Property="BackgroundColor" Value="Transparent"/>
-                <Setter Property="TextColor" Value="White"/>
+                <Setter Property="TextColor" Value="Black"/>
             </Style>
 
         </ResourceDictionary>
@@ -55,7 +55,7 @@
 
         <!-- Navigation Bar -->
         <StackLayout Grid.Row="0" Orientation="Horizontal"
-                     BackgroundColor="{StaticResource MessagesFeedBackgroundColor}"
+                     BackgroundColor="#33555555"
                      HeightRequest="{Binding NavBarHeight}" VerticalOptions="Start" Opacity=".9"
                      Padding="{OnPlatform Android='0,0,0,0', iOS='5,0,5,0'}">
 

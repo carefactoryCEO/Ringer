@@ -34,6 +34,7 @@ namespace RingerStaff.ViewModels
                     App.Token = token;
                     await RealTimeService.ConnectAsync(App.Huburl, App.Token);
                     await Shell.Current.Navigation.PopModalAsync();
+                    MessagingCenter.Send(this, "LoggedIn");
                 }
                 else
                     Debug.WriteLine("Token is empty");

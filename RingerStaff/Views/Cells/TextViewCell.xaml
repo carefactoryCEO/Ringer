@@ -74,6 +74,7 @@
             <Frame d:BackgroundColor="#FFEB03"
                    BackgroundColor="{Binding MessageTypes,
                                 Converter={StaticResource MessageTypesToColorConverter}}"
+                   BorderColor="Gray"
                    Padding="{OnPlatform iOS='12,6', Android='10,6'}"
                    VerticalOptions="Start"
                    CornerRadius="15"

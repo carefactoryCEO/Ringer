@@ -15,12 +15,12 @@ namespace RingerStaff.Views
             InitializeComponent();
 
             BindingContext = vm = new RoomsPageViewModel();
+
+            MessagingCenter.Subscribe<LoginPageViewModel>(this, "LoggedIn", async s => await vm.LoadRoomsAsync());
         }
 
         protected override async void OnAppearing()
         {
-            base.OnAppearing();
-
             IsBusy = true;
 
             try
@@ -43,6 +43,8 @@ namespace RingerStaff.Views
             {
                 IsBusy = false;
             }
+
+            base.OnAppearing();
         }
 
         protected override void OnDisappearing()
