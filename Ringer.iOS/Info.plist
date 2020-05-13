@@ -73,5 +73,7 @@
 	<string>링거</string>
 	<key>CFBundleVersion</key>
 	<string>1.0.1</string>
+	<key>UIRequiresFullScreen</key>
+	<true/>
 </dict>
 </plist>
