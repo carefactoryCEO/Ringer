@@ -41,9 +41,9 @@ namespace Ringerstaff.Droid.Renderers
 
                 // remove android default cursor color
                 // https://stackoverflow.com/questions/45916849/how-to-change-entry-cursor-color-in-xamarin-android
-                IntPtr IntPtrtextViewClass = JNIEnv.FindClass(typeof(TextView));
-                IntPtr mCursorDrawableResProperty = JNIEnv.GetFieldID(IntPtrtextViewClass, "mCursorDrawableRes", "I");
-                JNIEnv.SetField(Control.Handle, mCursorDrawableResProperty, 0); // replace 0 with a Resource.Drawable.my_cursor
+                //IntPtr IntPtrtextViewClass = JNIEnv.FindClass(typeof(TextView));
+                //IntPtr mCursorDrawableResProperty = JNIEnv.GetFieldID(IntPtrtextViewClass, "mCursorDrawableRes", "I");
+                //JNIEnv.SetField(Control.Handle, mCursorDrawableResProperty, 0); // replace 0 with a Resource.Drawable.my_cursor
 
                 if (initial)
                 {
