@@ -8,7 +8,12 @@ using Android.Views;
 
 namespace RingerStaff.Droid
 {
-    [Activity(Label = "RingerStaff", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation, WindowSoftInputMode = SoftInput.AdjustNothing)]
+    [Activity(Label = "링거스태프",
+        Icon = "@mipmap/ic_launcher",
+        Theme = "@style/MainTheme",
+        MainLauncher = true,
+        ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation,
+        WindowSoftInputMode = SoftInput.AdjustNothing)]
     public class MainActivity : global::Xamarin.Forms.Platform.Android.FormsAppCompatActivity
     {
         protected override void OnCreate(Bundle savedInstanceState)
