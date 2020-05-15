@@ -102,7 +102,9 @@ namespace RingerStaff.ViewModels
 
                 Rooms.Clear();
 
-                foreach (var roomInfo in roomInfors.OrderByDescending(r => r.LastMessage.CreatedAt))
+                var orderedRoomsInfos = roomInfors.Where(r => r.LastMessage != null).OrderByDescending(r => r.LastMessage.CreatedAt);
+
+                foreach (var roomInfo in orderedRoomsInfos)
                 {
                     if (!App.UnreadCounts.ContainsKey(roomInfo.Room.Id))
                         App.UnreadCounts[roomInfo.Room.Id] = 0;

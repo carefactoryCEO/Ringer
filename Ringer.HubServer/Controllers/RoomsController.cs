@@ -1,18 +1,14 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Ringer.Core.Data;
 using Ringer.Core.Models;
 using Ringer.HubServer.Data;
-using Ringer.HubServer.Hubs;
 
 namespace Ringer.HubServer.Controllers
 {
@@ -21,10 +17,12 @@ namespace Ringer.HubServer.Controllers
     public class RoomsController : ControllerBase
     {
         private readonly RingerDbContext dbContext;
+        private readonly ILogger<RoomsController> logger;
 
-        public RoomsController(RingerDbContext dbContext)
+        public RoomsController(RingerDbContext dbContext, ILogger<RoomsController> logger)
         {
             this.dbContext = dbContext;
+            this.logger = logger;
         }
 
         [Authorize]
@@ -43,6 +41,8 @@ namespace Ringer.HubServer.Controllers
         {
             List<Room> rooms = await dbContext.Rooms.ToListAsync();
 
+
+
             var roomInfos = new List<RoomInformation>();
 
             foreach (Room room in rooms)
@@ -52,9 +52,14 @@ namespace Ringer.HubServer.Controllers
                     .OrderByDescending(m => m.Id)
                     .FirstOrDefaultAsync();
                 roomInfos.Add(new RoomInformation { Room = room, LastMessage = lastMessage });
+
+                logger.LogWarning($"roomsInfo Added. Room.Id: {room.Id}");
             }
 
-            var response = JsonSerializer.Serialize(roomInfos);
+            logger.LogWarning("--------serialize start");
+            var response = JsonSerializer.Serialize<List<RoomInformation>>(roomInfos);
+            logger.LogWarning("--------serialize end");
+            logger.LogWarning($"--------response: {response}");
 
             return Ok(response);
         }
